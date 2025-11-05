@@ -1,0 +1,184 @@
+const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+
+// --- Configuration ---
+// FIX: Default port is now 80, as requested
+const PORT = process.env.PORT || 80;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const DATA_DIR = path.join(__dirname, 'data');
+const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
+const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
+
+// NEW: Environment variable defaults
+const PAGE_TITLE = process.env.PAGE_TITLE || 'Calendar';
+const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; // Default to null, client will handle
+const TIMEZONE = process.env.TIMEZONE || 'UTC';
+
+// In-memory store for valid admin tokens
+const validAdmins = new Set();
+
+// --- Server Setup ---
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// --- Security Best Practice ---
+if (!ADMIN_PASSWORD) {
+    console.error('FATAL ERROR: ADMIN_PASSWORD environment variable is not set.');
+    console.error('The application will not start. Set this variable to a secure password when running the container.');
+    process.exit(1); // Exit with a failure code
+}
+
+// --- WebSocket Handling ---
+wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket');
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+});
+
+// Broadcast function to all connected clients
+const broadcastUpdate = (year, data) => {
+    const message = JSON.stringify({
+        type: 'DATA_UPDATE',
+        payload: { year, data }
+    });
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+};
+
+// --- Middleware ---
+app.use(express.json()); // Parse JSON bodies
+app.use(express.static(CLIENT_BUILD_PATH)); // Serve the static React app
+
+// Token Verification Middleware
+const verifyAdminToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <TOKEN>
+
+    if (token == null) {
+        return res.sendStatus(401); // No token
+    }
+
+    if (validAdmins.has(token)) {
+        next(); // Token is valid, proceed
+    } else {
+        return res.sendStatus(403); // Invalid token
+    }
+};
+
+// --- Utility Functions ---
+const getDataFilePath = (year) => {
+    // Ensure the data directory exists
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    return path.join(DATA_DIR, `${year}_data.json`);
+};
+
+const readData = (year) => {
+    const filePath = getDataFilePath(year);
+    if (fs.existsSync(filePath)) {
+        try {
+            const fileData = fs.readFileSync(filePath, 'utf8');
+            return JSON.parse(fileData);
+        } catch (e) {
+            console.error(`Error reading data file for year ${year}:`, e);
+            return null; // Return null if file is corrupt
+        }
+    }
+    return null; // Return null if file doesn't exist
+};
+
+const writeData = (year, data) => {
+    const filePath = getDataFilePath(year);
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        console.error(`Error writing data file for year ${year}:`, e);
+        return false;
+    }
+};
+
+// --- API Routes ---
+
+// 1. NEW: Get App Configuration
+app.get('/api/config', (req, res) => {
+    res.json({
+        title: PAGE_TITLE,
+        headerName: PAGE_HEADER_NAME,
+        timezone: TIMEZONE
+    });
+});
+
+// 2. Authentication
+app.post('/api/auth/login', (req, res) => {
+    const { password } = req.body;
+    if (password === ADMIN_PASSWORD) {
+        // Generate a simple, secure token
+        const token = crypto.randomBytes(32).toString('hex');
+        validAdmins.add(token); // Store it as a valid session
+        
+        // Optionally, make tokens expire
+        setTimeout(() => {
+            validAdmins.delete(token);
+        }, 1000 * 60 * 60 * 8); // 8-hour session
+
+        res.json({ role: 'admin', token: token });
+    } else {
+        res.status(401).json({ role: 'view', token: null });
+    }
+});
+
+// 3. Get Data
+app.get('/api/data/:year', (req, res) => {
+    const { year } = req.params;
+    const data = readData(year);
+    if (data) {
+        res.json(data);
+    } else {
+        // If no data, return empty object (client will initialize)
+        res.json({}); 
+    }
+});
+
+// 4. Save Data (Protected)
+app.post('/api/data/:year', verifyAdminToken, (req, res) => {
+    const { year } = req.params;
+    const data = req.body;
+
+    // Updated to check for new data structure
+    if (!data.dayData || !data.keyItems || data.lastUpdatedText === undefined) {
+        return res.status(400).send('Invalid data structure.');
+    }
+
+    if (writeData(year, data)) {
+        // Broadcast the update to all connected clients
+        broadcastUpdate(parseInt(year), data);
+        res.status(200).send('Data saved successfully.');
+    } else {
+        res.status(500).send('Error saving data to file.');
+    }
+});
+
+// --- Serve React App ---
+// This catch-all route ensures that all non-API requests are
+// served the React app, allowing client-side routing to work.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
+});
+
+// --- Start Server ---
+server.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Serving static files from: ${CLIENT_BUILD_PATH}`);
+    console.log('WebSocket server is running.');
+});
