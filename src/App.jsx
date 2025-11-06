@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import ReactQuill from 'react-quill'; // NEW
 import { 
     Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, Lock, 
     User, Check, Edit, Save, Plus, X, Footprints, Bike, Palette, AlertTriangle, CloudOff, Loader,
-    Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, Bold, ChevronLeft, ChevronRight, Gift,
-    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Italic, Underline, List, Settings 
+    Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, ChevronLeft, ChevronRight, Gift,
+    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings 
+    // REMOVED: Bold, Italic, Underline, List
 } from 'lucide-react';
 
 // --- Configuration and Utility ---
@@ -40,6 +42,16 @@ const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June', 
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+
+// --- NEW: Configuration for the Rich Text Editor ---
+const QUILL_MODULES = {
+    toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['blockquote'],
+        ['clean']
+    ],
+};
 
 // --- Date Key Generation Utility ---
 const createDateKey = (year, monthIndex, day) => {
@@ -200,11 +212,11 @@ const StaticView = React.memo(({ localText1, localText2, localIcons }) => (
 ));
 
 // --- REWRITE: Sub-Component RichTextEditor (Moved Outside) ---
-// This is now a stable, memoized component. The inputs are now CONTROLLED with `value`.
+// This now uses ReactQuill for a true WYSIWYG experience.
 const RichTextEditor = React.memo(({
   isAdmin, activeTab, setActiveTab,
   localText1, setLocalText1,
-  localText2, setLocalText2, text2Ref, formatText,
+  localText2, setLocalText2, // REMOVED: text2Ref, formatText
   localColorId, setLocalColorId,
   localIcons,
   handleIconMove, setEditingIconIndex, setShowIconEditor, handleIconDelete
@@ -218,13 +230,13 @@ const RichTextEditor = React.memo(({
 
       {activeTab === 'text' && (
         <div className="space-y-4">
-          
+            
           {/* Line 1 (Location) */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
             <input
               type="text"
-              value={localText1} // REWRITE: Changed to controlled input
+              value={localText1}
               onChange={(e) => setLocalText1(e.target.value)}
               className="w-full border rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 font-bold dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Location"
@@ -232,27 +244,20 @@ const RichTextEditor = React.memo(({
             />
           </div>
 
-          {/* Line 2 (Details) - Rich Text */}
+          {/* Line 2 (Details) - NEW ReactQuill Editor */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Details</label>
-            <div className="flex items-center space-x-1 p-2 bg-gray-100 dark:bg-gray-900 border dark:border-gray-600 rounded-t-lg">
-                <button type="button" onClick={() => formatText('strong')} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200"><Bold size={16} /></button>
-                <button type="button" onClick={() => formatText('em')} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200"><Italic size={16} /></button>
-                <button type="button" onClick={() => formatText('u')} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200"><Underline size={16} /></button>
-                <button type="button" onClick={() => formatText('ul')} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200"><List size={16} /></button>
-                <button type="button" onClick={() => formatText('blockquote')} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 dark:text-gray-200" title="Indent"><Users size={16} /></button>
-            </div>
-            <textarea
-              ref={text2Ref}
-              value={localText2} // REWRITE: Changed to controlled input
-              onChange={(e) => setLocalText2(e.target.value)}
-              className="w-full border border-t-0 rounded-b-lg p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            <ReactQuill 
+              theme="snow" 
+              value={localText2} 
+              onChange={setLocalText2} // Directly sets the HTML string state
+              modules={QUILL_MODULES}
+              readOnly={!isAdmin}
               placeholder="Activity details"
-              disabled={!isAdmin}
-              rows="5"
+              className="quill-editor-custom" // Custom class for styling
             />
           </div>
-          
+            
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
           <div className="flex flex-wrap gap-2">
             {COLOR_OPTIONS.map(color => (
@@ -274,7 +279,7 @@ const RichTextEditor = React.memo(({
       {activeTab === 'icons' && (
         <div className="space-y-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 border-b dark:border-gray-700 pb-2">Activity Icons</label>
-          
+            
           <div className="flex flex-col gap-3 p-2 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 min-h-[5rem]">
               {localIcons.length === 0 ? (
                   <p className="text-gray-500 dark:text-gray-400 text-sm italic">No icons added yet. Click 'Add Icon' to start.</p>
@@ -326,10 +331,10 @@ const RichTextEditor = React.memo(({
           </div>
 
           <button 
-              onClick={() => { setEditingIconIndex(null); setShowIconEditor(true); }}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors"
+            onClick={() => { setEditingIconIndex(null); setShowIconEditor(true); }}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors"
           >
-              <Plus size={18} className="mr-2" /> Add Icon
+            <Plus size={18} className="mr-2" /> Add Icon
           </button>
         </div>
       )}
@@ -346,7 +351,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
   const [localText2, setLocalText2] = useState('');
   const [localColorId, setLocalColorId] = useState('none');
   const [localIcons, setLocalIcons] = useState([]);
-  const text2Ref = useRef(null); // Ref for rich text editing
 
   // Populate local state *only* when the modal is opened
   useEffect(() => {
@@ -410,44 +414,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
       [newIcons[indexToMove], newIcons[newIndex]] = [newIcons[newIndex], newIcons[indexToMove]];
       setLocalIcons(newIcons);
   };
-  
-  // --- Rich Text Editor Helper ---
-  const formatText = (tag) => {
-    const textarea = text2Ref.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = localText2.substring(start, end);
-    let newText;
-    let newCursorPos; // Track where the cursor should go
-
-    if (tag === 'ul') {
-      const lines = selectedText.split('\n').filter(line => line.trim() !== '');
-      const formattedLines = lines.map(line => `<li>${line}</li>`).join('\n');
-      const prefix = `${localText2.substring(0, start)}<ul>\n`;
-      const suffix = `\n</ul>${localText2.substring(end)}`;
-      newText = `${prefix}${formattedLines}${suffix}`;
-      newCursorPos = prefix.length + formattedLines.length;
-    } else {
-      // Handles strong, em, u, blockquote
-      const prefix = `${localText2.substring(0, start)}<${tag}>`;
-      const suffix = `</${tag}>${localText2.substring(end)}`;
-      newText = `${prefix}${selectedText}${suffix}`;
-      newCursorPos = prefix.length + selectedText.length; // Cursor after selected text + tag
-    }
-    
-    setLocalText2(newText);
-
-    // **CRITICAL FIX:** Wait for the DOM to update, then manually restore the cursor/selection
-    requestAnimationFrame(() => {
-        if (textarea) {
-            textarea.focus();
-            // Restore selection or set cursor to the end of the newly inserted text
-            textarea.setSelectionRange(newCursorPos, newCursorPos);
-        }
-    });
-  };
 
   return (
     <div className={`fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
@@ -469,7 +435,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
               isAdmin={isAdmin} activeTab={activeTab} setActiveTab={setActiveTab}
               localText1={localText1} setLocalText1={setLocalText1}
               localText2={localText2} setLocalText2={setLocalText2}
-              text2Ref={text2Ref} formatText={formatText}
               localColorId={localColorId} setLocalColorId={setLocalColorId}
               localIcons={localIcons}
               handleIconMove={handleIconMove}
@@ -598,19 +563,22 @@ const AuthModal = ({ isOpen, onClose, onAuthenticate, isLoading, setIsLoading, a
   );
 };
 
-
 // --- Component: Key Editor Modal ---
 const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
     if (!isOpen) return null;
 
     const [localKeyItems, setLocalKeyItems] = useState(keyData);
+    // NEW: State to manage the Icon Editor modal
+    const [showIconEditor, setShowIconEditor] = useState(false);
+    const [editingKeyId, setEditingKeyId] = useState(null);
     
     const handleAddRow = () => {
         setLocalKeyItems(prev => [...prev, { id: Date.now().toString(), label: 'New Item', icon: 'None', iconColor: KEY_COLOR_OPTIONS[0].class, isColorKey: false }]);
     };
     
+    // FIX: Simplified filter logic. The button is already disabled for the color key.
     const handleDeleteRow = (id) => {
-        setLocalKeyItems(prev => prev.filter(item => item.id !== id || item.isColorKey === false));
+        setLocalKeyItems(prev => prev.filter(item => item.id !== id));
     };
     
     const handleChange = (id, field, value) => {
@@ -635,7 +603,22 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
         
         setLocalKeyItems(newItems);
     };
-    
+
+    // NEW: Handler for saving data from the IconEditor
+    const handleIconSave = (iconData) => {
+        // iconData is { type: 'icon', value: iconType, color: iconColor }
+        if (editingKeyId) {
+            handleChange(editingKeyId, 'icon', iconData.value);
+            handleChange(editingKeyId, 'iconColor', iconData.color);
+        }
+        setShowIconEditor(false);
+        setEditingKeyId(null);
+    };
+
+    // NEW: Get the item being edited to pass to the IconEditor
+    const itemToEdit = editingKeyId ? localKeyItems.find(item => item.id === editingKeyId) : null;
+    const iconEditorInitialData = itemToEdit ? { value: itemToEdit.icon, color: itemToEdit.iconColor } : null;
+
     return (
       <div className={`fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl p-6 space-y-6 overflow-y-auto max-h-[90vh]">
@@ -643,9 +626,9 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Edit size={20} className="mr-2"/> Edit Calendar Key</h3>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
           </div>
-          
+            
           <p className="text-sm text-gray-600 dark:text-gray-300">The "Away From Home" item is locked to the top.</p>
-          
+            
           <div className="space-y-4">
             {localKeyItems.map((item, index) => {
                 const color = COLOR_OPTIONS.find(c => c.id === item.id);
@@ -672,36 +655,33 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
                             </button>
                         </div>
 
-                        <div className={`w-6 h-6 rounded-full ${bgColorClass} flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 flex-shrink-0`}>
-                          {IconComponent && item.icon !== 'None' && <IconComponent size={14} className={item.iconColor || 'text-gray-900'} />}
-                        </div>
+                        {/* REWRITE: This is now a button to open the Icon Editor */}
+                        <button
+                          onClick={() => {
+                            if (!item.isColorKey) { // Don't allow changing the color-key icon
+                              setEditingKeyId(item.id);
+                              setShowIconEditor(true);
+                            }
+                          }}
+                          className={`w-16 h-10 rounded-lg ${bgColorClass} flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 flex-shrink-0 ${item.isColorKey ? 'cursor-not-allowed' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                          disabled={item.isColorKey}
+                        >
+                          {IconComponent && item.icon !== 'None' ? (
+                            <IconComponent size={20} className={item.iconColor || 'text-gray-900'} />
+                          ) : (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Set</span>
+                          )}
+                        </button>
 
                         <input
                           type="text"
                           value={item.label}
                           onChange={(e) => handleChange(item.id, 'label', e.target.value)}
                           className="p-2 border rounded-lg flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="Label (e.e., Away From Home)"
+                          placeholder="Label (e.g., Away From Home)"
                         />
                         
-                        <select 
-                          value={item.icon} 
-                          onChange={(e) => handleChange(item.id, 'icon', e.target.value)} 
-                          className="p-2 border rounded-lg w-32 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        >
-                          {ICON_KEYS.map(key => <option key={key} value={key}>{key}</option>)}
-                        </select>
-
-                        <select
-                          value={item.iconColor}
-                          onChange={(e) => handleChange(item.id, 'iconColor', e.target.value)}
-                          className="p-2 border rounded-lg w-32 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          disabled={item.icon === 'None'}
-                        >
-                          {KEY_COLOR_OPTIONS.map(c => (
-                              <option key={c.id} value={c.class}>{c.label}</option>
-                          ))}
-                        </select>
+                        {/* The two <select> dropdowns for icon and color have been removed. */}
                         
                         <button 
                           onClick={() => handleDeleteRow(item.id)} 
@@ -714,7 +694,7 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
                 );
             })}
           </div>
-          
+            
           <div className="flex justify-between pt-4 border-t dark:border-gray-700">
             <button onClick={handleAddRow} className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg flex items-center transition-colors">
                 <Plus size={18} className="mr-2" /> Add Key Item
@@ -724,10 +704,18 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
             </button>
           </div>
         </div>
+
+        {/* NEW: Add the IconEditor, which is controlled by this component's state */}
+        <IconEditor
+          key={showIconEditor ? 'key-editor-open' : 'key-editor-closed'}
+          isOpen={showIconEditor}
+          onClose={() => setShowIconEditor(false)}
+          onSave={handleIconSave}
+          initialIconData={iconEditorInitialData}
+        />
       </div>
     );
-  };
-
+};
 
 // --- Component: Main App ---
 export default function App() {
@@ -813,7 +801,6 @@ export default function App() {
         
         setYear(initialYear);
         setConfig(appConfig);
-        document.title = appConfig.title;
 
       } catch (e) {
         console.error("Failed to fetch config:", e);
@@ -942,6 +929,12 @@ export default function App() {
       fetchData(year);
   }, [year, fetchData]);
 
+  // --- Set Page Title ---
+  useEffect(() => {
+    if (year) {
+      document.title = `${year} Calendar`;
+    }
+  }, [year]);
   
   // 4. Data Saving (Debounced for LastUpdatedText)
   const debouncedSaveRef = useRef(null);
@@ -1200,11 +1193,17 @@ export default function App() {
                     // Size is fixed to 20, but it will scale to fit the container
                     const size = 20; 
 
+                    const isYellow = item.color === 'text-yellow-500';
+                    const isCellOrange = dayInfo.colorId === 'orange';
+                    const shadowClass = (isYellow && isCellOrange)
+                        ? '[filter:drop-shadow(0px_0px_1px_rgba(0,0,0,0.9))]'
+                        : '';
+                    
                     return (
                         <div key={item.id || index} className={`flex items-center justify-center ${containerClasses}`}>
-                        <IconComponent 
+                        <IconComponent
                             size={size} // Fixed at 20
-                            className={`${item.color} w-full h-full`} // Force to use the container space
+                            className={`${item.color} w-full h-full ${shadowClass}`} // Conditionally adds the shadow
                         />
                         </div>
                     );

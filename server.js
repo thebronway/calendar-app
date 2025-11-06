@@ -14,7 +14,6 @@ const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 
 // NEW: Environment variable defaults
-const PAGE_TITLE = process.env.PAGE_TITLE || 'Calendar';
 const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; // Default to null, client will handle
 const TIMEZONE = process.env.TIMEZONE || 'UTC';
 
@@ -34,25 +33,42 @@ if (!ADMIN_PASSWORD) {
 }
 
 // --- WebSocket Handling ---
+
+// NEW: Heartbeat function. 'this' will be the ws client
+function heartbeat() {
+  this.isAlive = true;
+}
+
 wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
+    
+    // NEW: Handle heartbeat
+    ws.isAlive = true;
+    ws.on('pong', heartbeat); // The browser will auto-reply to pings
+
     ws.on('close', () => {
         console.log('Client disconnected');
     });
 });
 
-// Broadcast function to all connected clients
-const broadcastUpdate = (year, data) => {
-    const message = JSON.stringify({
-        type: 'DATA_UPDATE',
-        payload: { year, data }
-    });
-    wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
-};
+// NEW: WebSocket heartbeat interval
+// This will run every 30 seconds to check all connections
+const interval = setInterval(function ping() {
+  wss.clients.forEach(function each(ws) {
+    if (ws.isAlive === false) {
+      console.log('Terminating dead WebSocket connection.');
+      return ws.terminate();
+    }
+
+    ws.isAlive = false; // Assume it's dead, will be set to true by the 'pong'
+    ws.ping(); // Send the ping
+  });
+}, 30000); // 30,000 milliseconds = 30 seconds
+
+// NEW: Clear the interval on server close
+wss.on('close', function close() {
+  clearInterval(interval);
+});
 
 // --- Middleware ---
 app.use(express.json()); // Parse JSON bodies
@@ -113,7 +129,6 @@ const writeData = (year, data) => {
 // 1. NEW: Get App Configuration
 app.get('/api/config', (req, res) => {
     res.json({
-        title: PAGE_TITLE,
         headerName: PAGE_HEADER_NAME,
         timezone: TIMEZONE
     });
