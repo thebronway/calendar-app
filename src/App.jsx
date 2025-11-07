@@ -72,13 +72,12 @@ const generateCalendarForYear = (year) => {
       days[key] = {
         day: day,
         month: monthName,
-        text1: '', // Location
-        text2: '', // Details (now HTML)
+        locations: '', // RENAMED from text1, still a string
+        details: '', // RENAMED from text2
         colorId: 'none',
         icons: [], // Use 'icons' array
-        isText1Bold: true, // Location is now always bold
-        isText2Bold: false,
         year: year
+        // REMOVED isText1Bold and isText2Bold
       };
     }
   }
@@ -88,7 +87,7 @@ const generateCalendarForYear = (year) => {
 
 // Default Key Items
 const DEFAULT_KEY_ITEMS = [
-    { id: 'orange', label: 'Away From Home', icon: 'None', iconColor: KEY_COLOR_OPTIONS.find(c => c.id === 'gray').class, isColorKey: true },
+    { id: 'orange', label: 'Away From Home', icon: 'None', iconColor: KEY_COLOR_OPTIONS.find(c => c.id === 'gray').class, isColorKey: true, showCount: false },
 ];
 
 // --- Sub-Component: Icon Picker/Editor Modal ---
@@ -170,12 +169,25 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
 
 // --- REWRITE: Sub-Component StaticView (Moved Outside) ---
 // This is now a stable, memoized component and will not be re-defined on every render.
-const StaticView = React.memo(({ localText1, localText2, localIcons }) => (
+const StaticView = React.memo(({ localLocations, localDetails, localIcons }) => (
   <div className="space-y-4 p-6">
     
-    <p className="text-gray-700 dark:text-gray-300">
-      <strong>Location:</strong> <span className="font-bold">{localText1 || '-'}</span>
-    </p>
+    {/* --- NEW WRAPPING PILLS DISPLAY --- */}
+    <div className="text-gray-700 dark:text-gray-300">
+        <strong>Locations:</strong>
+        <div className="flex flex-wrap gap-2 mt-2">
+            {(localLocations && localLocations.length > 0) ? (
+                localLocations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
+                    <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
+                        {location}
+                    </span>
+                ))
+            ) : (
+                <span> -</span>
+            )}
+        </div>
+    </div>
+    {/* --- END WRAPPING PILLS DISPLAY --- */}
     
     {localIcons && localIcons.length > 0 && (
       <>
@@ -198,13 +210,13 @@ const StaticView = React.memo(({ localText1, localText2, localIcons }) => (
     )}
 
     {/* Render Details using dangerouslySetInnerHTML */}
-    {localText2 && (
+    {localDetails && (
        <div>
           <div 
           className="prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-y-auto whitespace-pre-wrap 
                       [&_blockquote]:m-0 [&_blockquote]:border-none [&_blockquote]:bg-transparent [&_blockquote]:pl-6"
           style={{ maxHeight: '150px' }}
-          dangerouslySetInnerHTML={{ __html: localText2 }}
+          dangerouslySetInnerHTML={{ __html: localDetails }}
           />
        </div>
     )}
@@ -215,8 +227,8 @@ const StaticView = React.memo(({ localText1, localText2, localIcons }) => (
 // This now uses ReactQuill for a true WYSIWYG experience.
 const RichTextEditor = React.memo(({
   isAdmin, activeTab, setActiveTab,
-  localText1, setLocalText1,
-  localText2, setLocalText2, // REMOVED: text2Ref, formatText
+  localLocations, setLocalLocations, // RENAMED
+  localDetails, setLocalDetails, // RENAMED
   localColorId, setLocalColorId,
   localIcons,
   handleIconMove, setEditingIconIndex, setShowIconEditor, handleIconDelete
@@ -233,13 +245,13 @@ const RichTextEditor = React.memo(({
             
           {/* Line 1 (Location) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Locations (comma-separated)</label>
             <input
               type="text"
-              value={localText1}
-              onChange={(e) => setLocalText1(e.target.value)}
+              value={localLocations}
+              onChange={(e) => setLocalLocations(e.target.value)}
               className="w-full border rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 font-bold dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Location"
+              placeholder="e.g. NYC, London, Tokyo"
               disabled={!isAdmin}
             />
           </div>
@@ -249,8 +261,8 @@ const RichTextEditor = React.memo(({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Details</label>
             <ReactQuill 
               theme="snow" 
-              value={localText2} 
-              onChange={setLocalText2} // Directly sets the HTML string state
+              value={localDetails} 
+              onChange={setLocalDetails} // Directly sets the HTML string state
               modules={QUILL_MODULES}
               readOnly={!isAdmin}
               placeholder="Activity details"
@@ -347,16 +359,16 @@ const RichTextEditor = React.memo(({
 const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
   
   // --- CURSOR BUG FIX: Use local state for all inputs ---
-  const [localText1, setLocalText1] = useState('');
-  const [localText2, setLocalText2] = useState('');
+  const [localLocations, setLocalLocations] = useState(''); // RENAMED
+  const [localDetails, setLocalDetails] = useState(''); // RENAMED
   const [localColorId, setLocalColorId] = useState('none');
   const [localIcons, setLocalIcons] = useState([]);
 
   // Populate local state *only* when the modal is opened
   useEffect(() => {
     if (dayData) {
-      setLocalText1(dayData.text1 || '');
-      setLocalText2(dayData.text2 || '');
+      setLocalLocations(dayData.locations || ''); // RENAMED
+      setLocalDetails(dayData.details || ''); // RENAMED
       setLocalColorId(dayData.colorId || 'none');
       // Handle legacy 'content' array if 'icons' is missing
       setLocalIcons(dayData.icons || dayData.content || []); 
@@ -373,12 +385,11 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
   const handleSave = () => {
     onSave({
       ...dayData,
-      text1: localText1,
-      text2: localText2,
+      locations: localLocations, // RENAMED
+      details: localDetails, // RENAMED
       colorId: localColorId,
       icons: localIcons,
-      isText1Bold: true, // Location is always bold now
-      isText2Bold: false // Field removed
+      // REMOVED isText1Bold and isText2Bold
     });
     onClose();
   };
@@ -433,8 +444,8 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
           {isAdmin ? (
             <RichTextEditor
               isAdmin={isAdmin} activeTab={activeTab} setActiveTab={setActiveTab}
-              localText1={localText1} setLocalText1={setLocalText1}
-              localText2={localText2} setLocalText2={setLocalText2}
+              localLocations={localLocations} setLocalLocations={setLocalLocations}
+              localDetails={localDetails} setLocalDetails={setLocalDetails}
               localColorId={localColorId} setLocalColorId={setLocalColorId}
               localIcons={localIcons}
               handleIconMove={handleIconMove}
@@ -444,8 +455,8 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
             />
           ) : (
             <StaticView
-              localText1={localText1}
-              localText2={localText2}
+              localLocations={localLocations}
+              localDetails={localDetails}
               localIcons={localIcons}
             />
           )}
@@ -573,7 +584,7 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
     const [editingKeyId, setEditingKeyId] = useState(null);
     
     const handleAddRow = () => {
-        setLocalKeyItems(prev => [...prev, { id: Date.now().toString(), label: 'New Item', icon: 'None', iconColor: KEY_COLOR_OPTIONS[0].class, isColorKey: false }]);
+        setLocalKeyItems(prev => [...prev, { id: Date.now().toString(), label: 'New Item', icon: 'None', iconColor: KEY_COLOR_OPTIONS[0].class, isColorKey: false, showCount: false }]);
     };
     
     // FIX: Simplified filter logic. The button is already disabled for the color key.
@@ -674,15 +685,27 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
                         </button>
 
                         <input
-                          type="text"
-                          value={item.label}
-                          onChange={(e) => handleChange(item.id, 'label', e.target.value)}
-                          className="p-2 border rounded-lg flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          placeholder="Label (e.g., Away From Home)"
+                            type="text"
+                            value={item.label}
+                            onChange={(e) => handleChange(item.id, 'label', e.target.value)}
+                            className="p-2 border rounded-lg flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            placeholder="Label (e.g., Away From Home)"
                         />
-                        
-                        {/* The two <select> dropdowns for icon and color have been removed. */}
-                        
+
+                        <div className="flex items-center space-x-2 text-sm ml-2">
+                            <input
+                                type="checkbox"
+                                id={`count-${item.id}`}
+                                checked={item.showCount || false}
+                                onChange={(e) => handleChange(item.id, 'showCount', e.target.checked)}
+                                disabled={item.isColorKey}
+                                className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 disabled:opacity-50"
+                            />
+                            <label htmlFor={`count-${item.id}`} className={`text-gray-600 dark:text-gray-300 ${item.isColorKey ? 'opacity-50' : ''}`}>
+                                Show Count
+                            </label>
+                        </div>
+
                         <button 
                           onClick={() => handleDeleteRow(item.id)} 
                           className={`text-red-500 hover:text-red-700 ${item.isColorKey ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -898,7 +921,7 @@ export default function App() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
+        let data = await response.json(); // Use 'let' so we can modify it
         
         if (Object.keys(data).length === 0 || !data.dayData) {
             console.log(`No data for ${currentYear}. Initializing...`);
@@ -911,6 +934,38 @@ export default function App() {
             setKeyItems(defaultData.keyItems);
             setLastUpdatedText(defaultData.lastUpdatedText);
         } else {
+            // --- NEW MIGRATION LOGIC ---
+            // Check the first day to see if migration is needed
+            const firstDayKey = Object.keys(data.dayData)[0];
+            if (firstDayKey && data.dayData[firstDayKey].text2 !== undefined) {
+                console.log('Old data format detected. Migrating in memory...');
+                Object.keys(data.dayData).forEach(key => {
+                    const day = data.dayData[key];
+                    
+                    // 1. Rename text1 to locations
+                    if (day.text1 !== undefined) {
+                        day.locations = day.text1;
+                        delete day.text1;
+                    }
+                    
+                    // 2. Rename text2 to details
+                    if (day.text2 !== undefined) {
+                        day.details = day.text2;
+                        delete day.text2;
+                    }
+
+                    // 3. Remove bold fields
+                    if (day.isText1Bold !== undefined) {
+                        delete day.isText1Bold;
+                    }
+                    if (day.isText2Bold !== undefined) {
+                        delete day.isText2Bold;
+                    }
+                });
+                console.log('Migration complete.');
+            }
+            // --- END MIGRATION LOGIC ---
+
             setCalendarData(data.dayData);
             setKeyItems(data.keyItems);
             setLastUpdatedText(data.lastUpdatedText);
@@ -1092,6 +1147,51 @@ export default function App() {
     return { monthly: totals, yearlyTotal, yearlyPercentage, totalDays };
   }, [calendarData, year]);
   
+  const iconCounts = useMemo(() => {
+    if (!calendarData) return {};
+    
+    const counts = {};
+    
+    Object.values(calendarData).forEach(day => {
+        // Handle legacy 'content' or new 'icons' array
+        const iconsToCount = day.icons || day.content || [];
+        
+        iconsToCount.forEach(iconItem => {
+            const iconName = iconItem.value || iconItem.icon; // Handle legacy
+            const iconColor = iconItem.color; // Get the color class (e.g., 'text-red-600')
+            
+            if (iconName && iconName !== 'None' && iconColor) {
+                // Create a unique key for the icon-color combination
+                const compositeKey = `${iconName}-${iconColor}`;
+                counts[compositeKey] = (counts[compositeKey] || 0) + 1;
+            }
+        });
+    });
+    return counts;
+  }, [calendarData]);
+
+  const locationCounts = useMemo(() => {
+    if (!calendarData) return [];
+    
+    const counts = {};
+    
+    Object.values(calendarData).forEach(day => {
+        // Check if locations string is not empty
+        if (day.locations && day.locations.length > 0) {
+            day.locations.split(',')
+                .map(loc => loc.trim()) // Trim whitespace from " NYC"
+                .filter(Boolean)       // Remove empty strings if they exist (e.g., "NYC,,London")
+                .forEach(location => {
+                    counts[location] = (counts[location] || 0) + 1;
+                });
+        }
+    });
+    
+    // Convert to an array and sort by count (highest first)
+    return Object.entries(counts)
+                 .sort(([, countA], [, countB]) => countB - countA);
+
+  }, [calendarData]);
 
   // --- Today's Date (Timezone Aware) ---
   const todayKey = useMemo(() => {
@@ -1151,7 +1251,6 @@ export default function App() {
       const isToday = isCurrentYear && dayKey === todayKey;
       const isHighlighted = dayInfo.colorId !== 'none';
       const dayNumberColor = isHighlighted ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100';
-      const locationTextColor = isHighlighted ? 'text-gray-800' : 'text-gray-700 dark:text-gray-300';
       
       const cellClasses = `p-0.5 sm:p-1 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer transition-shadow ${colorClass}`;
       
@@ -1168,13 +1267,23 @@ export default function App() {
 
             {/* This is your Top Block (Date + Location) */}
             <div className="text-xs font-semibold text-center flex flex-col items-center">
-                <span className={`text-lg font-bold ${isToday ? 'bg-blue-500 text-white rounded-full w-7 h-7 flex items-center justify-center' : dayNumberColor}`}>{dayInfo.day}</span> 
+                <span className={`text-xl font-bold ${isToday ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : dayNumberColor}`}>{dayInfo.day}</span> 
                 
-                {dayInfo.text1 && (
-                    <span className={`block text-base font-bold mt-1 ${locationTextColor} break-words line-clamp-2`}>
-                        {dayInfo.text1}
-                    </span>
+                {/* --- NEW WRAPPING PILLS FOR LOCATIONS --- */}
+                {dayInfo.locations && (
+                    <div className="flex flex-wrap justify-center gap-1 mt-1 w-full">
+                        {dayInfo.locations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
+                            <span 
+                                key={index} 
+                                // Use smaller pills for the small cell
+                                className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${isHighlighted ? 'bg-black/10 text-gray-900' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'} break-all`}
+                            >
+                                {location}
+                            </span>
+                        ))}
+                    </div>
                 )}
+                {/* --- END WRAPPING PILLS FOR LOCATIONS --- */}
             </div>
             {/* This is your Bottom Block (Icons) 
                 - Using flex-nowrap to encourage shrinking before wrapping
@@ -1238,11 +1347,11 @@ export default function App() {
       <div key={monthName} className="w-full lg:w-1/3 p-2">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 flex justify-between items-center">
             {monthName}
-            {monthStats && <span className="text-sm font-normal bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">{monthStats.highlighted} / {monthStats.total} days ({monthStats.percentage}%)</span>}
+            {monthStats && <span className="text-base font-normal bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">{monthStats.highlighted} / {monthStats.total} days ({monthStats.percentage}%)</span>}
         </h2>
         <table className="calendar-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-700 shadow-md rounded-lg overflow-hidden">
           <thead>
-            <tr className="bg-gray-200 dark:bg-gray-700 text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300">
+            <tr className="bg-gray-200 dark:bg-gray-700 text-sm font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                 <th key={day} className="p-2 border border-gray-300 dark:border-gray-600">{day}</th>
               ))}
@@ -1340,10 +1449,23 @@ export default function App() {
 
                     return (
                         <div key={item.id} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg">
-                            <div className={`w-5 h-5 rounded-full ${bgColorClass} flex items-center justify-center border border-gray-300 dark:border-gray-600`}>
+                            {/* Icon (added flex-shrink-0) */}
+                            <div className={`w-5 h-5 rounded-full ${bgColorClass} flex items-center justify-center border border-gray-300 dark:border-gray-600 flex-shrink-0`}>
                                 {IconComponent && item.icon !== 'None' && <IconComponent size={14} className={item.iconColor || 'text-gray-900'} />}
                             </div>
-                            <span className="font-medium text-gray-700 dark:text-gray-200">{item.label}</span>
+                            
+                            {/* Label (added flex-1 to make it grow and push the count right) */}
+                            <span className="font-medium text-gray-700 dark:text-gray-200 flex-1 truncate" title={item.label}>
+                                {item.label}
+                            </span>
+                            
+                            {/* NEW: Conditional Count (right-aligned) */}
+                            {item.showCount && !item.isColorKey && (
+                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                                    {/* Look up the count using both the icon AND its color */
+                                    iconCounts[`${item.icon}-${item.iconColor}`] || 0}
+                                </span>
+                            )}
                         </div>
                     );
                 })}
@@ -1360,7 +1482,25 @@ export default function App() {
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Time Away From Home</p>
                     <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyPercentage}%</p>
+
                 </div>
+            </div>
+            <div className="mt-6 pt-4 border-t dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Location Counts</h3>
+                {locationCounts.length > 0 ? (
+                    <div className="flex flex-wrap gap-3">
+                        {locationCounts.map(([location, count]) => (
+                            <div key={location} className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
+                                <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
+                                <span className="ml-3 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                                    {count}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">No locations have been added yet.</p>
+                )}
             </div>
         </section>
 

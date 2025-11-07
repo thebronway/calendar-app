@@ -124,6 +124,24 @@ const writeData = (year, data) => {
     }
 };
 
+const broadcastUpdate = (year, data) => {
+    console.log(`Broadcasting update for year ${year}`);
+    const message = JSON.stringify({
+        type: 'DATA_UPDATE',
+        payload: {
+            year: year,
+            data: data
+        }
+    });
+
+    wss.clients.forEach((client) => {
+        // Use the raw value '1' for OPEN state
+        if (client.readyState === 1) {
+            client.send(message);
+        }
+    });
+};
+
 // --- API Routes ---
 
 // 1. NEW: Get App Configuration
@@ -173,6 +191,17 @@ app.post('/api/data/:year', verifyAdminToken, (req, res) => {
     // Updated to check for new data structure
     if (!data.dayData || !data.keyItems || data.lastUpdatedText === undefined) {
         return res.status(400).send('Invalid data structure.');
+    }
+
+    // NEW: Validate a sample day object to ensure it has the new structure
+    // This prevents saving malformed data from an old client
+    const sampleKey = Object.keys(data.dayData)[0];
+    if (sampleKey) {
+        const sampleDay = data.dayData[sampleKey];
+        if (sampleDay.details === undefined || sampleDay.locations === undefined) {
+            console.warn('Blocking save: Data is in an old, invalid format.');
+            return res.status(400).send('Invalid data structure. Client may be out of date.');
+        }
     }
 
     if (writeData(year, data)) {
