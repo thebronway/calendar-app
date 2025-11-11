@@ -43,8 +43,8 @@ This application is designed to be run with **Docker**.
           # OPTIONAL: Set your local timezone (e.g., "America/New_York")
           - TIMEZONE=UTC
           
-          # OPTIONAL: Customize the header text
-          - PAGE_HEADER_NAME=My
+          # OPTIONAL: Customize the header text with your name
+          - PAGE_HEADER_NAME=John
     ```
 
 2.  Create the data directory and run the container:
@@ -62,7 +62,7 @@ Your calendar will be running at `http://localhost:8080`.
 | :--- | :--- | :--- | :--- |
 | **`ADMIN_PASSWORD`** | **Yes** | `null` | A secure password to enable Admin Mode (editing/saving). |
 | `TIMEZONE` | No | `UTC` | Sets the server's timezone to correctly identify "today." [List of valid names](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). |
-| `PAGE_HEADER_NAME`| No | `null` | Customizes the header text (e.g., `PAGE_HEADER_NAME=My`). |
+| `PAGE_HEADER_NAME`| No | `null` | Customizes the header text with your anme(e.g., `PAGE_HEADER_NAME=John`). |
 
 ## Tech Stack
 
