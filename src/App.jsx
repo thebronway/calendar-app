@@ -4,8 +4,7 @@ import {
     Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, Lock, 
     User, Check, Edit, Save, Plus, X, Footprints, Bike, Palette, AlertTriangle, CloudOff, Loader,
     Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, ChevronLeft, ChevronRight, Gift,
-    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings 
-    // REMOVED: Bold, Italic, Underline, List
+    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings, ChevronDown, ChevronUp, Github, Database
 } from 'lucide-react';
 
 // --- Configuration and Utility ---
@@ -72,12 +71,11 @@ const generateCalendarForYear = (year) => {
       days[key] = {
         day: day,
         month: monthName,
-        locations: '', // RENAMED from text1, still a string
-        details: '', // RENAMED from text2
+        locations: '',
+        details: '',
         colorId: 'none',
         icons: [], // Use 'icons' array
         year: year
-        // REMOVED isText1Bold and isText2Bold
       };
     }
   }
@@ -167,46 +165,47 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
     );
 }
 
-// --- REWRITE: Sub-Component StaticView (Moved Outside) ---
-// This is now a stable, memoized component and will not be re-defined on every render.
-const StaticView = React.memo(({ localLocations, localDetails, localIcons }) => (
+const StaticView = React.memo(({ localLocations, localDetails, localIcons, keyItems }) => (
   <div className="space-y-4 p-6">
     
-    {/* --- NEW WRAPPING PILLS DISPLAY --- */}
-    <div className="text-gray-700 dark:text-gray-300">
-        <strong>Locations:</strong>
-        <div className="flex flex-wrap gap-2 mt-2">
-            {(localLocations && localLocations.length > 0) ? (
-                localLocations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
-                    <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
-                        {location}
-                    </span>
-                ))
-            ) : (
-                <span> -</span>
-            )}
-        </div>
-    </div>
-    {/* --- END WRAPPING PILLS DISPLAY --- */}
-    
+      {/* --- NEW WRAPPING PILLS DISPLAY --- */}
+      <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
+        <strong>Location(s):</strong>
+        {(localLocations && localLocations.length > 0) ? (
+          localLocations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
+            <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
+              {location}
+            </span>
+          ))
+        ) : (
+          <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
+            Home
+          </span>
+        )}
+      </div>
+      {/* --- END WRAPPING PILLS DISPLAY --- */}
+      
     {localIcons && localIcons.length > 0 && (
-      <>
-        <div className="flex flex-wrap gap-2 mt-1">
-            {localIcons.map((item, index) => {
-              // Handle legacy content array
-              const iconValue = item.value || item.icon; 
-              if (item.type === 'icon' && iconValue !== 'None' && ICON_MAP[iconValue]) {
-                const IconComponent = ICON_MAP[iconValue];
-                return (
-                  <div key={item.id || index} className="flex flex-col items-center p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                      <IconComponent size={24} className={item.color} />
-                  </div>
-                );
-              }
-              return null;
-            }).filter(Boolean)}
-        </div>
-      </>
+      <div className="space-y-2">
+        {localIcons.map((item, index) => {
+          const iconValue = item.value || item.icon; 
+          if (item.type === 'icon' && iconValue !== 'None' && ICON_MAP[iconValue]) {
+            const IconComponent = ICON_MAP[iconValue];
+            
+            // Find the matching keyItem to get the label
+            const keyItem = keyItems.find(k => k.icon === iconValue && k.iconColor === item.color);
+            const label = keyItem ? keyItem.label : iconValue; // Fallback to icon name if not in key
+
+            return (
+              <div key={item.id || index} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <IconComponent size={20} className={item.color} />
+                <span className="font-medium text-gray-800 dark:text-gray-200">{label}</span>
+              </div>
+            );
+          }
+          return null;
+        }).filter(Boolean)}
+      </div>
     )}
 
     {/* Render Details using dangerouslySetInnerHTML */}
@@ -223,8 +222,6 @@ const StaticView = React.memo(({ localLocations, localDetails, localIcons }) => 
   </div>
 ));
 
-// --- REWRITE: Sub-Component RichTextEditor (Moved Outside) ---
-// This now uses ReactQuill for a true WYSIWYG experience.
 const RichTextEditor = React.memo(({
   isAdmin, activeTab, setActiveTab,
   localLocations, setLocalLocations, // RENAMED
@@ -356,26 +353,22 @@ const RichTextEditor = React.memo(({
 
 
 // --- Component: Cell Editor Modal ---
-const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
+const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin, keyItems }) => {
   
-  // --- CURSOR BUG FIX: Use local state for all inputs ---
-  const [localLocations, setLocalLocations] = useState(''); // RENAMED
-  const [localDetails, setLocalDetails] = useState(''); // RENAMED
+  const [localLocations, setLocalLocations] = useState('');
+  const [localDetails, setLocalDetails] = useState('');
   const [localColorId, setLocalColorId] = useState('none');
   const [localIcons, setLocalIcons] = useState([]);
 
   // Populate local state *only* when the modal is opened
   useEffect(() => {
     if (dayData) {
-      setLocalLocations(dayData.locations || ''); // RENAMED
-      setLocalDetails(dayData.details || ''); // RENAMED
+      setLocalLocations(dayData.locations || '');
+      setLocalDetails(dayData.details || '');
       setLocalColorId(dayData.colorId || 'none');
-      // Handle legacy 'content' array if 'icons' is missing
       setLocalIcons(dayData.icons || dayData.content || []); 
     }
-  }, [dayData]); // REWRITE: This dependency is now SAFE because the component is shielded
-
-  // --- END CURSOR BUG FIX ---
+  }, [dayData]);
   
   const [activeTab, setActiveTab] = useState('text'); 
   const [showIconEditor, setShowIconEditor] = useState(false);
@@ -400,7 +393,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
         const newIcons = [...prevIcons];
         if (iconData.value === 'None') {
             if (editingIconIndex !== null) {
-                // If editing, 'None' means delete
                 newIcons.splice(editingIconIndex, 1);
             }
         } else if (editingIconIndex !== null) {
@@ -428,7 +420,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
 
   return (
     <div className={`fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
-      {/* REWRITE: We check for dayData here to prevent crash, but the component is stable */}
       {dayData && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg">
           <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
@@ -440,7 +431,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
             </button>
           </div>
 
-          {/* REWRITE: Pass props to the new stable components */}
           {isAdmin ? (
             <RichTextEditor
               isAdmin={isAdmin} activeTab={activeTab} setActiveTab={setActiveTab}
@@ -458,6 +448,7 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
               localLocations={localLocations}
               localDetails={localDetails}
               localIcons={localIcons}
+              keyItems={keyItems}
             />
           )}
 
@@ -490,7 +481,6 @@ const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin }) => {
   );
 };
 
-// REWRITE: Shield the CellEditor from parent re-renders
 const CellEditorMemo = React.memo(CellEditor);
 
 
@@ -579,7 +569,6 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
     if (!isOpen) return null;
 
     const [localKeyItems, setLocalKeyItems] = useState(keyData);
-    // NEW: State to manage the Icon Editor modal
     const [showIconEditor, setShowIconEditor] = useState(false);
     const [editingKeyId, setEditingKeyId] = useState(null);
     
@@ -587,7 +576,6 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
         setLocalKeyItems(prev => [...prev, { id: Date.now().toString(), label: 'New Item', icon: 'None', iconColor: KEY_COLOR_OPTIONS[0].class, isColorKey: false, showCount: false }]);
     };
     
-    // FIX: Simplified filter logic. The button is already disabled for the color key.
     const handleDeleteRow = (id) => {
         setLocalKeyItems(prev => prev.filter(item => item.id !== id));
     };
@@ -666,7 +654,6 @@ const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
                             </button>
                         </div>
 
-                        {/* REWRITE: This is now a button to open the Icon Editor */}
                         <button
                           onClick={() => {
                             if (!item.isColorKey) { // Don't allow changing the color-key icon
@@ -758,7 +745,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   
-  const [calendarData, setCalendarData] = useState(null); // BUG FIX: Initialize as null
+  const [calendarData, setCalendarData] = useState(null);
   const [isSaving, setIsSaving] =useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true); // Start loading
   const [activeCell, setActiveCell] = useState(null); 
@@ -766,6 +753,7 @@ export default function App() {
   const [keyItems, setKeyItems] = useState(DEFAULT_KEY_ITEMS); // Use default
   const [lastUpdatedText, setLastUpdatedText] = useState('');
   const [year, setYear] = useState(new Date().getFullYear()); // Default, will be overwritten by config
+  const [isStatsExpanded, setIsStatsExpanded] = useState(false);
   
   // API Connection State
   const [apiError, setApiError] = useState(null);
@@ -1205,8 +1193,6 @@ export default function App() {
     }
   }, [config.timezone]);
 
-
-  // BUG FIX: Show loader if data is loading OR if calendarData is null
   if (isDataLoading || !calendarData) {
        return (
           <div className="min-h-screen bg-gray-200 dark:bg-gray-900 flex flex-col items-center justify-center">
@@ -1239,7 +1225,6 @@ export default function App() {
       const dayKey = createDateKey(year, monthIndex, i);
       const dayInfo = calendarData[dayKey];
       
-      // BUG FIX: Check if dayInfo exists
       if (!dayInfo) {
         days.push(<td key={`missing-${i}`} className="p-1 sm:p-2 border border-gray-200 dark:border-gray-700 h-28 bg-red-100 dark:bg-red-900/50">?</td>);
         continue;
@@ -1455,7 +1440,7 @@ export default function App() {
                             </div>
                             
                             {/* Label (added flex-1 to make it grow and push the count right) */}
-                            <span className="font-medium text-gray-700 dark:text-gray-200 flex-1 truncate" title={item.label}>
+                            <span className="font-medium text-gray-700 dark:text-gray-200 flex-1" title={item.label}>
                                 {item.label}
                             </span>
                             
@@ -1473,41 +1458,56 @@ export default function App() {
         </section>
         
         <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{year} Stats</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Away from Home</p>
-                    <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyTotal} days</p>
-                </div>
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Time Away From Home</p>
-                    <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyPercentage}%</p>
+          {/* Clickable Header */}
+          <h2
+            className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex justify-between items-center md:cursor-default cursor-pointer"
+            onClick={() => setIsStatsExpanded(prev => !prev)}
+          >
+            <span>{year} Stats</span>
+            {/* Show toggle arrow only on mobile (hidden on md and up) */}
+            <span className="md:hidden">
+              {isStatsExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+            </span>
+          </h2>
 
-                </div>
+          {/* Collapsible Content */}
+          {/*
+            - `hidden` = mobile-first, it's collapsed
+            - `md:block` = desktop-first, it's expanded
+            - `isStatsExpanded ? 'block' : 'hidden'` = JS state overrides the default 'hidden' on mobile
+          */}
+          <div className={`${isStatsExpanded ? 'block' : 'hidden'} md:block`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Away from Home</p>
+                <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyTotal} days</p>
+              </div>
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Time Away From Home</p>
+                <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyPercentage}%</p>
+              </div>
             </div>
             <div className="mt-6 pt-4 border-t dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Location Counts</h3>
-                {locationCounts.length > 0 ? (
-                    <div className="flex flex-wrap gap-3">
-                        {locationCounts.map(([location, count]) => (
-                            <div key={location} className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-                                <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
-                                <span className="ml-3 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                                    {count}
-                                </span>
-                            </div>
-                        ))}
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Location Counts</h3>
+              {locationCounts.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {locationCounts.map(([location, count]) => (
+                    <div key={location} className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
+                      <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
+                      <span className="ml-3 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                        {count}
+                      </span>
                     </div>
-                ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">No locations have been added yet.</p>
-                )}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400 italic">No locations have been added yet.</p>
+              )}
             </div>
+          </div>
         </section>
 
-
         <div className="flex flex-wrap -m-2">
-          {/* BUG FIX: Was {MONTHS.map((month, index) => renderMonth(month, index))} */}
-          {/* Changed to pass index only */}
           {MONTHS.map((_, index) => renderMonth(index))}
         </div>
       </div>
@@ -1520,6 +1520,7 @@ export default function App() {
         dayData={activeCell ? calendarData[activeCell] : null}
         onSave={handleCellEditorSave}
         isAdmin={role === 'admin'}
+        keyItems={keyItems}
       />
       
       <KeyEditor
@@ -1537,6 +1538,37 @@ export default function App() {
         authError={authError}
         setIsLoading={setAuthLoading}
       />
+
+      {/* --- Footer --- */}
+      <footer className="max-w-screen-2xl xl:max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <span>v0.25</span>
+          <span className="hidden sm:inline">|</span>
+          <a
+            href="https://github.com/thebronway/calendar-app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
+            <Github size={16} />
+            GitHub
+          </a>
+          <span className="hidden sm:inline">|</span>
+          <a
+            href="https://hub.docker.com/r/thebronway/calendar-app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          >
+            <Database size={16} />
+            Docker Hub
+          </a>
+        </div>
+        <p className="mt-4">
+          A self-hosted calendar app by <a href="https://github.com/thebronway" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">thebronway</a>.
+        </p>
+      </footer>
+      {/* --- End Footer --- */}
     </div>
   );
 }

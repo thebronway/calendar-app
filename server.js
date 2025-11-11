@@ -6,14 +6,13 @@ const path = require('path');
 const crypto = require('crypto');
 
 // --- Configuration ---
-// FIX: Default port is now 80, as requested
 const PORT = process.env.PORT || 80;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_DIR = path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 
-// NEW: Environment variable defaults
+// Environment variable defaults
 const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; // Default to null, client will handle
 const TIMEZONE = process.env.TIMEZONE || 'UTC';
 
@@ -34,7 +33,7 @@ if (!ADMIN_PASSWORD) {
 
 // --- WebSocket Handling ---
 
-// NEW: Heartbeat function. 'this' will be the ws client
+// Heartbeat function. 'this' will be the ws client
 function heartbeat() {
   this.isAlive = true;
 }
@@ -42,7 +41,7 @@ function heartbeat() {
 wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
     
-    // NEW: Handle heartbeat
+    // Handle heartbeat
     ws.isAlive = true;
     ws.on('pong', heartbeat); // The browser will auto-reply to pings
 
@@ -51,7 +50,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-// NEW: WebSocket heartbeat interval
+// WebSocket heartbeat interval
 // This will run every 30 seconds to check all connections
 const interval = setInterval(function ping() {
   wss.clients.forEach(function each(ws) {
@@ -65,7 +64,7 @@ const interval = setInterval(function ping() {
   });
 }, 30000); // 30,000 milliseconds = 30 seconds
 
-// NEW: Clear the interval on server close
+// Clear the interval on server close
 wss.on('close', function close() {
   clearInterval(interval);
 });
@@ -144,7 +143,7 @@ const broadcastUpdate = (year, data) => {
 
 // --- API Routes ---
 
-// 1. NEW: Get App Configuration
+// 1. Get App Configuration
 app.get('/api/config', (req, res) => {
     res.json({
         headerName: PAGE_HEADER_NAME,
@@ -188,12 +187,11 @@ app.post('/api/data/:year', verifyAdminToken, (req, res) => {
     const { year } = req.params;
     const data = req.body;
 
-    // Updated to check for new data structure
     if (!data.dayData || !data.keyItems || data.lastUpdatedText === undefined) {
         return res.status(400).send('Invalid data structure.');
     }
 
-    // NEW: Validate a sample day object to ensure it has the new structure
+    // Validate a sample day object to ensure it has the new structure
     // This prevents saving malformed data from an old client
     const sampleKey = Object.keys(data.dayData)[0];
     if (sampleKey) {
