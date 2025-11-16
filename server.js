@@ -15,6 +15,7 @@ const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString
 // Environment variable defaults
 const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; // Default to null, client will handle
 const TIMEZONE = process.env.TIMEZONE || 'UTC';
+const PAGE_BANNER_HTML = process.env.PAGE_BANNER_HTML || null; 
 
 // In-memory store for valid admin tokens
 const validAdmins = new Set();
@@ -147,7 +148,8 @@ const broadcastUpdate = (year, data) => {
 app.get('/api/config', (req, res) => {
     res.json({
         headerName: PAGE_HEADER_NAME,
-        timezone: TIMEZONE
+        timezone: TIMEZONE,
+        bannerHtml: PAGE_BANNER_HTML 
     });
 });
 
