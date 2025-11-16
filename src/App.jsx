@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill'; // NEW
 import { 
-    Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, Lock, 
+    Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, CalendarDays, Lock, 
     User, Check, Edit, Save, Plus, X, Footprints, Bike, Palette, AlertTriangle, CloudOff, Loader,
     Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, ChevronLeft, ChevronRight, Gift,
     LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings, ChevronDown, ChevronUp, Github, Database
@@ -33,7 +33,7 @@ const ICON_MAP = {
   Plane: Plane, Car: Car, Train: Train, Activity: Activity, Mountain: Mountain, Music: Music,
   Flag: Flag, Heart: Heart, Calendar: Calendar, Footprints: Footprints, Bike: Bike,
   Hotel: Hotel, Map: Map, Globe: Globe, Anchor: Anchor, Ticket: Ticket, Tent: Tent, Home: Home, Truck: Truck, Users: Users, Briefcase: Briefcase,
-  Gift: Gift,
+  Gift: Gift, CalendarDays: CalendarDays,
 };
 const ICON_KEYS = Object.keys(ICON_MAP);
 
@@ -754,6 +754,7 @@ export default function App() {
   const [lastUpdatedText, setLastUpdatedText] = useState('');
   const [year, setYear] = useState(new Date().getFullYear()); // Default, will be overwritten by config
   const [isStatsExpanded, setIsStatsExpanded] = useState(false);
+  const [highlightFilters, setHighlightFilters] = useState({ locations: [], icons: [] }); 
   
   // API Connection State
   const [apiError, setApiError] = useState(null);
@@ -978,6 +979,37 @@ export default function App() {
       document.title = `${year} Calendar`;
     }
   }, [year]);
+
+  // --- Keyboard Navigation for Year ---
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const activeElement = document.activeElement;
+      
+      const isTyping = 
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.closest('.ql-editor');
+
+      const isModalOpen = !!activeCell || showKeyEditor || showAuthModal;
+
+      if (isTyping || isModalOpen) {
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        setYear(y => y - 1);
+      } else if (event.key === 'ArrowRight') {
+        setYear(y => y + 1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+
+  }, [activeCell, showKeyEditor, showAuthModal]); // Re-run if modal state changes
   
   // 4. Data Saving (Debounced for LastUpdatedText)
   const debouncedSaveRef = useRef(null);
@@ -1017,6 +1049,53 @@ export default function App() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, adminToken, year]); // handleLogout is stable
+
+  // --- Filter Toggle Handlers ---
+
+  const handleLocationFilterToggle = (locationName) => {
+    setHighlightFilters(prevFilters => {
+      // Check if the location is already in the array
+      const existing = prevFilters.locations.includes(locationName);
+      
+      let newLocations;
+      if (existing) {
+        // If it exists, remove it
+        newLocations = prevFilters.locations.filter(loc => loc !== locationName);
+      } else {
+        // If it doesn't exist, add it
+        newLocations = [...prevFilters.locations, locationName];
+      }
+      
+      return { ...prevFilters, locations: newLocations };
+    });
+  };
+
+  const handleIconFilterToggle = (iconItem) => {
+    // We only care about icon and color, not ID or other junk
+    const filterToToggle = { icon: iconItem.icon, iconColor: iconItem.iconColor };
+
+    setHighlightFilters(prevFilters => {
+      // Check if an identical icon/color filter already exists
+      const existingIndex = prevFilters.icons.findIndex(
+        item => item.icon === filterToToggle.icon && item.iconColor === filterToToggle.iconColor
+      );
+
+      let newIcons;
+      if (existingIndex > -1) {
+        // If it exists, remove it
+        newIcons = prevFilters.icons.filter((_, index) => index !== existingIndex);
+      } else {
+        // If it doesn't exist, add it
+        newIcons = [...prevFilters.icons, filterToToggle];
+      }
+
+      return { ...prevFilters, icons: newIcons };
+    });
+  };
+
+  const handleClearFilters = () => {
+    setHighlightFilters({ locations: [], icons: [] });
+  };
 
   // --- Event Handlers ---
 
@@ -1193,6 +1272,49 @@ export default function App() {
     }
   }, [config.timezone]);
 
+  const shouldHighlightCell = (dayInfo) => {
+    const { locations: filterLocations, icons: filterIcons } = highlightFilters;
+
+    // 1. If no filters are active, do nothing.
+    if (filterLocations.length === 0 && filterIcons.length === 0) {
+      return false;
+    }
+
+    // --- 2. Check for Location Matches ---
+    let locationMatch = true; // Assume it matches, unless a filter is active and fails
+    if (filterLocations.length > 0) {
+      // Get the day's locations, handling empty strings and spaces
+      const dayLocations = (dayInfo.locations || '')
+        .split(',')
+        .map(loc => loc.trim())
+        .filter(Boolean); // removes any empty strings
+      
+      // Check if *every* location in our filter list
+      // is also in this specific day's location list.
+      locationMatch = filterLocations.every(filterLoc => dayLocations.includes(filterLoc));
+    }
+
+    // --- 3. Check for Icon Matches ---
+    let iconMatch = true; // Assume it matches, unless a filter is active and fails
+    if (filterIcons.length > 0) {
+      // Get the day's icons (handle legacy 'content' field)
+      const dayIcons = dayInfo.icons || dayInfo.content || [];
+
+      // Check if *every* icon in our filter list
+      // is also in this specific day's icon list.
+      // This checks both the icon name AND the icon color.
+      iconMatch = filterIcons.every(filterIcon => 
+        dayIcons.some(dayIcon =>
+          (dayIcon.value || dayIcon.icon) === filterIcon.icon && dayIcon.color === filterIcon.iconColor
+        )
+      );
+    }
+
+    // --- 4. Final Result ---
+    // The cell is highlighted *only if* it passes BOTH checks (the "AND" logic)
+    return locationMatch && iconMatch;
+  };
+
   if (isDataLoading || !calendarData) {
        return (
           <div className="min-h-screen bg-gray-200 dark:bg-gray-900 flex flex-col items-center justify-center">
@@ -1232,23 +1354,26 @@ export default function App() {
       
       const color = COLOR_OPTIONS.find(c => c.id === dayInfo.colorId);
       const colorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-') || cls.startsWith('dark:bg-')).join(' ') : 'bg-white dark:bg-gray-800';
-      
+
       const isToday = isCurrentYear && dayKey === todayKey;
       const isHighlighted = dayInfo.colorId !== 'none';
       const dayNumberColor = isHighlighted ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100';
-      
+
+      const isFilterHighlighted = shouldHighlightCell(dayInfo);
+
       const cellClasses = `p-0.5 sm:p-1 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer transition-shadow ${colorClass}`;
-      
-      // Combine legacy 'content' and new 'icons'
+
       const iconsToDisplay = (dayInfo.icons || dayInfo.content || []).filter(item => (item.type === 'icon' || item.value)); // Handle both formats
 
       days.push(
       <td 
         key={dayKey} 
-        className={cellClasses} // This className (with h-28) stays the same
+        className={cellClasses} 
         onClick={() => handleCellClick(dayKey)}
         >
-        <div className="h-full flex flex-col justify-between p-1">
+        <div className={`h-full flex flex-col justify-between p-1 ${
+          isFilterHighlighted ? 'relative ring-4 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''
+        }`}>
 
             {/* This is your Top Block (Date + Location) */}
             <div className="text-xs font-semibold text-center flex flex-col items-center">
@@ -1354,6 +1479,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
       
+      {config.bannerHtml && (
+        <div
+          className="sticky top-0 z-[70] bg-yellow-100 border-b-4 border-yellow-500 text-yellow-900 p-4 text-center font-semibold shadow-lg"
+          dangerouslySetInnerHTML={{ __html: config.bannerHtml }}
+        />
+      )}
+
       {apiError && (
         <div className="sticky top-0 z-[60] bg-red-600 text-white p-3 text-center font-bold flex items-center justify-center shadow-lg">
             <CloudOff size={18} className="mr-2" />
@@ -1364,13 +1496,17 @@ export default function App() {
       <div className="max-w-screen-2xl xl:max-w-screen-2xl mx-auto p-4 sm:p-6">
         <header className="mb-8 border-b dark:border-gray-700 pb-4">
           <div className="flex flex-col sm:flex-row justify-between items-center">
-            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white text-center sm:text-left">
+            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white text-center sm:text-left flex items-center">
+              <CalendarDays size={36} className="mr-3 text-blue-600" />
+              {/* This new span groups all the text together as one flex item */}
+              <span>
                 {headerPrefix}
                 {/* Apply contrasting color classes for visibility in both themes */}
                 <span className="text-blue-600 dark:text-blue-600 font-black ml-2 mr-1">
-                    {headerYear}
+                  {headerYear}
                 </span>
                 {config.headerName ? '?' : ''}
+              </span>
             </h1>
             <div className="flex items-center space-x-4 mt-4 sm:mt-0 flex-wrap justify-center">
                 
@@ -1424,16 +1560,40 @@ export default function App() {
         </header>
 
         <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Key</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
+              {(highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0) && (
+                <button
+                  onClick={handleClearFilters}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
+                >
+                  <X size={16} className="mr-1" />
+                  Clear All Filters
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
                 {keyItems.map(item => {
-                    const color = COLOR_OPTIONS.find(c => c.id === item.id);
-                    const IconComponent = ICON_MAP[item.icon];
-                    
-                    const bgColorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-')).join(' ') : 'bg-gray-100 dark:bg-gray-700';
+                        const color = COLOR_OPTIONS.find(c => c.id === item.id);
+                        const IconComponent = ICON_MAP[item.icon];
+                        
+                        const bgColorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-')).join(' ') : 'bg-gray-100 dark:bg-gray-700';
 
-                    return (
-                        <div key={item.id} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg">
+                        // Check if this specific icon/color combo is selected
+                        const isSelected = highlightFilters.icons.some(
+                          filter => filter.icon === item.icon && filter.iconColor === item.iconColor
+                        );
+
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={item.isColorKey ? undefined : () => handleIconFilterToggle(item)}
+                            className={`flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg transition-all ${
+                              item.isColorKey
+                                ? '' // Don't make color keys clickable
+                                : `cursor-pointer ${isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`
+                            }`}
+                          >
                             {/* Icon (added flex-shrink-0) */}
                             <div className={`w-5 h-5 rounded-full ${bgColorClass} flex items-center justify-center border border-gray-300 dark:border-gray-600 flex-shrink-0`}>
                                 {IconComponent && item.icon !== 'None' && <IconComponent size={14} className={item.iconColor || 'text-gray-900'} />}
@@ -1491,14 +1651,24 @@ export default function App() {
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Location Counts</h3>
               {locationCounts.length > 0 ? (
                 <div className="flex flex-wrap gap-3">
-                  {locationCounts.map(([location, count]) => (
-                    <div key={location} className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2">
-                      <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
+                  {locationCounts.map(([location, count]) => {
+                    const isSelected = highlightFilters.locations.includes(location);
+                    return (
+                      <div
+                        key={location}
+                        onClick={() => handleLocationFilterToggle(location)}
+                        className={`flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2 cursor-pointer transition-all ${
+                          isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
                       <span className="ml-3 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
                         {count}
                       </span>
                     </div>
-                  ))}
+                    )
+                  })
+                }
                 </div>
               ) : (
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">No locations have been added yet.</p>
@@ -1542,7 +1712,7 @@ export default function App() {
       {/* --- Footer --- */}
       <footer className="max-w-screen-2xl xl:max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <span>v0.25</span>
+          <span>v0.3</span>
           <span className="hidden sm:inline">|</span>
           <a
             href="https://github.com/thebronway/calendar-app"
