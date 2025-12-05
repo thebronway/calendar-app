@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
+// Update: Destructure WebSocketServer for v8+ compatibility
+const { WebSocketServer } = require('ws'); 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -10,10 +11,9 @@ const PORT = process.env.PORT || 80;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_DIR = path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
-const TOKEN_SECRET = process.env.TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 
 // Environment variable defaults
-const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; // Default to null, client will handle
+const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; 
 const TIMEZONE = process.env.TIMEZONE || 'UTC';
 const PAGE_BANNER_HTML = process.env.PAGE_BANNER_HTML || null; 
 
@@ -23,36 +23,41 @@ const validAdmins = new Set();
 // --- Server Setup ---
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ 
+    server,
+    clientTracking: true,
+});
 
 // --- Security Best Practice ---
 if (!ADMIN_PASSWORD) {
     console.error('FATAL ERROR: ADMIN_PASSWORD environment variable is not set.');
-    console.error('The application will not start. Set this variable to a secure password when running the container.');
-    process.exit(1); // Exit with a failure code
+    process.exit(1); 
 }
 
 // --- WebSocket Handling ---
 
-// Heartbeat function. 'this' will be the ws client
 function heartbeat() {
   this.isAlive = true;
 }
 
-wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
+wss.on('connection', (ws, req) => {
+    // Log the origin to debug connection issues
+    const clientIp = req.socket.remoteAddress;
+    console.log(`Client connected to WebSocket from ${clientIp}`);
     
-    // Handle heartbeat
     ws.isAlive = true;
-    ws.on('pong', heartbeat); // The browser will auto-reply to pings
+    ws.on('pong', heartbeat); 
 
-    ws.on('close', () => {
-        console.log('Client disconnected');
+    ws.on('error', (err) => {
+        console.error('WebSocket client error:', err);
+    });
+
+    ws.on('close', (code, reason) => {
+        console.log(`Client disconnected. Code: ${code}, Reason: ${reason}`);
     });
 });
 
-// WebSocket heartbeat interval
-// This will run every 30 seconds to check all connections
+// WebSocket heartbeat interval (30s)
 const interval = setInterval(function ping() {
   wss.clients.forEach(function each(ws) {
     if (ws.isAlive === false) {
@@ -60,39 +65,35 @@ const interval = setInterval(function ping() {
       return ws.terminate();
     }
 
-    ws.isAlive = false; // Assume it's dead, will be set to true by the 'pong'
-    ws.ping(); // Send the ping
+    ws.isAlive = false; 
+    ws.ping(); 
   });
-}, 30000); // 30,000 milliseconds = 30 seconds
+}, 30000); 
 
-// Clear the interval on server close
 wss.on('close', function close() {
   clearInterval(interval);
 });
 
 // --- Middleware ---
-app.use(express.json()); // Parse JSON bodies
-app.use(express.static(CLIENT_BUILD_PATH)); // Serve the static React app
+app.use(express.json()); 
+app.use(express.static(CLIENT_BUILD_PATH)); 
 
 // Token Verification Middleware
 const verifyAdminToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <TOKEN>
+    const token = authHeader && authHeader.split(' ')[1]; 
 
-    if (token == null) {
-        return res.sendStatus(401); // No token
-    }
+    if (token == null) return res.sendStatus(401); 
 
     if (validAdmins.has(token)) {
-        next(); // Token is valid, proceed
+        next(); 
     } else {
-        return res.sendStatus(403); // Invalid token
+        return res.sendStatus(403); 
     }
 };
 
 // --- Utility Functions ---
 const getDataFilePath = (year) => {
-    // Ensure the data directory exists
     if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
     }
@@ -103,14 +104,13 @@ const readData = (year) => {
     const filePath = getDataFilePath(year);
     if (fs.existsSync(filePath)) {
         try {
-            const fileData = fs.readFileSync(filePath, 'utf8');
-            return JSON.parse(fileData);
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
         } catch (e) {
             console.error(`Error reading data file for year ${year}:`, e);
-            return null; // Return null if file is corrupt
+            return null; 
         }
     }
-    return null; // Return null if file doesn't exist
+    return null; 
 };
 
 const writeData = (year, data) => {
@@ -125,18 +125,15 @@ const writeData = (year, data) => {
 };
 
 const broadcastUpdate = (year, data) => {
-    console.log(`Broadcasting update for year ${year}`);
+    // Console log removed to reduce noise, usually only needed for debugging
+    // console.log(`Broadcasting update for year ${year}`);
     const message = JSON.stringify({
         type: 'DATA_UPDATE',
-        payload: {
-            year: year,
-            data: data
-        }
+        payload: { year: year, data: data }
     });
 
     wss.clients.forEach((client) => {
-        // Use the raw value '1' for OPEN state
-        if (client.readyState === 1) {
+        if (client.readyState === 1) { // WebSocket.OPEN
             client.send(message);
         }
     });
@@ -157,14 +154,11 @@ app.get('/api/config', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
     const { password } = req.body;
     if (password === ADMIN_PASSWORD) {
-        // Generate a simple, secure token
         const token = crypto.randomBytes(32).toString('hex');
-        validAdmins.add(token); // Store it as a valid session
+        validAdmins.add(token);
         
-        // Optionally, make tokens expire
-        setTimeout(() => {
-            validAdmins.delete(token);
-        }, 1000 * 60 * 60 * 8); // 8-hour session
+        // 8-hour session
+        setTimeout(() => validAdmins.delete(token), 1000 * 60 * 60 * 8); 
 
         res.json({ role: 'admin', token: token });
     } else {
@@ -176,12 +170,7 @@ app.post('/api/auth/login', (req, res) => {
 app.get('/api/data/:year', (req, res) => {
     const { year } = req.params;
     const data = readData(year);
-    if (data) {
-        res.json(data);
-    } else {
-        // If no data, return empty object (client will initialize)
-        res.json({}); 
-    }
+    res.json(data || {});
 });
 
 // 4. Save Data (Protected)
@@ -193,19 +182,7 @@ app.post('/api/data/:year', verifyAdminToken, (req, res) => {
         return res.status(400).send('Invalid data structure.');
     }
 
-    // Validate a sample day object to ensure it has the new structure
-    // This prevents saving malformed data from an old client
-    const sampleKey = Object.keys(data.dayData)[0];
-    if (sampleKey) {
-        const sampleDay = data.dayData[sampleKey];
-        if (sampleDay.details === undefined || sampleDay.locations === undefined) {
-            console.warn('Blocking save: Data is in an old, invalid format.');
-            return res.status(400).send('Invalid data structure. Client may be out of date.');
-        }
-    }
-
     if (writeData(year, data)) {
-        // Broadcast the update to all connected clients
         broadcastUpdate(parseInt(year), data);
         res.status(200).send('Data saved successfully.');
     } else {
@@ -214,15 +191,13 @@ app.post('/api/data/:year', verifyAdminToken, (req, res) => {
 });
 
 // --- Serve React App ---
-// This catch-all route ensures that all non-API requests are
-// served the React app, allowing client-side routing to work.
 app.get('*', (req, res) => {
     res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
 // --- Start Server ---
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
     console.log(`Serving static files from: ${CLIENT_BUILD_PATH}`);
     console.log('WebSocket server is running.');
 });

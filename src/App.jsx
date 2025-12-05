@@ -858,7 +858,7 @@ export default function App() {
                     if (updatedYear === currentYear) {
                         console.log('Received real-time update for current year:', updatedYear);
                         setCalendarData(updatedData.dayData);
-                        setKeyItems(updatedData.keyItems);
+                        setKeyItems(updatedData.keyItems || DEFAULT_KEY_ITEMS);
                         setLastUpdatedText(updatedData.lastUpdatedText);
                     } else {
                         console.log('Received real-time update for different year, ignoring.');
@@ -923,40 +923,8 @@ export default function App() {
             setKeyItems(defaultData.keyItems);
             setLastUpdatedText(defaultData.lastUpdatedText);
         } else {
-            // --- NEW MIGRATION LOGIC ---
-            // Check the first day to see if migration is needed
-            const firstDayKey = Object.keys(data.dayData)[0];
-            if (firstDayKey && data.dayData[firstDayKey].text2 !== undefined) {
-                console.log('Old data format detected. Migrating in memory...');
-                Object.keys(data.dayData).forEach(key => {
-                    const day = data.dayData[key];
-                    
-                    // 1. Rename text1 to locations
-                    if (day.text1 !== undefined) {
-                        day.locations = day.text1;
-                        delete day.text1;
-                    }
-                    
-                    // 2. Rename text2 to details
-                    if (day.text2 !== undefined) {
-                        day.details = day.text2;
-                        delete day.text2;
-                    }
-
-                    // 3. Remove bold fields
-                    if (day.isText1Bold !== undefined) {
-                        delete day.isText1Bold;
-                    }
-                    if (day.isText2Bold !== undefined) {
-                        delete day.isText2Bold;
-                    }
-                });
-                console.log('Migration complete.');
-            }
-            // --- END MIGRATION LOGIC ---
-
             setCalendarData(data.dayData);
-            setKeyItems(data.keyItems);
+            setKeyItems(data.keyItems || DEFAULT_KEY_ITEMS);
             setLastUpdatedText(data.lastUpdatedText);
         }
     } catch (e) {
