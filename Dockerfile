@@ -40,10 +40,10 @@ COPY --from=build /app/dist /app/client/build
 # This will be mapped to a host folder.
 VOLUME /app/data
 
-# NEW: Set the port environment variable for the server (Modern Syntax)
+# Set the port environment variable for the server (Modern Syntax)
 ENV PORT=80
 
-# NEW: Expose the new default port
+# Expose the new default port
 EXPOSE 80
 
 # The command to run the application
