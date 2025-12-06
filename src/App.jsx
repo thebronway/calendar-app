@@ -905,33 +905,40 @@ export default function App() {
         {config.bannerHtml && <div className="sticky top-0 z-[70] bg-yellow-100 border-b-4 border-yellow-500 text-yellow-900 p-4 text-center font-semibold" dangerouslySetInnerHTML={{ __html: config.bannerHtml }} />}
         
         <div className="max-w-screen-2xl mx-auto p-4 sm:p-6">
-            <header className="mb-8 border-b dark:border-gray-700 pb-4 flex flex-col sm:flex-row justify-between items-center">
-                <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center">
-                    <CalendarDays size={36} className="mr-3 text-blue-600 hidden sm:block" />
-                    <span>{renderHeaderTitle()}</span>
-                </h1>
-                <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-                    <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                        <button onClick={()=>setYear(y=>y-1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronLeft size={20}/></button>
-                        <span className="font-semibold">{year}</span>
-                        <button onClick={()=>setYear(y=>y+1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronRight size={20}/></button>
+            <header className="mb-8 border-b dark:border-gray-700 pb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center">
+                    <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center">
+                        <CalendarDays size={36} className="mr-3 text-blue-600 hidden sm:block" />
+                        <span>{renderHeaderTitle()}</span>
+                    </h1>
+                    <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+                        <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                            <button onClick={()=>setYear(y=>y-1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronLeft size={20}/></button>
+                            <span className="font-semibold">{year}</span>
+                            <button onClick={()=>setYear(y=>y+1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronRight size={20}/></button>
+                        </div>
+                        <button onClick={toggleDarkMode} className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
+                        {role==='admin' ? (
+                            <>
+                                <button onClick={()=>setShowConfigureModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    <Settings size={20} className="sm:mr-2"/>
+                                    <span className="hidden sm:inline">Configure</span>
+                                </button>
+                                <button onClick={()=>{setRole('view'); setAdminToken(null);}} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                                    <LogOut size={20} className="sm:mr-2"/>
+                                    <span className="hidden sm:inline">Logout</span>
+                                </button>
+                            </>
+                        ) : (
+                            <button onClick={()=>setShowAuthModal(true)} className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Lock size={20}/></button>
+                        )}
                     </div>
-                    <button onClick={toggleDarkMode} className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
-                    {role==='admin' ? (
-                        <>
-                            <button onClick={()=>setShowConfigureModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                <Settings size={20} className="sm:mr-2"/>
-                                <span className="hidden sm:inline">Configure</span>
-                            </button>
-                            <button onClick={()=>{setRole('view'); setAdminToken(null);}} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                                <LogOut size={20} className="sm:mr-2"/>
-                                <span className="hidden sm:inline">Logout</span>
-                            </button>
-                        </>
-                    ) : (
-                        <button onClick={()=>setShowAuthModal(true)} className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Lock size={20}/></button>
-                    )}
                 </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-center justify-center sm:justify-start">
+                    <span className="mr-2">Last updated:</span>
+                    <span className="font-semibold">{lastUpdatedText}</span>
+                    {isSaving && <span className="ml-2 text-xs text-blue-500 flex items-center"><Loader size={12} className="mr-1 animate-spin"/> Saving...</span>}
+                </p>
             </header>
 
             <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
@@ -1028,7 +1035,7 @@ export default function App() {
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.4</span>
+                <span>v0.41</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub
