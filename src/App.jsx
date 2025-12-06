@@ -844,7 +844,7 @@ export default function App() {
             <td key={key} onClick={()=>setActiveCell(key)} className={`p-0.5 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer ${colorClass}`}>
                 <div className={`h-full flex flex-col justify-between p-1 ${isHigh ? 'relative ring-4 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''}`}>
                     <div className="flex flex-col items-center">
-                        <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : 'text-gray-800 dark:text-gray-100'}`}>{d}</span>
+                        <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : (day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100')}`}>{d}</span>
                         {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).length > 0 && (
                             <div className="flex flex-wrap justify-center gap-1 mt-1.5 w-full">
                                 {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).map((l,i) => 
@@ -1035,7 +1035,7 @@ export default function App() {
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.41</span>
+                <span>v0.42</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub
