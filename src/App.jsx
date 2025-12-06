@@ -1,22 +1,23 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import ReactQuill from 'react-quill'; // NEW
+import ReactQuill from 'react-quill';
 import { 
     Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, CalendarDays, Lock, 
     User, Check, Edit, Save, Plus, X, Footprints, Bike, Palette, AlertTriangle, CloudOff, Loader,
     Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, ChevronLeft, ChevronRight, Gift,
-    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings, ChevronDown, ChevronUp, Github, Database
+    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings, ChevronDown, ChevronUp, Github, Database,
+    Layout, List, Image as ImageIcon, MapPin, Tag
 } from 'lucide-react';
 
-// --- Configuration and Utility ---
-
-// Cell background color options
-const COLOR_OPTIONS = [
-  { id: 'none', label: 'Home/Default', class: 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700' },
-  { id: 'orange', label: 'Away From Home', class: 'bg-orange-400 hover:bg-orange-500' },
+// --- Available Colors ---
+const CATEGORY_COLORS = [
+    { id: 'orange', label: 'Orange', bg: 'bg-orange-400', border: 'border-orange-500' },
+    { id: 'blue', label: 'Blue', bg: 'bg-blue-400', border: 'border-blue-500' },
+    { id: 'green', label: 'Green', bg: 'bg-emerald-400', border: 'border-emerald-500' },
+    { id: 'purple', label: 'Purple', bg: 'bg-purple-400', border: 'border-purple-500' },
+    { id: 'red', label: 'Red', bg: 'bg-rose-400', border: 'border-rose-500' },
 ];
 
-// Available colors for icons/key swatches
-const KEY_COLOR_OPTIONS = [
+const ICON_COLOR_OPTIONS = [
     { id: 'gray', class: 'text-gray-900 dark:text-gray-100', bg: 'bg-gray-900 dark:bg-gray-100', label: 'Black/Gray' },
     { id: 'red', class: 'text-red-600', bg: 'bg-red-600', label: 'Red' },
     { id: 'blue', class: 'text-blue-600', bg: 'bg-blue-600', label: 'Blue' },
@@ -27,7 +28,6 @@ const KEY_COLOR_OPTIONS = [
     { id: 'orange', class: 'text-orange-600', bg: 'bg-orange-600', label: 'Orange' },
 ];
 
-// Map of available icons (lucide-react) for the editor
 const ICON_MAP = {
   None: null,
   Plane: Plane, Car: Car, Train: Train, Activity: Activity, Mountain: Mountain, Music: Music,
@@ -42,17 +42,16 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-// --- NEW: Configuration for the Rich Text Editor ---
 const QUILL_MODULES = {
     toolbar: [
-        ['bold', 'italic', 'underline'],
+        ['bold', 'italic', 'underline', 'strike'],
+        ['code-block'],
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['blockquote'],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
         ['clean']
     ],
 };
 
-// --- Date Key Generation Utility ---
 const createDateKey = (year, monthIndex, day) => {
     const date = new Date(Date.UTC(year, monthIndex, day));
     const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
@@ -60,7 +59,6 @@ const createDateKey = (year, monthIndex, day) => {
     return `${date.getUTCFullYear()}-${month}-${d}`;
 };
 
-// --- Calendar Initialization and Default Data ---
 const generateCalendarForYear = (year) => {
   const days = {};
   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
@@ -69,1644 +67,978 @@ const generateCalendarForYear = (year) => {
     for (let day = 1; day <= daysInMonth; day++) {
       const key = createDateKey(year, monthIndex, day);
       days[key] = {
-        day: day,
-        month: monthName,
-        locations: '',
-        details: '',
-        colorId: 'none',
-        icons: [], // Use 'icons' array
-        year: year
+        day: day, month: monthName, locations: '', details: '', colorId: 'none', icons: [], year: year
       };
     }
   }
   return days;
 };
 
+const DEFAULT_KEY_ITEMS = [];
 
-// Default Key Items
-const DEFAULT_KEY_ITEMS = [
-    { id: 'orange', label: 'Away From Home', icon: 'None', iconColor: KEY_COLOR_OPTIONS.find(c => c.id === 'gray').class, isColorKey: true, showCount: false },
-];
+const ToggleSwitch = ({ checked, onChange, disabled }) => (
+    <button 
+        type="button"
+        onClick={() => !disabled && onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+    >
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+    </button>
+);
 
 // --- Sub-Component: Icon Picker/Editor Modal ---
 const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
     if (!isOpen) return null;
-
     const [iconType, setIconType] = useState(initialIconData?.value || ICON_KEYS[0]);
-    const [iconColor, setIconColor] = useState(initialIconData?.color || KEY_COLOR_OPTIONS[0].class);
+    const [iconColor, setIconColor] = useState(initialIconData?.color || ICON_COLOR_OPTIONS[0].class);
     
     const handleSave = () => {
         onSave({ type: 'icon', value: iconType, color: iconColor });
         onClose();
     };
-
     const IconComponent = ICON_MAP[iconType];
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-[70] flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl p-6 space-y-4">
                 <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100 border-b dark:border-gray-700 pb-3">Select Icon and Color</h4>
-                
                 <div className="flex space-x-4 items-center">
                     <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
                         {IconComponent && iconType !== 'None' && <IconComponent size={30} className={iconColor} />}
                     </div>
                     <div className="text-lg font-medium text-gray-900 dark:text-gray-100">Selected: {iconType}</div>
                 </div>
-
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Icon Type</label>
                 <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900">
                     {ICON_KEYS.map(key => {
                         const Icon = ICON_MAP[key];
-                        const isNone = key === 'None';
                         return (
-                            <button
-                                key={key}
-                                onClick={() => setIconType(key)}
-                                className={`p-2 rounded-lg border transition-all flex flex-col items-center justify-center text-sm ${
-                                    iconType === key ? 'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-600 shadow-md' : 'bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
-                                title={key}
-                            >
-                                {isNone ? (
-                                    <span className="text-gray-500 dark:text-gray-400 text-xs py-[6px]">No Icon</span>
-                                ) : (
-                                    <Icon size={20} className={iconColor} />
-                                )}
+                            <button key={key} onClick={() => setIconType(key)} className={`p-2 rounded-lg border transition-all ${iconType === key ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-500' : 'bg-white dark:bg-gray-800 dark:border-gray-700'}`}>
+                                {key === 'None' ? <span className="text-xs">None</span> : <Icon size={20} className={iconColor} />}
                             </button>
                         );
                     })}
                 </div>
-
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center"><Palette size={16} className="mr-1" /> Icon Color</label>
                 <div className="flex flex-wrap gap-2">
-                    {KEY_COLOR_OPTIONS.map(color => (
-                        <button
-                            key={color.id}
-                            onClick={() => setIconColor(color.class)}
-                            className={`flex items-center justify-center p-2 rounded-full w-10 h-10 border-2 transition-all ${color.bg} ${iconColor === color.class ? 'ring-4 ring-offset-2 ring-gray-900/50' : 'border-gray-600'}`}
-                            title={color.label}
-                        >
-                            {iconColor === color.class && <Check size={20} className="text-white drop-shadow-md" />}
-                        </button>
+                    {ICON_COLOR_OPTIONS.map(color => (
+                        <button key={color.id} onClick={() => setIconColor(color.class)} className={`w-8 h-8 rounded-full ${color.bg} ${iconColor === color.class ? 'ring-2 ring-offset-2 ring-gray-900' : ''}`} />
                     ))}
                 </div>
-
-                <div className="pt-4 border-t dark:border-gray-700 flex justify-end space-x-3">
-                    <button onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg transition-colors">
-                        Cancel
-                    </button>
-                    <button onClick={handleSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors">
-                        <Save size={18} className="mr-2" /> Save Icon
-                    </button>
+                <div className="flex justify-end space-x-3 pt-4">
+                    <button onClick={onClose} className="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded-lg">Cancel</button>
+                    <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded-lg">Save</button>
                 </div>
             </div>
         </div>
     );
 }
 
-const StaticView = React.memo(({ localLocations, localDetails, localIcons, keyItems }) => (
-  <div className="space-y-4 p-6">
+// --- Component: Configure Modal ---
+const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKeyItemsSave }) => {
+    if (!isOpen) return null;
+
+    const [activeTab, setActiveTab] = useState('general');
+    const [localConfig, setLocalConfig] = useState(config);
+    const [localKeyItems, setLocalKeyItems] = useState(keyItems);
+
+    const categories = localKeyItems.filter(i => i.isColorKey);
+    const icons = localKeyItems.filter(i => !i.isColorKey);
+
+    const [showIconEditor, setShowIconEditor] = useState(false);
+    const [editingIconId, setEditingIconId] = useState(null);
+
+    const handleConfigChange = (field, value) => setLocalConfig(prev => ({ ...prev, [field]: value }));
+
+    const previewTitle = () => {
+        const y = new Date().getFullYear();
+        const n = localConfig.ownerName || 'John';
+        switch (localConfig.headerStyle) {
+            case 'possessive': return `${n}'s ${y} Calendar`;
+            case 'question': return `Where is ${n} in ${y}?`;
+            default: return `${y} Calendar`;
+        }
+    };
+
+    const handleAddCategory = () => {
+        if (categories.length >= 5) return;
+        setLocalKeyItems(prev => [...prev, {
+            id: `cat_${Date.now()}`, label: 'New Category', isColorKey: true, colorCode: 'blue', showCount: false, icon: 'None'
+        }]);
+    };
+
+    const handleUpdateCategory = (id, field, value) => setLocalKeyItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+    const handleDeleteCategory = (id) => setLocalKeyItems(prev => prev.filter(item => item.id !== id));
+
+    const handleAddIconItem = () => {
+        setLocalKeyItems(prev => [...prev, {
+            id: `icon_${Date.now()}`, label: 'New Activity', isColorKey: false, icon: 'Star', iconColor: ICON_COLOR_OPTIONS[0].class, showCount: false
+        }]);
+    };
     
-      {/* --- NEW WRAPPING PILLS DISPLAY --- */}
-      <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
-        <strong>Location(s):</strong>
-        {(localLocations && localLocations.length > 0) ? (
-          localLocations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
-            <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
-              {location}
-            </span>
-          ))
-        ) : (
-          <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">
-            Home
-          </span>
-        )}
-      </div>
-      {/* --- END WRAPPING PILLS DISPLAY --- */}
-      
-    {localIcons && localIcons.length > 0 && (
-      <div className="space-y-2">
-        {localIcons.map((item, index) => {
-          const iconValue = item.value || item.icon; 
-          if (item.type === 'icon' && iconValue !== 'None' && ICON_MAP[iconValue]) {
-            const IconComponent = ICON_MAP[iconValue];
-            
-            // Find the matching keyItem to get the label
-            const keyItem = keyItems.find(k => k.icon === iconValue && k.iconColor === item.color);
-            const label = keyItem ? keyItem.label : iconValue; // Fallback to icon name if not in key
+    const handleIconEditClick = (id) => { setEditingIconId(id); setShowIconEditor(true); };
+    const handleIconSaveFromEditor = (iconData) => {
+        if (editingIconId) {
+            handleUpdateCategory(editingIconId, 'icon', iconData.value);
+            handleUpdateCategory(editingIconId, 'iconColor', iconData.color);
+        }
+        setShowIconEditor(false); setEditingIconId(null);
+    };
 
-            return (
-              <div key={item.id || index} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                <IconComponent size={20} className={item.color} />
-                <span className="font-medium text-gray-800 dark:text-gray-200">{label}</span>
-              </div>
-            );
-          }
-          return null;
-        }).filter(Boolean)}
-      </div>
-    )}
+    const handleKeyMove = (index, direction, isCategory) => {
+        const items = isCategory ? categories : icons;
+        const itemToMove = items[index];
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= items.length) return;
+        
+        const swappedItems = [...items];
+        [swappedItems[index], swappedItems[newIndex]] = [swappedItems[newIndex], swappedItems[index]];
+        
+        if (isCategory) {
+            setLocalKeyItems([...swappedItems, ...icons]);
+        } else {
+            setLocalKeyItems([...categories, ...swappedItems]);
+        }
+    };
 
-    {/* Render Details using dangerouslySetInnerHTML */}
-    {localDetails && (
-       <div>
-          <div 
-          className="prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-y-auto whitespace-pre-wrap 
-                      [&_blockquote]:m-0 [&_blockquote]:border-none [&_blockquote]:bg-transparent [&_blockquote]:pl-6"
-          style={{ maxHeight: '150px' }}
-          dangerouslySetInnerHTML={{ __html: localDetails }}
-          />
-       </div>
-    )}
-  </div>
-));
+    const handleSaveAll = () => {
+        onConfigSave(localConfig);
+        onKeyItemsSave(localKeyItems);
+        onClose();
+    };
 
-const RichTextEditor = React.memo(({
-  isAdmin, activeTab, setActiveTab,
-  localLocations, setLocalLocations, // RENAMED
-  localDetails, setLocalDetails, // RENAMED
-  localColorId, setLocalColorId,
-  localIcons,
-  handleIconMove, setEditingIconIndex, setShowIconEditor, handleIconDelete
-}) => {
-  return (
-    <div className="space-y-4 p-6 max-h-[70vh] overflow-y-auto">
-      <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 rounded-lg">
-        <button onClick={() => setActiveTab('text')} className={`px-4 py-1 rounded-full text-sm font-medium transition-all ${activeTab === 'text' ? 'bg-white dark:bg-gray-700 shadow' : 'text-gray-600 dark:text-gray-400'}`}>Text & Color</button>
-        <button onClick={() => setActiveTab('icons')} className={`px-4 py-1 rounded-full text-sm font-medium transition-all ${activeTab === 'icons' ? 'bg-white dark:bg-gray-700 shadow' : 'text-gray-600 dark:text-gray-400'}`}>Icons</button>
-      </div>
-
-      {activeTab === 'text' && (
-        <div className="space-y-4">
-            
-          {/* Line 1 (Location) */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Locations (comma-separated)</label>
-            <input
-              type="text"
-              value={localLocations}
-              onChange={(e) => setLocalLocations(e.target.value)}
-              className="w-full border rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 font-bold dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="e.g. NYC, London, Tokyo"
-              disabled={!isAdmin}
-            />
-          </div>
-
-          {/* Line 2 (Details) - NEW ReactQuill Editor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Details</label>
-            <ReactQuill 
-              theme="snow" 
-              value={localDetails} 
-              onChange={setLocalDetails} // Directly sets the HTML string state
-              modules={QUILL_MODULES}
-              readOnly={!isAdmin}
-              placeholder="Activity details"
-              className="quill-editor-custom" // Custom class for styling
-            />
-          </div>
-            
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
-          <div className="flex flex-wrap gap-2">
-            {COLOR_OPTIONS.map(color => (
-              <div key={color.id} className="relative group">
-                  <button
-                    onClick={() => setLocalColorId(color.id)}
-                    className={`flex items-center justify-center p-2 rounded-full w-12 h-12 border-2 transition-all ${color.class.split(' ').filter(cls => cls.startsWith('bg-')).join(' ')} ${localColorId === color.id ? 'ring-4 ring-offset-2 ring-blue-500' : 'border-gray-300/50 dark:border-gray-600/50 hover:ring-2 hover:ring-gray-300'}`}
-                    title={color.label}
-                    disabled={!isAdmin}
-                  >
-                    {localColorId === color.id && <Check size={20} className={`${color.id === 'none' ? 'text-gray-900' : 'text-white'} drop-shadow-md`} />}
-                  </button>
-              </div>
-            ))}
-          </div>
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Settings size={24} className="mr-3 text-blue-500"/> Configuration</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
+                </div>
+                <div className="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
+                    {[
+                        { id: 'general', label: 'General', icon: Layout },
+                        { id: 'categories', label: 'Categories', icon: Palette },
+                        { id: 'activities', label: 'Activities', icon: List }
+                    ].map(tab => (
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center py-4 px-6 border-b-2 font-medium transition-colors ${activeTab === tab.id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
+                            <tab.icon size={18} className="mr-2" /> {tab.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                    {activeTab === 'general' && (
+                        <div className="space-y-8 max-w-2xl mx-auto">
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+                                <h4 className="text-lg font-bold mb-4 dark:text-white">Page Appearance</h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Header Style</label>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            {[ { id: 'simple', label: '<Year> Calendar' }, { id: 'possessive', label: '<Name>\'s Calendar' }, { id: 'question', label: 'Where is <Name>?' } ].map(opt => (
+                                                <button key={opt.id} onClick={() => handleConfigChange('headerStyle', opt.id)} className={`p-3 rounded-lg border text-sm font-medium transition-all ${localConfig.headerStyle === opt.id ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' : 'border-gray-300 dark:border-gray-600'}`}>{opt.label}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {(localConfig.headerStyle === 'possessive' || localConfig.headerStyle === 'question') && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                                            <input type="text" value={localConfig.ownerName || ''} onChange={(e) => handleConfigChange('ownerName', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. John" />
+                                        </div>
+                                    )}
+                                    <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg text-center">
+                                        <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Live Preview</span>
+                                        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{previewTitle()}</h1>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+                                <h4 className="text-lg font-bold mb-4 dark:text-white">Regional Settings</h4>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
+                                    <input type="text" value={localConfig.timezone} onChange={(e) => handleConfigChange('timezone', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. UTC, America/New_York" />
+                                    <p className="text-xs text-gray-500 mt-1">Must be a valid IANA timezone. <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" className="text-blue-500 hover:underline">See List</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'categories' && (
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            <div className="flex justify-between items-center">
+                                <p className="text-sm text-gray-600 dark:text-gray-300">Categories color the background of the day cell. (Max 5)</p>
+                                <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50"><Plus size={16} className="mr-2"/> Add Category</button>
+                            </div>
+                            <div className="grid gap-4">
+                                {categories.map((cat) => (
+                                    <div key={cat.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4">
+                                        <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                            {CATEGORY_COLORS.map(c => (
+                                                <button key={c.id} onClick={() => handleUpdateCategory(cat.id, 'colorCode', c.id)} className={`w-8 h-8 rounded-full ${c.bg} ${cat.colorCode === c.id ? 'ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200' : 'opacity-50 hover:opacity-100'}`} title={c.label} />
+                                            ))}
+                                        </div>
+                                        <div className="flex-1 w-full">
+                                            <label className="text-xs font-bold text-gray-500 uppercase">Label</label>
+                                            <input type="text" value={cat.label} onChange={(e) => handleUpdateCategory(cat.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Show Count</span>
+                                            <ToggleSwitch checked={cat.showCount} onChange={(val) => handleUpdateCategory(cat.id, 'showCount', val)} />
+                                        </div>
+                                        <button onClick={() => handleDeleteCategory(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg"><X size={20} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {activeTab === 'activities' && (
+                        <div className="max-w-4xl mx-auto space-y-6">
+                             <div className="flex justify-between items-center">
+                                <p className="text-sm text-gray-600 dark:text-gray-300">Activities appear as small symbols on the day cell.</p>
+                                <button onClick={handleAddIconItem} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center"><Plus size={16} className="mr-2"/> Add Activity</button>
+                            </div>
+                            <div className="space-y-3">
+                                {icons.map((item, index) => {
+                                    const IconC = ICON_MAP[item.icon];
+                                    // Ensure color is visible if none
+                                    const displayColor = (!item.iconColor || item.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
+                                    return (
+                                        <div key={item.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4">
+                                            <button onClick={() => handleIconEditClick(item.id)} className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border dark:border-gray-600 hover:bg-gray-200">
+                                                {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs">None</span>}
+                                            </button>
+                                            <div className="flex-1">
+                                                <input type="text" value={item.label} onChange={(e) => handleUpdateCategory(item.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" placeholder="Activity Name" />
+                                            </div>
+                                            <div className="flex items-center gap-2 border-l pl-4 dark:border-gray-700">
+                                                <span className="text-xs font-medium text-gray-500 uppercase">Count</span>
+                                                <ToggleSwitch checked={item.showCount} onChange={(val) => handleUpdateCategory(item.id, 'showCount', val)} />
+                                            </div>
+                                            <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
+                                                <button onClick={() => handleKeyMove(index, -1, false)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowUp size={16}/></button>
+                                                <button onClick={() => handleKeyMove(index, 1, false)} disabled={index === icons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowDown size={16}/></button>
+                                            </div>
+                                            <button onClick={() => handleDeleteCategory(item.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg"><X size={18} /></button>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3">
+                    <button onClick={onClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">Cancel</button>
+                    <button onClick={handleSaveAll} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center"><Save size={18} className="mr-2" /> Save Configuration</button>
+                </div>
+            </div>
+            <IconEditor isOpen={showIconEditor} onClose={() => setShowIconEditor(false)} onSave={handleIconSaveFromEditor} initialIconData={editingIconId ? localKeyItems.find(i => i.id === editingIconId) : null} />
         </div>
-      )}
+    );
+};
 
-      {activeTab === 'icons' && (
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 border-b dark:border-gray-700 pb-2">Activity Icons</label>
-            
-          <div className="flex flex-col gap-3 p-2 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 min-h-[5rem]">
-              {localIcons.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-sm italic">No icons added yet. Click 'Add Icon' to start.</p>
-              ) : (
-                  localIcons.map((item, index) => {
-                      const iconValue = item.value || item.icon; // Handle legacy
-                      const IconComponent = ICON_MAP[iconValue];
-                      if (iconValue === 'None' || !IconComponent) return null;
+const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyItems }) => {
+    // Categories List for Selection
+    const categories = useMemo(() => keyItems.filter(k => k.isColorKey), [keyItems]);
+    // Activities List for "Add Activity" - Filter out empty/invalid ones
+    const availableActivities = useMemo(() => keyItems.filter(k => !k.isColorKey && k.icon !== 'None'), [keyItems]);
 
-                      return (
-                          <div key={item.id || index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm w-full">
-                              <div className="flex items-center space-x-2">
-                                  <IconComponent size={20} className={item.color} />
-                                  <span className="text-sm font-medium dark:text-gray-200">{iconValue}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                  <button 
-                                      onClick={() => handleIconMove(index, -1)} 
-                                      disabled={index === 0}
-                                      className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-30" title="Move Up"
-                                  >
-                                      <ArrowUp size={16} />
-                                  </button>
-                                  <button 
-                                      onClick={() => handleIconMove(index, 1)} 
-                                      disabled={index === localIcons.length - 1}
-                                      className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-30" title="Move Down"
-                                  >
-                                      <ArrowDown size={16} />
-                                  </button>
-                                  <span className="border-l dark:border-gray-600 h-5"></span>
-                                  <button 
-                                      onClick={() => { setEditingIconIndex(index); setShowIconEditor(true); }}
-                                      className="text-blue-500 hover:text-blue-700" title="Edit Icon"
-                                  >
-                                      <Edit size={16} />
-                                  </button>
-                                  <button 
-                                      onClick={() => handleIconDelete(index)}
-                                      className="text-red-500 hover:text-red-700" title="Delete Icon"
-                                  >
-                                      <X size={16} />
-                                  </button>
-                              </div>
-                          </div>
-                      );
-                  }).filter(Boolean)
-              )}
-          </div>
+    // Available Category Colors (for mapping)
+    const categoryOptions = useMemo(() => {
+        const defaults = [{ id: 'none', label: 'Home', class: 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700' }];
+        const cats = categories.map(k => {
+            const colorDef = CATEGORY_COLORS.find(c => c.id === k.colorCode) || CATEGORY_COLORS[0];
+            return { id: k.id, label: k.label, class: `${colorDef.bg} text-gray-900 border-2 ${colorDef.border}` };
+        });
+        return [...defaults, ...cats];
+    }, [categories]);
 
-          <button 
-            onClick={() => { setEditingIconIndex(null); setShowIconEditor(true); }}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors"
-          >
-            <Plus size={18} className="mr-2" /> Add Icon
-          </button>
+    const [localLocations, setLocalLocations] = useState('');
+    const [localDetails, setLocalDetails] = useState('');
+    const [localColorId, setLocalColorId] = useState('none');
+    const [localIcons, setLocalIcons] = useState([]);
+
+    useEffect(() => {
+        if (dayData) {
+            setLocalLocations(dayData.locations || '');
+            setLocalDetails(dayData.details || '');
+            setLocalColorId(dayData.colorId || 'none');
+            setLocalIcons(dayData.icons || dayData.content || []); 
+        }
+    }, [dayData]);
+  
+    const [activeTab, setActiveTab] = useState('category'); // Default tab
+
+    const handleSave = () => {
+        onSave({
+            ...dayData,
+            locations: localLocations,
+            details: localDetails,
+            colorId: localColorId,
+            icons: localIcons,
+        });
+        onClose();
+    };
+  
+    // Add Activity: Copies properties from the Key Item (Allows multiples)
+    const handleAddActivity = (keyItem) => {
+        if (localIcons.length >= 4) return;
+        setLocalIcons(prev => [...prev, {
+            id: Date.now().toString(), // Unique ID per instance
+            value: keyItem.icon,
+            color: keyItem.iconColor
+        }]);
+    };
+  
+    const handleIconDelete = (index) => setLocalIcons(prev => prev.filter((_, i) => i !== index));
+    
+    // Reorder Handlers for the Cell
+    const handleIconMove = (index, direction) => {
+        const newIcons = [...localIcons];
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= newIcons.length) return;
+        [newIcons[index], newIcons[newIndex]] = [newIcons[newIndex], newIcons[index]];
+        setLocalIcons(newIcons);
+    };
+
+    if (!isOpen || !dayData) return null;
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg">
+                <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{isAdmin ? 'Edit Day' : 'View Day'} - {dayData.month} {dayData.day}, {dayData.year}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
+                </div>
+                {isAdmin && (
+                     <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700">
+                        {[
+                            { id: 'category', label: 'Category', icon: Tag },
+                            { id: 'activities', label: 'Activities', icon: Activity },
+                            { id: 'location', label: 'Location & Notes', icon: MapPin }
+                        ].map(tab => (
+                            <button 
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)} 
+                                className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'}`}
+                            >
+                                <tab.icon size={16} className="mr-1.5"/> {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+                <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                    {!isAdmin ? (
+                         // View Mode
+                         <div className="space-y-4">
+                            <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
+                                <strong>Location(s):</strong>
+                                {(localLocations && localLocations.length > 0) ? (
+                                    localLocations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
+                                    <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">{location}</span>
+                                    ))
+                                ) : <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-all">Home</span>}
+                            </div>
+                            {localIcons.length > 0 && (
+                                <div className="space-y-2">
+                                    {localIcons.map((item, index) => {
+                                        const iconValue = item.value || item.icon; 
+                                        if (iconValue !== 'None' && ICON_MAP[iconValue]) {
+                                            const IconComponent = ICON_MAP[iconValue];
+                                            const keyItem = keyItems.find(k => k.icon === iconValue && k.iconColor === item.color);
+                                            return (
+                                                <div key={index} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                                                    <IconComponent size={20} className={item.color} />
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">{keyItem ? keyItem.label : iconValue}</span>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+                            )}
+                            {localDetails && <div className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-y-auto" style={{ maxHeight: '150px' }} dangerouslySetInnerHTML={{ __html: localDetails }} />}
+                         </div>
+                    ) : (
+                        // Admin Mode
+                        <>
+                            {activeTab === 'category' && (
+                                <div className="space-y-4">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Select a category for this day:</p>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {categoryOptions.map(color => (
+                                            <button 
+                                                key={color.id} 
+                                                onClick={() => setLocalColorId(color.id)} 
+                                                className={`flex items-center p-3 rounded-lg border transition-all ${color.class} ${localColorId === color.id ? 'ring-4 ring-blue-500 ring-offset-2' : 'border-transparent'}`}
+                                            >
+                                                <div className="flex-1 text-left font-bold">{color.label}</div>
+                                                {localColorId === color.id && <Check size={20} />}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'activities' && (
+                                <div className="space-y-6">
+                                    {/* Current Activities */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Selected (Max 4)</h4>
+                                        {localIcons.length === 0 && <p className="text-sm italic text-gray-500">No activities selected.</p>}
+                                        {localIcons.map((item, index) => {
+                                             const iconValue = item.value || item.icon;
+                                             const IconComponent = ICON_MAP[iconValue];
+                                             if (!IconComponent) return null;
+                                             // Find label from key
+                                             const keyDef = keyItems.find(k => k.icon === iconValue && k.iconColor === item.color);
+                                             return (
+                                                 <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+                                                     <div className="flex items-center space-x-2">
+                                                         <IconComponent size={20} className={item.color} />
+                                                         <span className="text-sm font-medium dark:text-gray-200">{keyDef ? keyDef.label : iconValue}</span>
+                                                     </div>
+                                                     <div className="flex items-center space-x-1">
+                                                        <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowUp size={16}/></button>
+                                                        <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowDown size={16}/></button>
+                                                        <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X size={16}/></button>
+                                                     </div>
+                                                 </div>
+                                             )
+                                         })}
+                                    </div>
+                                    
+                                    {/* Add New Activity */}
+                                    {localIcons.length < 4 && (
+                                        <div className="space-y-2 pt-4 border-t dark:border-gray-700">
+                                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Add Activity</h4>
+                                            {availableActivities.length > 0 ? (
+                                                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                                                    {availableActivities.map(keyItem => {
+                                                        const IconC = ICON_MAP[keyItem.icon];
+                                                        const displayColor = (!keyItem.iconColor || keyItem.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : keyItem.iconColor;
+                                                        return (
+                                                            <button 
+                                                                key={keyItem.id} 
+                                                                onClick={() => handleAddActivity(keyItem)}
+                                                                className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left"
+                                                            >
+                                                                {IconC && <IconC size={16} className={`${displayColor} mr-2`} />}
+                                                                <span className="text-xs font-medium truncate dark:text-gray-200">{keyItem.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className="text-sm text-gray-500 italic p-2 border border-dashed border-gray-300 rounded-lg">
+                                                    No activities defined in Key. Go to Configure > Activities to add some.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'location' && (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Location(s) (comma-seperated)</label>
+                                        <input type="text" value={localLocations} onChange={(e) => setLocalLocations(e.target.value)} className="w-full border rounded-lg p-2 font-bold dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. NYC, London" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                                        <ReactQuill theme="snow" value={localDetails} onChange={setLocalDetails} modules={QUILL_MODULES} className="quill-editor-custom" />
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 flex justify-end space-x-3">
+                    {isAdmin && <button onClick={handleSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center"><Save size={18} className="mr-2" /> Save</button>}
+                    {!isAdmin && <button onClick={onClose} className="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg">Close</button>}
+                </div>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 });
 
 
-// --- Component: Cell Editor Modal ---
-const CellEditor = ({ isOpen, onClose, dayData, onSave, isAdmin, keyItems }) => {
-  
-  const [localLocations, setLocalLocations] = useState('');
-  const [localDetails, setLocalDetails] = useState('');
-  const [localColorId, setLocalColorId] = useState('none');
-  const [localIcons, setLocalIcons] = useState([]);
-
-  // Populate local state *only* when the modal is opened
-  useEffect(() => {
-    if (dayData) {
-      setLocalLocations(dayData.locations || '');
-      setLocalDetails(dayData.details || '');
-      setLocalColorId(dayData.colorId || 'none');
-      setLocalIcons(dayData.icons || dayData.content || []); 
-    }
-  }, [dayData]);
-  
-  const [activeTab, setActiveTab] = useState('text'); 
-  const [showIconEditor, setShowIconEditor] = useState(false);
-  const [editingIconIndex, setEditingIconIndex] = useState(null);
-
-  // Save handler sends local state back up
-  const handleSave = () => {
-    onSave({
-      ...dayData,
-      locations: localLocations, // RENAMED
-      details: localDetails, // RENAMED
-      colorId: localColorId,
-      icons: localIcons,
-      // REMOVED isText1Bold and isText2Bold
-    });
-    onClose();
-  };
-  
-  // --- Icon Handlers (use local state) ---
-  const handleIconSave = (iconData) => {
-    setLocalIcons(prevIcons => {
-        const newIcons = [...prevIcons];
-        if (iconData.value === 'None') {
-            if (editingIconIndex !== null) {
-                newIcons.splice(editingIconIndex, 1);
-            }
-        } else if (editingIconIndex !== null) {
-            newIcons[editingIconIndex] = { ...newIcons[editingIconIndex], ...iconData };
-        } else {
-            newIcons.push({ id: Date.now().toString(), ...iconData });
-        }
-        return newIcons;
-    });
-    setEditingIconIndex(null);
-    setShowIconEditor(false);
-  };
-  
-  const handleIconDelete = (index) => {
-    setLocalIcons(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleIconMove = (indexToMove, direction) => {
-      const newIcons = [...localIcons];
-      const newIndex = indexToMove + direction;
-      if (newIndex < 0 || newIndex >= newIcons.length) return;
-      [newIcons[indexToMove], newIcons[newIndex]] = [newIcons[newIndex], newIcons[indexToMove]];
-      setLocalIcons(newIcons);
-  };
-
-  return (
-    <div className={`fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
-      {dayData && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg">
-          <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-              {isAdmin ? 'Edit Day' : 'View Day'} - {dayData.month} {dayData.day}, {dayData.year}
-            </h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-              <X size={24} />
-            </button>
-          </div>
-
-          {isAdmin ? (
-            <RichTextEditor
-              isAdmin={isAdmin} activeTab={activeTab} setActiveTab={setActiveTab}
-              localLocations={localLocations} setLocalLocations={setLocalLocations}
-              localDetails={localDetails} setLocalDetails={setLocalDetails}
-              localColorId={localColorId} setLocalColorId={setLocalColorId}
-              localIcons={localIcons}
-              handleIconMove={handleIconMove}
-              setEditingIconIndex={setEditingIconIndex}
-              setShowIconEditor={setShowIconEditor}
-              handleIconDelete={handleIconDelete}
-            />
-          ) : (
-            <StaticView
-              localLocations={localLocations}
-              localDetails={localDetails}
-              localIcons={localIcons}
-              keyItems={keyItems}
-            />
-          )}
-
-          <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 flex justify-end">
-            {isAdmin && (
-              <button
-                onClick={handleSave}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors"
-              >
-                <Save size={18} className="mr-2" /> Save Changes
-              </button>
-            )}
-            {!isAdmin && (
-              <button onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg transition-colors">
-                Close
-              </button>
-            )}
-          </div>
-        </div>
-      )} {/* This closes the dayData && check */}
-      
-      <IconEditor
-        key={showIconEditor ? 'open' : 'closed'}
-        isOpen={showIconEditor}
-        onClose={() => setShowIconEditor(false)}
-        onSave={handleIconSave}
-        initialIconData={editingIconIndex !== null && localIcons[editingIconIndex] ? localIcons[editingIconIndex] : null}
-      />
-    </div>
-  );
-};
-
-const CellEditorMemo = React.memo(CellEditor);
-
-
-// --- Component: Authentication Modal (Triggered by button) ---
+// --- Authentication Modal ---
 const AuthModal = ({ isOpen, onClose, onAuthenticate, isLoading, setIsLoading, authError }) => {
   const [password, setPassword] = useState('');
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-        setPassword('');
-    }
-  }, [isOpen]);
-
+  useEffect(() => { if (isOpen) setPassword(''); }, [isOpen]);
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     setIsLoading(true);
-    
     try {
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
-        });
-
+        const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
         if (response.ok) {
             const { role, token } = await response.json();
             onAuthenticate(role, token);
             onClose();
         } else {
-            onAuthenticate('view', null); // Ensure auth error is set
+            onAuthenticate('view', null);
         }
-    } catch (e) {
-        console.error("Auth error:", e);
-        onAuthenticate('view', null); // Ensure auth error is set
-    } finally {
-        setIsLoading(false);
-    }
+    } catch (e) { console.error("Auth error:", e); onAuthenticate('view', null); } 
+    finally { setIsLoading(false); }
   };
-  
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-[80] flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 relative">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-            <X size={24} />
-        </button>
-      
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-          <Lock size={24} className="mr-2 text-blue-500" /> Calendar Settings
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          Enter the admin password to access settings.
-        </p>
-
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400"><X size={24} /></button>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Lock size={24} className="mr-2 text-blue-500" /> Admin Access</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-3 text-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              placeholder="Enter Password"
-              disabled={isLoading}
-            />
-            {authError && <p className="text-red-500 text-sm">{authError}</p>}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
-          >
-            {isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}
-            <span className="ml-2">{isLoading ? 'Checking...' : 'Authenticate'}</span>
-          </button>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border rounded-lg p-3 text-lg dark:bg-gray-700 dark:text-white" placeholder="Enter Password" disabled={isLoading} />
+          {authError && <p className="text-red-500 text-sm">{authError}</p>}
+          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg flex items-center justify-center">{isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}<span className="ml-2">Authenticate</span></button>
         </form>
       </div>
     </div>
   );
 };
 
-// --- Component: Key Editor Modal ---
-const KeyEditor = ({ isOpen, onClose, keyData, onSave }) => {
-    if (!isOpen) return null;
-
-    const [localKeyItems, setLocalKeyItems] = useState(keyData);
-    const [showIconEditor, setShowIconEditor] = useState(false);
-    const [editingKeyId, setEditingKeyId] = useState(null);
-    
-    const handleAddRow = () => {
-        setLocalKeyItems(prev => [...prev, { id: Date.now().toString(), label: 'New Item', icon: 'None', iconColor: KEY_COLOR_OPTIONS[0].class, isColorKey: false, showCount: false }]);
-    };
-    
-    const handleDeleteRow = (id) => {
-        setLocalKeyItems(prev => prev.filter(item => item.id !== id));
-    };
-    
-    const handleChange = (id, field, value) => {
-        setLocalKeyItems(prev => prev.map(item => 
-            item.id === id ? { ...item, [field]: value } : item
-        ));
-    };
-    
-    const handleSaveKey = () => {
-        onSave(localKeyItems);
-        onClose();
-    };
-    
-    const handleKeyMove = (indexToMove, direction) => {
-        const newIndex = indexToMove + direction;
-
-        if (newIndex < 0 || newIndex >= localKeyItems.length) return;
-        if (localKeyItems[indexToMove].isColorKey || localKeyItems[newIndex].isColorKey) return; 
-
-        const newItems = [...localKeyItems];
-        [newItems[indexToMove], newItems[newIndex]] = [newItems[newIndex], newItems[indexToMove]];
-        
-        setLocalKeyItems(newItems);
-    };
-
-    // NEW: Handler for saving data from the IconEditor
-    const handleIconSave = (iconData) => {
-        // iconData is { type: 'icon', value: iconType, color: iconColor }
-        if (editingKeyId) {
-            handleChange(editingKeyId, 'icon', iconData.value);
-            handleChange(editingKeyId, 'iconColor', iconData.color);
-        }
-        setShowIconEditor(false);
-        setEditingKeyId(null);
-    };
-
-    // NEW: Get the item being edited to pass to the IconEditor
-    const itemToEdit = editingKeyId ? localKeyItems.find(item => item.id === editingKeyId) : null;
-    const iconEditorInitialData = itemToEdit ? { value: itemToEdit.icon, color: itemToEdit.iconColor } : null;
-
-    return (
-      <div className={`fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} transition-opacity`}>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl p-6 space-y-6 overflow-y-auto max-h-[90vh]">
-          <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Edit size={20} className="mr-2"/> Edit Calendar Key</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
-          </div>
-            
-          <p className="text-sm text-gray-600 dark:text-gray-300">The "Away From Home" item is locked to the top.</p>
-            
-          <div className="space-y-4">
-            {localKeyItems.map((item, index) => {
-                const color = COLOR_OPTIONS.find(c => c.id === item.id);
-                const IconComponent = ICON_MAP[item.icon];
-                
-                const bgColorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-')).join(' ') : 'bg-gray-100';
-
-                return (
-                    <div key={item.id} className="flex items-center space-x-2 border-b dark:border-gray-700 pb-3">
-                        <div className="flex flex-col">
-                            <button 
-                                onClick={() => handleKeyMove(index, -1)} 
-                                disabled={index === 0 || item.isColorKey || (index > 0 && localKeyItems[index - 1].isColorKey)}
-                                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-30" title="Move Up"
-                            >
-                                <ArrowUp size={16} />
-                            </button>
-                            <button 
-                                onClick={() => handleKeyMove(index, 1)} 
-                                disabled={index === localKeyItems.length - 1 || item.isColorKey}
-                                className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 disabled:opacity-30" title="Move Down"
-                            >
-                                <ArrowDown size={16} />
-                            </button>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            if (!item.isColorKey) { // Don't allow changing the color-key icon
-                              setEditingKeyId(item.id);
-                              setShowIconEditor(true);
-                            }
-                          }}
-                          className={`w-16 h-10 rounded-lg ${bgColorClass} flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 flex-shrink-0 ${item.isColorKey ? 'cursor-not-allowed' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                          disabled={item.isColorKey}
-                        >
-                          {IconComponent && item.icon !== 'None' ? (
-                            <IconComponent size={20} className={item.iconColor || 'text-gray-900'} />
-                          ) : (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">Set</span>
-                          )}
-                        </button>
-
-                        <input
-                            type="text"
-                            value={item.label}
-                            onChange={(e) => handleChange(item.id, 'label', e.target.value)}
-                            className="p-2 border rounded-lg flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            placeholder="Label (e.g., Away From Home)"
-                        />
-
-                        <div className="flex items-center space-x-2 text-sm ml-2">
-                            <input
-                                type="checkbox"
-                                id={`count-${item.id}`}
-                                checked={item.showCount || false}
-                                onChange={(e) => handleChange(item.id, 'showCount', e.target.checked)}
-                                disabled={item.isColorKey}
-                                className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:ring-blue-600 disabled:opacity-50"
-                            />
-                            <label htmlFor={`count-${item.id}`} className={`text-gray-600 dark:text-gray-300 ${item.isColorKey ? 'opacity-50' : ''}`}>
-                                Show Count
-                            </label>
-                        </div>
-
-                        <button 
-                          onClick={() => handleDeleteRow(item.id)} 
-                          className={`text-red-500 hover:text-red-700 ${item.isColorKey ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          disabled={item.isColorKey}
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-                );
-            })}
-          </div>
-            
-          <div className="flex justify-between pt-4 border-t dark:border-gray-700">
-            <button onClick={handleAddRow} className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg flex items-center transition-colors">
-                <Plus size={18} className="mr-2" /> Add Key Item
-            </button>
-            <button onClick={handleSaveKey} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors">
-                <Save size={18} className="mr-2" /> Save Key
-            </button>
-          </div>
-        </div>
-
-        {/* NEW: Add the IconEditor, which is controlled by this component's state */}
-        <IconEditor
-          key={showIconEditor ? 'key-editor-open' : 'key-editor-closed'}
-          isOpen={showIconEditor}
-          onClose={() => setShowIconEditor(false)}
-          onSave={handleIconSave}
-          initialIconData={iconEditorInitialData}
-        />
-      </div>
-    );
-};
-
-// --- Component: Main App ---
+// --- MAIN APP COMPONENT ---
 export default function App() {
-  
-  // --- Config State (from Server) ---
-  const [config, setConfig] = useState({
-    timezone: 'UTC',
-    title: 'Calendar',
-    headerName: null // Will be set to year + 'Calendar'
-  });
+  const [config, setConfig] = useState({ timezone: 'UTC', headerStyle: 'simple', ownerName: '' });
   const [isDarkMode, setIsDarkMode] = useState(false);
-  
-  // --- Production Auth Flow ---
   const [role, setRole] = useState('view');
   const [adminToken, setAdminToken] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
-  
   const [calendarData, setCalendarData] = useState(null);
   const [isSaving, setIsSaving] =useState(false);
-  const [isDataLoading, setIsDataLoading] = useState(true); // Start loading
+  const [isDataLoading, setIsDataLoading] = useState(true);
   const [activeCell, setActiveCell] = useState(null); 
-  const [showKeyEditor, setShowKeyEditor] = useState(false);
-  const [keyItems, setKeyItems] = useState(DEFAULT_KEY_ITEMS); // Use default
+  const [showConfigureModal, setShowConfigureModal] = useState(false);
+  const [keyItems, setKeyItems] = useState(DEFAULT_KEY_ITEMS);
   const [lastUpdatedText, setLastUpdatedText] = useState('');
-  const [year, setYear] = useState(new Date().getFullYear()); // Default, will be overwritten by config
+  const [year, setYear] = useState(new Date().getFullYear());
   const [isStatsExpanded, setIsStatsExpanded] = useState(false);
   const [highlightFilters, setHighlightFilters] = useState({ locations: [], icons: [] }); 
-  
-  // API Connection State
   const [apiError, setApiError] = useState(null);
   const wsRef = useRef(null);
 
-  // --- Dark Mode Effect ---
+  // Dark Mode
   useEffect(() => {
-    // Check for saved theme or system preference
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-        setIsDarkMode(true);
-        document.documentElement.classList.add('dark');
+        setIsDarkMode(true); document.documentElement.classList.add('dark');
     } else {
-        setIsDarkMode(false);
-        document.documentElement.classList.remove('dark');
+        setIsDarkMode(false); document.documentElement.classList.remove('dark');
     }
   }, []);
-
   const toggleDarkMode = () => {
-      setIsDarkMode(prevMode => {
-          const newMode = !prevMode;
-          if (newMode) {
-              document.documentElement.classList.add('dark');
-              localStorage.setItem('theme', 'dark');
-          } else {
-              document.documentElement.classList.remove('dark');
-              localStorage.setItem('theme', 'light');
-          }
+      setIsDarkMode(prev => {
+          const newMode = !prev;
+          document.documentElement.classList.toggle('dark', newMode);
+          localStorage.setItem('theme', newMode ? 'dark' : 'light');
           return newMode;
       });
   };
 
-  // --- API and WebSocket Persistence ---
+  // Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+        if (activeCell || showConfigureModal || showAuthModal) return; 
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowLeft') setYear(y => y - 1);
+        if (e.key === 'ArrowRight') setYear(y => y + 1);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeCell, showConfigureModal, showAuthModal]);
 
-  // 1. Fetch Config on initial load
+  // Config Fetch
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const response = await fetch('/api/config');
-        if (!response.ok) throw new Error('Failed to load config');
         const appConfig = await response.json();
-        
-        // Set year based on timezone
-        let initialYear = new Date().getFullYear();
+        setConfig(appConfig);
         try {
             const now = new Date(new Date().toLocaleString('en-US', { timeZone: appConfig.timezone }));
-            initialYear = now.getFullYear();
-        } catch (e) {
-            console.warn(`Invalid timezone '${appConfig.timezone}'. Falling back to UTC.`);
-            const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
-            initialYear = now.getFullYear();
-            appConfig.timezone = 'UTC'; // Force fallback
-        }
-        
-        setYear(initialYear);
-        setConfig(appConfig);
-
-      } catch (e) {
-        console.error("Failed to fetch config:", e);
-        // App will run with defaults
-        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
-        setYear(now.getFullYear());
-      }
+            setYear(now.getFullYear());
+        } catch (e) { console.warn("Invalid timezone"); }
+      } catch (e) { console.error("Config fetch error", e); }
     };
     fetchConfig();
-  }, []); // Run only once on mount
+  }, []);
 
-  // 2. WebSocket Setup
+  // WebSocket
   useEffect(() => {
     const getWebSocketURL = () => {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        return `${protocol}//${host}`;
+        return `${protocol}//${window.location.host}`;
     };
-
-    const wsURL = getWebSocketURL();
-    if (!wsURL) {
-        console.error("Could not determine WebSocket URL.");
-        setApiError("Failed to initialize connection.");
-        return;
-    }
-
     const connectWebSocket = () => {
-        wsRef.current = new WebSocket(wsURL);
-
-        wsRef.current.onopen = () => {
-            console.log('WebSocket connected');
-            setApiError(null);
-        };
-
+        wsRef.current = new WebSocket(getWebSocketURL());
+        wsRef.current.onopen = () => setApiError(null);
         wsRef.current.onmessage = (event) => {
             const message = JSON.parse(event.data);
             if (message.type === 'DATA_UPDATE') {
-                const updatedData = message.payload.data;
-                const updatedYear = message.payload.year;
-
-                // Use functional state update to ensure we're updating based on the *current* year
-                setYear(currentYear => {
-                    if (updatedYear === currentYear) {
-                        console.log('Received real-time update for current year:', updatedYear);
-                        setCalendarData(updatedData.dayData);
-                        setKeyItems(updatedData.keyItems || DEFAULT_KEY_ITEMS);
-                        setLastUpdatedText(updatedData.lastUpdatedText);
-                    } else {
-                        console.log('Received real-time update for different year, ignoring.');
+                const { year: uYear, data: uData } = message.payload;
+                setYear(prev => {
+                    if (uYear === prev) {
+                        setCalendarData(uData.dayData);
+                        setKeyItems(uData.keyItems || DEFAULT_KEY_ITEMS);
+                        setLastUpdatedText(uData.lastUpdatedText);
                     }
-                    return currentYear; // Return the unchanged year
+                    return prev;
                 });
+            } else if (message.type === 'CONFIG_UPDATE') {
+                setConfig(message.payload);
             }
         };
-
-        wsRef.current.onclose = () => {
-            console.log('WebSocket disconnected. Reconnecting...');
-            if (apiError === null) {
-              setApiError("Connection Lost. Reconnecting...");
-            }
-            // Use a unique timeout ID to prevent multiple reconnect loops
-            const timeoutId = setTimeout(connectWebSocket, 3000);
-            wsRef.current.timeoutId = timeoutId;
-        };
-
-        wsRef.current.onerror = (err) => {
-            console.error('WebSocket Error:', err);
-            setApiError("Error connecting to server.");
-            wsRef.current.close(); // This will trigger the onclose reconnect logic
-        };
+        wsRef.current.onclose = () => { setTimeout(connectWebSocket, 3000); };
     };
-
     connectWebSocket();
-
-    // Cleanup on component unmount
-    return () => {
-        if (wsRef.current) {
-            if (wsRef.current.timeoutId) {
-                clearTimeout(wsRef.current.timeoutId); // Clear reconnect timeout
-            }
-            wsRef.current.onclose = null; // Prevent reconnect on unmount
-            wsRef.current.close();
-        }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount
-
-
-  // 3. Data Loading
-  const fetchData = useCallback(async (currentYear) => {
-    setIsDataLoading(true);
-    setApiError(null);
-    try {
-        const response = await fetch(`/api/data/${currentYear}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        let data = await response.json(); // Use 'let' so we can modify it
-        
-        if (Object.keys(data).length === 0 || !data.dayData) {
-            console.log(`No data for ${currentYear}. Initializing...`);
-            const defaultData = {
-                dayData: generateCalendarForYear(currentYear),
-                keyItems: DEFAULT_KEY_ITEMS,
-                lastUpdatedText: '',
-            };
-            setCalendarData(defaultData.dayData);
-            setKeyItems(defaultData.keyItems);
-            setLastUpdatedText(defaultData.lastUpdatedText);
-        } else {
-            setCalendarData(data.dayData);
-            setKeyItems(data.keyItems || DEFAULT_KEY_ITEMS);
-            setLastUpdatedText(data.lastUpdatedText);
-        }
-    } catch (e) {
-        console.error(`Error fetching data for ${currentYear}:`, e);
-        setApiError("Failed to load calendar data.");
-        setCalendarData({}); // Set to empty object on error to stop loading
-    } finally {
-        setIsDataLoading(false);
-    }
+    return () => wsRef.current?.close();
   }, []);
 
-  // Load data when the year changes
-  useEffect(() => {
-      fetchData(year);
-  }, [year, fetchData]);
+  // Data Fetch
+  const fetchData = useCallback(async (currentYear) => {
+    setIsDataLoading(true);
+    try {
+        const response = await fetch(`/api/data/${currentYear}`);
+        const data = await response.json();
+        if (!data.dayData) {
+            const defaultData = { dayData: generateCalendarForYear(currentYear), keyItems: DEFAULT_KEY_ITEMS, lastUpdatedText: '' };
+            setCalendarData(defaultData.dayData); setKeyItems(defaultData.keyItems); setLastUpdatedText('');
+        } else {
+            setCalendarData(data.dayData); setKeyItems(data.keyItems || DEFAULT_KEY_ITEMS); setLastUpdatedText(data.lastUpdatedText);
+        }
+    } catch (e) { setApiError("Failed to load data"); setCalendarData({}); } 
+    finally { setIsDataLoading(false); }
+  }, []);
 
-  // --- Set Page Title ---
-  useEffect(() => {
-    if (year) {
-      document.title = `${year} Calendar`;
-    }
-  }, [year]);
+  useEffect(() => { fetchData(year); }, [year, fetchData]);
 
-  // --- Keyboard Navigation for Year ---
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      const activeElement = document.activeElement;
-      
-      const isTyping = 
-        activeElement.tagName === 'INPUT' || 
-        activeElement.tagName === 'TEXTAREA' ||
-        activeElement.closest('.ql-editor');
-
-      const isModalOpen = !!activeCell || showKeyEditor || showAuthModal;
-
-      if (isTyping || isModalOpen) {
-        return;
-      }
-
-      if (event.key === 'ArrowLeft') {
-        setYear(y => y - 1);
-      } else if (event.key === 'ArrowRight') {
-        setYear(y => y + 1);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-
-  }, [activeCell, showKeyEditor, showAuthModal]); // Re-run if modal state changes
-  
-  // 4. Data Saving (Debounced for LastUpdatedText)
-  const debouncedSaveRef = useRef(null);
+  // Page Title
+  useEffect(() => { 
+      let title = `${year} Calendar`;
+      if (config.headerStyle === 'possessive' && config.ownerName) title = `${config.ownerName}'s ${year} Calendar`;
+      else if (config.headerStyle === 'question' && config.ownerName) title = `Where is ${config.ownerName}?`;
+      document.title = title;
+  }, [year, config]);
 
   const saveData = useCallback(async (dataToSave) => {
-    if (role !== 'admin' || !adminToken) {
-        console.warn("Save blocked: Not an admin or no token.");
-        return; 
-    }
-    
+    if (role !== 'admin' || !adminToken) return;
     setIsSaving(true);
-    setApiError(null);
     try {
-        const response = await fetch(`/api/data/${year}`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${adminToken}`
-            },
-            body: JSON.stringify(dataToSave)
+        await fetch(`/api/data/${year}`, { 
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` }, body: JSON.stringify(dataToSave) 
         });
+    } catch (e) { setApiError("Save failed"); } finally { setTimeout(() => setIsSaving(false), 500); }
+  }, [role, adminToken, year]);
 
-        if (!response.ok) {
-          if (response.status === 401) {
-              setApiError("Admin session expired. Please log in again.");
-              handleLogout(); // Force logout
-          } else {
-              throw new Error(`Failed to save: ${response.statusText}`);
-          }
-        }
-        
-    } catch (e) {
-        console.error("Failed to save data:", e);
-        setApiError("Failed to save data.");
-    } finally {
-        setTimeout(() => setIsSaving(false), 500);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, adminToken, year]); // handleLogout is stable
-
-  // --- Filter Toggle Handlers ---
-
-  const handleLocationFilterToggle = (locationName) => {
-    setHighlightFilters(prevFilters => {
-      // Check if the location is already in the array
-      const existing = prevFilters.locations.includes(locationName);
-      
-      let newLocations;
-      if (existing) {
-        // If it exists, remove it
-        newLocations = prevFilters.locations.filter(loc => loc !== locationName);
-      } else {
-        // If it doesn't exist, add it
-        newLocations = [...prevFilters.locations, locationName];
-      }
-      
-      return { ...prevFilters, locations: newLocations };
-    });
+  const saveConfig = async (newConfig) => {
+      if (role !== 'admin' || !adminToken) return;
+      try {
+          const res = await fetch('/api/config', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` }, body: JSON.stringify(newConfig) 
+          });
+          if (res.ok) setConfig(newConfig);
+      } catch(e) { setApiError("Config save failed"); }
   };
 
-  const handleIconFilterToggle = (iconItem) => {
-    // We only care about icon and color, not ID or other junk
-    const filterToToggle = { icon: iconItem.icon, iconColor: iconItem.iconColor };
-
-    setHighlightFilters(prevFilters => {
-      // Check if an identical icon/color filter already exists
-      const existingIndex = prevFilters.icons.findIndex(
-        item => item.icon === filterToToggle.icon && item.iconColor === filterToToggle.iconColor
-      );
-
-      let newIcons;
-      if (existingIndex > -1) {
-        // If it exists, remove it
-        newIcons = prevFilters.icons.filter((_, index) => index !== existingIndex);
-      } else {
-        // If it doesn't exist, add it
-        newIcons = [...prevFilters.icons, filterToToggle];
-      }
-
-      return { ...prevFilters, icons: newIcons };
-    });
-  };
-
-  const handleClearFilters = () => {
-    setHighlightFilters({ locations: [], icons: [] });
-  };
-
-  // --- Event Handlers ---
-
-  const handleDayUpdate = useCallback((dayKey, updatedDayData) => {
-    if (role !== 'admin' || !calendarData) return;
-    
+  // Handlers
+  const handleDayUpdate = (updatedDayData) => {
+    const dayKey = activeCell; // Use captured activeCell
+    if (!dayKey) return;
     updatedDayData.year = parseInt(dayKey.split('-')[0], 10);
-
     const newDayData = { ...calendarData, [dayKey]: updatedDayData };
     setCalendarData(newDayData);
-    
-    const newTimestamp = new Date().toLocaleDateString();
-    setLastUpdatedText(newTimestamp);
-    saveData({ dayData: newDayData, keyItems, lastUpdatedText: newTimestamp });
-  }, [calendarData, saveData, keyItems, lastUpdatedText, role, setLastUpdatedText]);
-
-  const handleLastUpdatedTextChange = (e) => {
-    const newText = e.target.value;
-    setLastUpdatedText(newText);
-    
-    if (debouncedSaveRef.current) {
-      clearTimeout(debouncedSaveRef.current);
-    }
-    
-    debouncedSaveRef.current = setTimeout(() => {
-      // Use functional state update to get latest calendarData
-      setCalendarData(currentCalendarData => {
-        saveData({ dayData: currentCalendarData, keyItems, lastUpdatedText: newText });
-        return currentCalendarData;
-      });
-    }, 800);
+    const ts = new Date().toLocaleDateString();
+    setLastUpdatedText(ts);
+    saveData({ dayData: newDayData, keyItems, lastUpdatedText: ts });
   };
 
-  const handleAuthentication = (userRole, token) => {
-    setRole(userRole);
-    setAdminToken(token);
-    setAuthError(null); // Clear error on success
-    
-    if (userRole === 'admin') {
-        // Check if calendar data is empty (e.g., first run)
-        if (calendarData && Object.keys(calendarData).length === 0) {
-            const defaultData = {
-                dayData: generateCalendarForYear(year),
-                keyItems: DEFAULT_KEY_ITEMS,
-                lastUpdatedText: '',
-            };
-            setCalendarData(defaultData.dayData);
-            setKeyItems(defaultData.keyItems);
-            setLastUpdatedText(defaultData.lastUpdatedText);
-            // Save the newly generated default data
-            // We need to pass the token *directly* because state update might not be instant
-            saveData(defaultData, token); 
-        }
-    } else {
-        // This handles the case where login fails
-        setAuthError("Incorrect admin password.");
-    }
-  };
-  
-  const handleLogout = () => {
-      setRole('view');
-      setAdminToken(null);
-  };
-
-  const handleCellClick = (dayKey) => {
-    if (calendarData[dayKey]) {
-      setActiveCell(dayKey);
-    }
-  };
-
-  const handleCellEditorSave = (updatedDayData) => {
-    handleDayUpdate(activeCell, updatedDayData);
-    setActiveCell(null);
-  };
-  
   const handleKeyUpdate = (newKeyItems) => {
       setKeyItems(newKeyItems);
-      const newTimestamp = new Date().toLocaleDateString();
-      setLastUpdatedText(newTimestamp);
-      saveData({ dayData: calendarData, keyItems: newKeyItems, lastUpdatedText: newTimestamp });
-  };
-  
-  const getTotalDaysInYear = (y) => {
-    return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0) ? 366 : 365;
+      const ts = new Date().toLocaleDateString();
+      setLastUpdatedText(ts);
+      saveData({ dayData: calendarData, keyItems: newKeyItems, lastUpdatedText: ts });
   };
 
-  // 6. Calculations (Monthly & Yearly Totals)
-  const calculatedTotals = useMemo(() => {
-    if (!calendarData) return { monthly: {}, yearlyTotal: 0, yearlyPercentage: 0, totalDays: 0 };
-    
-    const totals = {};
-    let yearlyTotal = 0;
-    const totalDays = getTotalDaysInYear(year); 
+  const handleLocationFilterToggle = (loc) => {
+      setHighlightFilters(prev => ({ ...prev, locations: prev.locations.includes(loc) ? prev.locations.filter(l => l !== loc) : [...prev.locations, loc] }));
+  };
+  const handleIconFilterToggle = (item) => {
+      const exists = highlightFilters.icons.find(f => f.icon === item.icon && f.iconColor === item.iconColor);
+      setHighlightFilters(prev => ({ ...prev, icons: exists ? prev.icons.filter(i => i !== exists) : [...prev.icons, { icon: item.icon, iconColor: item.iconColor }] }));
+  };
+  const shouldHighlightCell = (dayInfo) => {
+      if (!highlightFilters.locations.length && !highlightFilters.icons.length) return false;
+      const dayLocs = (dayInfo.locations || '').split(',').map(l=>l.trim()).filter(Boolean);
+      const locMatch = !highlightFilters.locations.length || highlightFilters.locations.every(f => dayLocs.includes(f));
+      const dayIcons = dayInfo.icons || dayInfo.content || [];
+      const iconMatch = !highlightFilters.icons.length || highlightFilters.icons.every(f => dayIcons.some(d => (d.value||d.icon) === f.icon && d.color === f.iconColor));
+      return locMatch && iconMatch;
+  };
 
-    for (const key in calendarData) {
-      const day = calendarData[key];
-      const monthName = day.month;
-
-      if (!totals[monthName]) {
-        totals[monthName] = { highlighted: 0, total: 0 };
-      }
-
-      totals[monthName].total++;
-      if (day.colorId !== 'none') {
-        totals[monthName].highlighted++;
-        yearlyTotal++;
-      }
-    }
-
-    for (const month in totals) {
-      totals[month].percentage = Math.round((totals[month].highlighted / totals[month].total) * 100);
-    }
-    
-    const yearlyPercentage = totalDays > 0 ? Math.round((yearlyTotal / totalDays) * 100) : 0;
-
-    return { monthly: totals, yearlyTotal, yearlyPercentage, totalDays };
-  }, [calendarData, year]);
-  
-  const iconCounts = useMemo(() => {
-    if (!calendarData) return {};
-    
-    const counts = {};
-    
+  // Stats Logic
+  const stats = useMemo(() => {
+    if (!calendarData) return { totalDays: 0, categories: {}, totalHighlighted: 0 };
+    const totalDays = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
+    const catStats = {}; 
+    let totalHighlighted = 0;
+    keyItems.filter(k => k.isColorKey).forEach(k => catStats[k.id] = 0);
     Object.values(calendarData).forEach(day => {
-        // Handle legacy 'content' or new 'icons' array
-        const iconsToCount = day.icons || day.content || [];
-        
-        iconsToCount.forEach(iconItem => {
-            const iconName = iconItem.value || iconItem.icon; // Handle legacy
-            const iconColor = iconItem.color; // Get the color class (e.g., 'text-red-600')
-            
-            if (iconName && iconName !== 'None' && iconColor) {
-                // Create a unique key for the icon-color combination
-                const compositeKey = `${iconName}-${iconColor}`;
-                counts[compositeKey] = (counts[compositeKey] || 0) + 1;
-            }
-        });
+        if (day.colorId && day.colorId !== 'none' && catStats[day.colorId] !== undefined) {
+            catStats[day.colorId]++;
+            totalHighlighted++;
+        }
     });
-    return counts;
+    return { totalDays, categories: catStats, totalHighlighted };
+  }, [calendarData, year, keyItems]);
+
+  const iconCounts = useMemo(() => {
+      if (!calendarData) return {};
+      const counts = {};
+      Object.values(calendarData).forEach(day => {
+          (day.icons||[]).forEach(i => {
+             const key = `${i.value||i.icon}-${i.color}`;
+             counts[key] = (counts[key]||0)+1;
+          });
+      });
+      return counts;
   }, [calendarData]);
 
   const locationCounts = useMemo(() => {
     if (!calendarData) return [];
-    
     const counts = {};
-    
-    Object.values(calendarData).forEach(day => {
-        // Check if locations string is not empty
-        if (day.locations && day.locations.length > 0) {
-            day.locations.split(',')
-                .map(loc => loc.trim()) // Trim whitespace from " NYC"
-                .filter(Boolean)       // Remove empty strings if they exist (e.g., "NYC,,London")
-                .forEach(location => {
-                    counts[location] = (counts[location] || 0) + 1;
-                });
-        }
-    });
-    
-    // Convert to an array and sort by count (highest first)
-    return Object.entries(counts)
-                 .sort(([, countA], [, countB]) => countB - countA);
-
+    Object.values(calendarData).forEach(d => (d.locations||'').split(',').map(l=>l.trim()).filter(Boolean).forEach(l => counts[l] = (counts[l]||0)+1));
+    return Object.entries(counts).sort(([,a],[,b])=>b-a);
   }, [calendarData]);
 
-  // --- Today's Date (Timezone Aware) ---
-  const todayKey = useMemo(() => {
-    try {
-      const now = new Date(new Date().toLocaleString('en-US', { timeZone: config.timezone }));
-      return createDateKey(now.getFullYear(), now.getMonth(), now.getDate());
-    } catch (e) {
-      // This catch block handles the initial render before config is loaded
-      const now = new Date();
-      return createDateKey(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-    }
-  }, [config.timezone]);
+  if (isDataLoading) return <div className="min-h-screen flex items-center justify-center bg-gray-200 dark:bg-gray-900"><Loader className="animate-spin" size={48}/></div>;
 
-  const shouldHighlightCell = (dayInfo) => {
-    const { locations: filterLocations, icons: filterIcons } = highlightFilters;
-
-    // 1. If no filters are active, do nothing.
-    if (filterLocations.length === 0 && filterIcons.length === 0) {
-      return false;
-    }
-
-    // --- 2. Check for Location Matches ---
-    let locationMatch = true; // Assume it matches, unless a filter is active and fails
-    if (filterLocations.length > 0) {
-      // Get the day's locations, handling empty strings and spaces
-      const dayLocations = (dayInfo.locations || '')
-        .split(',')
-        .map(loc => loc.trim())
-        .filter(Boolean); // removes any empty strings
-      
-      // Check if *every* location in our filter list
-      // is also in this specific day's location list.
-      locationMatch = filterLocations.every(filterLoc => dayLocations.includes(filterLoc));
-    }
-
-    // --- 3. Check for Icon Matches ---
-    let iconMatch = true; // Assume it matches, unless a filter is active and fails
-    if (filterIcons.length > 0) {
-      // Get the day's icons (handle legacy 'content' field)
-      const dayIcons = dayInfo.icons || dayInfo.content || [];
-
-      // Check if *every* icon in our filter list
-      // is also in this specific day's icon list.
-      // This checks both the icon name AND the icon color.
-      iconMatch = filterIcons.every(filterIcon => 
-        dayIcons.some(dayIcon =>
-          (dayIcon.value || dayIcon.icon) === filterIcon.icon && dayIcon.color === filterIcon.iconColor
-        )
-      );
-    }
-
-    // --- 4. Final Result ---
-    // The cell is highlighted *only if* it passes BOTH checks (the "AND" logic)
-    return locationMatch && iconMatch;
-  };
-
-  if (isDataLoading || !calendarData) {
-       return (
-          <div className="min-h-screen bg-gray-200 dark:bg-gray-900 flex flex-col items-center justify-center">
-            <Loader size={48} className="animate-spin text-blue-500" />
-            <div className="text-xl font-medium text-gray-700 dark:text-gray-300 mt-4">Loading Calendar Data for {year}...</div>
-          </div>
-        );
-  }
-
-  // --- Component Rendering ---
-  const activeCellData = activeCell ? calendarData[activeCell] : null;
-  const headerPrefix = config.headerName ? `Where is ${config.headerName} in` : 'Calendar';
-  const headerYear = year;
-
-  // Helper to render one month's table
-  const renderMonth = (monthIndex) => {
-    const monthName = MONTHS[monthIndex];
-    const isCurrentYear = new Date(new Date().toLocaleString('en-US', { timeZone: config.timezone })).getFullYear() === year;
-
-    const firstDayOfMonth = new Date(Date.UTC(year, monthIndex, 1));
-    const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
-    const startingDay = firstDayOfMonth.getUTCDay();
+  const renderMonth = (mIdx) => {
+    const mName = MONTHS[mIdx];
+    const isTodayYear = new Date().getFullYear() === year;
+    const firstDay = new Date(Date.UTC(year, mIdx, 1)).getUTCDay();
+    const daysInMonth = new Date(Date.UTC(year, mIdx+1, 0)).getUTCDate();
+    const cells = [];
+    let monthHighCount = 0; 
     
-    const days = [];
-    for (let i = 0; i < startingDay; i++) {
-      days.push(<td key={`pad-${monthName}-${i}`} className="p-1 sm:p-2 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"></td>);
-    }
+    for(let i=0; i<firstDay; i++) cells.push(<td key={`p-${i}`} className="p-1 bg-gray-50 dark:bg-gray-800/50"></td>);
 
-    for (let i = 1; i <= daysInMonth; i++) {
-      const dayKey = createDateKey(year, monthIndex, i);
-      const dayInfo = calendarData[dayKey];
-      
-      if (!dayInfo) {
-        days.push(<td key={`missing-${i}`} className="p-1 sm:p-2 border border-gray-200 dark:border-gray-700 h-28 bg-red-100 dark:bg-red-900/50">?</td>);
-        continue;
-      }
-      
-      const color = COLOR_OPTIONS.find(c => c.id === dayInfo.colorId);
-      const colorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-') || cls.startsWith('dark:bg-')).join(' ') : 'bg-white dark:bg-gray-800';
+    for(let d=1; d<=daysInMonth; d++) {
+        const key = createDateKey(year, mIdx, d);
+        const day = calendarData[key] || { day: d, month: mName, locations: '', icons: [], colorId: 'none' };
+        
+        if (day.colorId !== 'none') monthHighCount++; 
 
-      const isToday = isCurrentYear && dayKey === todayKey;
-      const isHighlighted = dayInfo.colorId !== 'none';
-      const dayNumberColor = isHighlighted ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100';
-
-      const isFilterHighlighted = shouldHighlightCell(dayInfo);
-
-      const cellClasses = `p-0.5 sm:p-1 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer transition-shadow ${colorClass}`;
-
-      const iconsToDisplay = (dayInfo.icons || dayInfo.content || []).filter(item => (item.type === 'icon' || item.value)); // Handle both formats
-
-      days.push(
-      <td 
-        key={dayKey} 
-        className={cellClasses} 
-        onClick={() => handleCellClick(dayKey)}
-        >
-        <div className={`h-full flex flex-col justify-between p-1 ${
-          isFilterHighlighted ? 'relative ring-4 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''
-        }`}>
-
-            {/* This is your Top Block (Date + Location) */}
-            <div className="text-xs font-semibold text-center flex flex-col items-center">
-                <span className={`text-xl font-bold ${isToday ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : dayNumberColor}`}>{dayInfo.day}</span> 
-                
-                {/* --- NEW WRAPPING PILLS FOR LOCATIONS --- */}
-                {dayInfo.locations && (
-                    <div className="flex flex-wrap justify-center gap-1 mt-1 w-full">
-                        {dayInfo.locations.split(',').map(loc => loc.trim()).filter(Boolean).map((location, index) => (
-                            <span 
-                                key={index} 
-                                // Use smaller pills for the small cell
-                                className={`px-1.5 py-0.5 text-xs font-bold rounded-full ${isHighlighted ? 'bg-black/10 text-gray-900' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'} break-all`}
-                            >
-                                {location}
-                            </span>
-                        ))}
+        let colorClass = 'bg-white dark:bg-gray-800';
+        if (day.colorId !== 'none') {
+             const cat = keyItems.find(k => k.id === day.colorId);
+             if (cat) {
+                 const cDef = CATEGORY_COLORS.find(c => c.id === cat.colorCode);
+                 if (cDef) colorClass = `${cDef.bg}`; 
+             }
+        }
+        
+        const isHigh = shouldHighlightCell(day);
+        const icons = (day.icons||[]).filter(i=>i.value!=='None');
+        
+        cells.push(
+            <td key={key} onClick={()=>setActiveCell(key)} className={`p-0.5 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer ${colorClass}`}>
+                <div className={`h-full flex flex-col justify-between p-1 ${isHigh ? 'relative ring-4 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''}`}>
+                    <div className="flex flex-col items-center">
+                        <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : 'text-gray-800 dark:text-gray-100'}`}>{d}</span>
+                        {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).length > 0 && (
+                            <div className="flex flex-wrap justify-center gap-1 mt-1.5 w-full">
+                                {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).map((l,i) => 
+                                    <span key={i} className="px-1.5 py-0.5 text-xs font-bold rounded-full bg-white/50 text-gray-900 break-all">{l}</span>
+                                )}
+                            </div>
+                        )}
                     </div>
-                )}
-                {/* --- END WRAPPING PILLS FOR LOCATIONS --- */}
-            </div>
-            {/* This is your Bottom Block (Icons) 
-                - Using flex-nowrap to encourage shrinking before wrapping
-                - Removed space-y-1, it's not needed if we are using flex-nowrap
-            */}
-
-            <div className="flex flex-wrap justify-center items-end">
-                {iconsToDisplay.slice(0, 3).map((item, index) => {
-                    const iconValue = item.value || item.icon;
-                    if (ICON_MAP[iconValue] && iconValue !== 'None') {
-                    const IconComponent = ICON_MAP[iconValue];
-                    
-                    // NEW LOGIC: Use a wrapping div to manage width and padding
-                    const containerClasses = 'w-1/2 p-0';
+                    <div className="flex flex-wrap justify-center items-end">
+                        {icons.slice(0,4).map((i,idx) => {
+                            const IC = ICON_MAP[i.value||i.icon];
+                            const isYellow = i.color === 'text-yellow-500';
+                            const shadowClass = isYellow ? 'dark:[filter:drop-shadow(0px_0px_1px_rgba(0,0,0,1))]' : '';
                             
-                    // Size is fixed to 20, but it will scale to fit the container
-                    const size = 20; 
-
-                    const isYellow = item.color === 'text-yellow-500';
-                    const isCellOrange = dayInfo.colorId === 'orange';
-                    const shadowClass = (isYellow && isCellOrange)
-                        ? '[filter:drop-shadow(0px_0px_1px_rgba(0,0,0,0.9))]'
-                        : '';
-                    
-                    return (
-                        <div key={item.id || index} className={`flex items-center justify-center ${containerClasses}`}>
-                        <IconComponent
-                            size={size} // Fixed at 20
-                            className={`${item.color} w-full h-full ${shadowClass}`} // Conditionally adds the shadow
-                        />
-                        </div>
-                    );
-                    }
-                    return null;
-                }).filter(Boolean)}
-            </div>
-        </div>
-      </td>
-      );
+                            return IC ? <div key={idx} className="w-1/2 flex justify-center shrink-0 h-6"><IC size={24} className={`${i.color} ${shadowClass} shrink-0`} strokeWidth={2.5} /></div> : null;
+                        })}
+                    </div>
+                </div>
+            </td>
+        );
     }
-
+    while(cells.length % 7 !== 0) cells.push(<td key={`pe-${cells.length}`} className="p-1 bg-gray-50 dark:bg-gray-800/50"></td>);
     const rows = [];
-    let currentRow = [];
-    days.forEach((cell, index) => {
-      currentRow.push(cell);
-      if (currentRow.length === 7) {
-        rows.push(<tr key={`row-${rows.length}`} className="h-full">{currentRow}</tr>);
-        currentRow = [];
-      }
-    });
-    if (currentRow.length > 0) {
-      while (currentRow.length < 7) {
-        currentRow.push(<td key={`pad-end-${monthName}-${currentRow.length}`} className="p-1 sm:p-2 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"></td>);
-      }
-      rows.push(<tr key={`row-${rows.length}`} className="h-full">{currentRow}</tr>);
-    }
-    
-    const monthStats = calculatedTotals.monthly[monthName];
+    for(let i=0; i<cells.length; i+=7) rows.push(<tr key={i}>{cells.slice(i, i+7)}</tr>);
 
     return (
-      <div key={monthName} className="w-full lg:w-1/3 p-2">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 flex justify-between items-center">
-            {monthName}
-            {monthStats && <span className="text-base font-normal bg-gray-100 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">{monthStats.highlighted} / {monthStats.total} days ({monthStats.percentage}%)</span>}
-        </h2>
-        <table className="calendar-table w-full table-fixed border-collapse border border-gray-300 dark:border-gray-700 shadow-md rounded-lg overflow-hidden">
-          <thead>
-            <tr className="bg-gray-200 dark:bg-gray-700 text-sm font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <th key={day} className="p-2 border border-gray-300 dark:border-gray-600">{day}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800">
-            {rows}
-          </tbody>
-        </table>
-      </div>
+        <div key={mName} className="w-full lg:w-1/3 p-2">
+             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 flex justify-between items-center">
+                 {mName}
+                 <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+                    {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount/daysInMonth)*100)}%)
+                 </span>
+             </h2>
+             <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm">
+                 <thead><tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(h=><th key={h} className="p-2 border dark:border-gray-600">{h}</th>)}
+                 </tr></thead>
+                 <tbody>{rows}</tbody>
+             </table>
+        </div>
     );
   };
-  
-  // --- Main Application Render ---
+
+  const renderHeaderTitle = () => {
+      const y = year;
+      const n = config.ownerName || '';
+      if (config.headerStyle === 'possessive' && n) return <>{n}'s <span className="text-blue-600 ml-1">{y}</span> Calendar</>;
+      if (config.headerStyle === 'question' && n) return <>Where is {n} in <span className="text-blue-600">{y}</span>?</>;
+      return <><span className="text-blue-600 mr-2">{y}</span> Calendar</>;
+  };
+
+  // Split KeyItems for Key Display
+  const keyCategories = keyItems.filter(k => k.isColorKey);
+  const keyActivities = keyItems.filter(k => !k.isColorKey);
+
   return (
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
-      
-      {config.bannerHtml && (
-        <div
-          className="sticky top-0 z-[70] bg-yellow-100 border-b-4 border-yellow-500 text-yellow-900 p-4 text-center font-semibold shadow-lg"
-          dangerouslySetInnerHTML={{ __html: config.bannerHtml }}
-        />
-      )}
-
-      {apiError && (
-        <div className="sticky top-0 z-[60] bg-red-600 text-white p-3 text-center font-bold flex items-center justify-center shadow-lg">
-            <CloudOff size={18} className="mr-2" />
-            {apiError}
-        </div>
-      )}
-
-      <div className="max-w-screen-2xl xl:max-w-screen-2xl mx-auto p-4 sm:p-6">
-        <header className="mb-8 border-b dark:border-gray-700 pb-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
-            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white text-center sm:text-left flex items-center">
-              <CalendarDays size={36} className="mr-3 text-blue-600" />
-              {/* This new span groups all the text together as one flex item */}
-              <span>
-                {headerPrefix}
-                {/* Apply contrasting color classes for visibility in both themes */}
-                <span className="text-blue-600 dark:text-blue-600 font-black ml-2 mr-1">
-                  {headerYear}
-                </span>
-                {config.headerName ? '?' : ''}
-              </span>
-            </h1>
-            <div className="flex items-center space-x-4 mt-4 sm:mt-0 flex-wrap justify-center">
-                
-                <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                    <button onClick={() => setYear(year - 1)} className="p-1 rounded-full bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"><ChevronLeft size={20} /></button>
-                    <span className="font-semibold text-gray-700 dark:text-gray-300">Year: {year}</span>
-                    <button onClick={() => setYear(year + 1)} className="p-1 rounded-full bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"><ChevronRight size={20} /></button>
-                </div>
-
-                <button 
-                    onClick={toggleDarkMode} 
-                    className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    title="Toggle Dark Mode"
-                >
-                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-
-                {role === 'admin' && (
-                    <span className="text-sm font-medium px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/50 dark:text-red-300 text-red-700">
-                        ADMIN MODE
-                    </span>
-                )}
-                
-                {role === 'admin' ? (
-                    <>
-                        <button onClick={() => setShowKeyEditor(true)} className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded-lg flex items-center transition-colors">
-                            <Edit size={16} className="mr-1" /> Edit Key
-                        </button>
-                        <button onClick={handleLogout} className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded-lg flex items-center transition-colors">
-                            <LogOut size={16} className="mr-1" /> Logout
-                        </button>
-                    </>
-                ) : (
-                    <button 
-                        onClick={() => { setShowAuthModal(true); setAuthError(null); }} 
-                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"
-                        title="Settings" // Added title for accessibility
-                    >
-                        <Settings size={18} />
-                    </button>
-                )}
-                
-            </div>
-          </div>
-          
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 flex items-center">
-            <span className="mr-2">Last updated:</span>
-            <span className="font-semibold">{lastUpdatedText}</span>
-            {isSaving && <span className="ml-2 text-xs text-blue-500 flex items-center"><Loader size={12} className="mr-1 animate-spin"/> Saving...</span>}
-          </p>
-        </header>
-
-        <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
-              {(highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0) && (
-                <button
-                  onClick={handleClearFilters}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
-                >
-                  <X size={16} className="mr-1" />
-                  Clear All Filters
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
-                {keyItems.map(item => {
-                        const color = COLOR_OPTIONS.find(c => c.id === item.id);
-                        const IconComponent = ICON_MAP[item.icon];
-                        
-                        const bgColorClass = color ? color.class.split(' ').filter(cls => cls.startsWith('bg-')).join(' ') : 'bg-gray-100 dark:bg-gray-700';
-
-                        // Check if this specific icon/color combo is selected
-                        const isSelected = highlightFilters.icons.some(
-                          filter => filter.icon === item.icon && filter.iconColor === item.iconColor
-                        );
-
-                        return (
-                          <div
-                            key={item.id}
-                            onClick={item.isColorKey ? undefined : () => handleIconFilterToggle(item)}
-                            className={`flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg transition-all ${
-                              item.isColorKey
-                                ? '' // Don't make color keys clickable
-                                : `cursor-pointer ${isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`
-                            }`}
-                          >
-                            {/* Icon (added flex-shrink-0) */}
-                            <div className={`w-5 h-5 rounded-full ${bgColorClass} flex items-center justify-center border border-gray-300 dark:border-gray-600 flex-shrink-0`}>
-                                {IconComponent && item.icon !== 'None' && <IconComponent size={14} className={item.iconColor || 'text-gray-900'} />}
-                            </div>
-                            
-                            {/* Label (added flex-1 to make it grow and push the count right) */}
-                            <span className="font-medium text-gray-700 dark:text-gray-200 flex-1" title={item.label}>
-                                {item.label}
-                            </span>
-                            
-                            {/* NEW: Conditional Count (right-aligned) */}
-                            {item.showCount && !item.isColorKey && (
-                                <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
-                                    {/* Look up the count using both the icon AND its color */
-                                    iconCounts[`${item.icon}-${item.iconColor}`] || 0}
-                                </span>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        </section>
+        {config.bannerHtml && <div className="sticky top-0 z-[70] bg-yellow-100 border-b-4 border-yellow-500 text-yellow-900 p-4 text-center font-semibold" dangerouslySetInnerHTML={{ __html: config.bannerHtml }} />}
         
-        <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
-          {/* Clickable Header */}
-          <h2
-            className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex justify-between items-center md:cursor-default cursor-pointer"
-            onClick={() => setIsStatsExpanded(prev => !prev)}
-          >
-            <span>{year} Stats</span>
-            {/* Show toggle arrow only on mobile (hidden on md and up) */}
-            <span className="md:hidden">
-              {isStatsExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-            </span>
-          </h2>
-
-          {/* Collapsible Content */}
-          {/*
-            - `hidden` = mobile-first, it's collapsed
-            - `md:block` = desktop-first, it's expanded
-            - `isStatsExpanded ? 'block' : 'hidden'` = JS state overrides the default 'hidden' on mobile
-          */}
-          <div className={`${isStatsExpanded ? 'block' : 'hidden'} md:block`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Away from Home</p>
-                <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyTotal} days</p>
-              </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Time Away From Home</p>
-                <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{calculatedTotals.yearlyPercentage}%</p>
-              </div>
-            </div>
-            <div className="mt-6 pt-4 border-t dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Location Counts</h3>
-              {locationCounts.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                  {locationCounts.map(([location, count]) => {
-                    const isSelected = highlightFilters.locations.includes(location);
-                    return (
-                      <div
-                        key={location}
-                        onClick={() => handleLocationFilterToggle(location)}
-                        className={`flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-lg px-4 py-2 cursor-pointer transition-all ${
-                          isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'hover:bg-gray-200 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        <span className="font-medium text-gray-800 dark:text-gray-100">{location}</span>
-                      <span className="ml-3 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                        {count}
-                      </span>
+        <div className="max-w-screen-2xl mx-auto p-4 sm:p-6">
+            <header className="mb-8 border-b dark:border-gray-700 pb-4 flex flex-col sm:flex-row justify-between items-center">
+                <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center">
+                    <CalendarDays size={36} className="mr-3 text-blue-600 hidden sm:block" />
+                    <span>{renderHeaderTitle()}</span>
+                </h1>
+                <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+                    <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                        <button onClick={()=>setYear(y=>y-1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronLeft size={20}/></button>
+                        <span className="font-semibold">{year}</span>
+                        <button onClick={()=>setYear(y=>y+1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"><ChevronRight size={20}/></button>
                     </div>
-                    )
-                  })
-                }
+                    <button onClick={toggleDarkMode} className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
+                    {role==='admin' ? (
+                        <>
+                            <button onClick={()=>setShowConfigureModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <Settings size={20} className="sm:mr-2"/>
+                                <span className="hidden sm:inline">Configure</span>
+                            </button>
+                            <button onClick={()=>{setRole('view'); setAdminToken(null);}} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                                <LogOut size={20} className="sm:mr-2"/>
+                                <span className="hidden sm:inline">Logout</span>
+                            </button>
+                        </>
+                    ) : (
+                        <button onClick={()=>setShowAuthModal(true)} className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Lock size={20}/></button>
+                    )}
                 </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic">No locations have been added yet.</p>
-              )}
+            </header>
+
+            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Key</h2>
+                    {(highlightFilters.locations.length>0 || highlightFilters.icons.length>0) && <button onClick={()=>setHighlightFilters({locations:[], icons:[]})} className="text-blue-500 flex items-center"><X size={16} className="mr-1"/> Clear Filters</button>}
+                </div>
+                <div className="space-y-6">
+                    {/* Categories Section */}
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            {keyCategories.map(item => {
+                                const cDef = CATEGORY_COLORS.find(c=>c.id === item.colorCode);
+                                let boxClass = 'bg-gray-100';
+                                if (cDef) boxClass = `${cDef.bg} text-white dark:text-gray-100`;
+
+                                return (
+                                    <div key={item.id} className="flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-default">
+                                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}></div>
+                                        <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
+                                        {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{stats.categories[item.id]||0}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="border-t dark:border-gray-700"></div>
+
+                    {/* Activities Section */}
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Activities</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            {keyActivities.map(item => {
+                                const IconC = ICON_MAP[item.icon];
+                                const isSelected = highlightFilters.icons.some(f => f.icon === item.icon && f.iconColor === item.iconColor);
+                                // Force color if none/empty so it shows in key
+                                const dispColor = (!item.iconColor || item.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
+
+                                return (
+                                    <div key={item.id} onClick={()=>handleIconFilterToggle(item)} className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+                                        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-500 flex-shrink-0">
+                                            {IconC && <IconC size={20} className={dispColor} />}
+                                        </div>
+                                        <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
+                                        {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{iconCounts[`${item.icon}-${item.iconColor}`]||0}</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
+                <h2 className="text-2xl font-bold mb-4 cursor-pointer flex justify-between" onClick={()=>setIsStatsExpanded(!isStatsExpanded)}>
+                    {year} Stats <span className="md:hidden">{isStatsExpanded?<ChevronUp/>:<ChevronDown/>}</span>
+                </h2>
+                <div className={`${isStatsExpanded?'block':'hidden'} md:block`}>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                             <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Traveling</p>
+                             <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{stats.totalHighlighted} days</p>
+                         </div>
+                         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                             <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Time Traveling</p>
+                             <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">{Math.round((stats.totalHighlighted/stats.totalDays)*100)}%</p>
+                         </div>
+                     </div>
+
+                     <div className="mt-6 pt-4 border-t dark:border-gray-700">
+                         <h3 className="text-lg font-semibold mb-3">Location Counts</h3>
+                         <div className="flex flex-wrap gap-2">
+                             {locationCounts.map(([loc, count]) => (
+                                 <button type="button" key={loc} onClick={()=>handleLocationFilterToggle(loc)} className={`px-3 py-1 rounded-lg flex items-center space-x-2 transition-all border ${highlightFilters.locations.includes(loc)?'bg-blue-600 text-white border-transparent shadow-lg':'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                                     <span className="font-medium dark:text-gray-200">{loc}</span>
+                                     <span className="ml-2 bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">{count}</span>
+                                 </button>
+                             ))}
+                         </div>
+                     </div>
+                </div>
+            </section>
+
+            <div className="flex flex-wrap -m-2">
+                {MONTHS.map((_, i) => renderMonth(i))}
             </div>
-          </div>
-        </section>
-
-        <div className="flex flex-wrap -m-2">
-          {MONTHS.map((_, index) => renderMonth(index))}
         </div>
-      </div>
-      
-      {/* Modals */}
-      <CellEditor
-        key={activeCell}
-        isOpen={!!activeCell}
-        onClose={() => setActiveCell(null)}
-        dayData={activeCell ? calendarData[activeCell] : null}
-        onSave={handleCellEditorSave}
-        isAdmin={role === 'admin'}
-        keyItems={keyItems}
-      />
-      
-      <KeyEditor
-        isOpen={showKeyEditor}
-        onClose={() => setShowKeyEditor(false)}
-        keyData={keyItems}
-        onSave={handleKeyUpdate}
-      />
-      
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => {setShowAuthModal(false); setAuthError(null);}}
-        onAuthenticate={handleAuthentication}
-        isLoading={authLoading}
-        authError={authError}
-        setIsLoading={setAuthLoading}
-      />
 
-      {/* --- Footer --- */}
-      <footer className="max-w-screen-2xl xl:max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <span>v0.3</span>
-          <span className="hidden sm:inline">|</span>
-          <a
-            href="https://github.com/thebronway/calendar-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <Github size={16} />
-            GitHub
-          </a>
-          <span className="hidden sm:inline">|</span>
-          <a
-            href="https://hub.docker.com/r/thebronway/calendar-app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <Database size={16} />
-            Docker Hub
-          </a>
-        </div>
-        <p className="mt-4">
-          A self-hosted calendar app by <a href="https://github.com/thebronway" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">thebronway</a>.
-        </p>
-      </footer>
-      {/* --- End Footer --- */}
+        <CellEditor isOpen={!!activeCell} onClose={()=>setActiveCell(null)} dayData={activeCell?calendarData[activeCell]:null} onSave={handleDayUpdate} isAdmin={role==='admin'} keyItems={keyItems} />
+        <ConfigureModal isOpen={showConfigureModal} onClose={()=>setShowConfigureModal(false)} config={config} onConfigSave={saveConfig} keyItems={keyItems} onKeyItemsSave={handleKeyUpdate} />
+        <AuthModal isOpen={showAuthModal} onClose={()=>setShowAuthModal(false)} onAuthenticate={(r,t)=>{setRole(r);setAdminToken(t);}} isLoading={authLoading} setIsLoading={setAuthLoading} authError={authError} />
+        
+        <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <span>v0.4</span>
+                <span className="hidden sm:inline">|</span>
+                <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                    <Github size={16} /> GitHub
+                </a>
+                <span className="hidden sm:inline">|</span>
+                <a href="https://hub.docker.com/r/thebronway/calendar-app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+                    <Database size={16} /> Docker Hub
+                </a>
+            </div>
+        </footer>
     </div>
   );
 }

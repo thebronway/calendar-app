@@ -1,6 +1,5 @@
 const express = require('express');
 const http = require('http');
-// Update: Destructure WebSocketServer for v8+ compatibility
 const { WebSocketServer } = require('ws'); 
 const fs = require('fs');
 const path = require('path');
@@ -11,11 +10,15 @@ const PORT = process.env.PORT || 80;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_DIR = path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
-// Environment variable defaults
-const PAGE_HEADER_NAME = process.env.PAGE_HEADER_NAME || null; 
-const TIMEZONE = process.env.TIMEZONE || 'UTC';
-const PAGE_BANNER_HTML = process.env.PAGE_BANNER_HTML || null; 
+// Environment variable defaults (used only if config.json doesn't exist)
+const DEFAULT_CONFIG = {
+    headerStyle: 'simple', // 'simple', 'possessive', 'question'
+    ownerName: '',
+    timezone: process.env.TIMEZONE || 'UTC',
+    bannerHtml: process.env.PAGE_BANNER_HTML || null
+};
 
 // In-memory store for valid admin tokens
 const validAdmins = new Set();
@@ -23,6 +26,8 @@ const validAdmins = new Set();
 // --- Server Setup ---
 const app = express();
 const server = http.createServer(app);
+
+// Initialize WebSocketServer explicitly
 const wss = new WebSocketServer({ 
     server,
     clientTracking: true,
@@ -41,30 +46,22 @@ function heartbeat() {
 }
 
 wss.on('connection', (ws, req) => {
-    // Log the origin to debug connection issues
     const clientIp = req.socket.remoteAddress;
-    console.log(`Client connected to WebSocket from ${clientIp}`);
+    // console.log(`Client connected from ${clientIp}`); // Optional logging
     
     ws.isAlive = true;
     ws.on('pong', heartbeat); 
 
-    ws.on('error', (err) => {
-        console.error('WebSocket client error:', err);
-    });
-
+    ws.on('error', (err) => console.error('WebSocket client error:', err));
     ws.on('close', (code, reason) => {
-        console.log(`Client disconnected. Code: ${code}, Reason: ${reason}`);
+        // console.log(`Client disconnected. Code: ${code}`); // Optional logging
     });
 });
 
 // WebSocket heartbeat interval (30s)
 const interval = setInterval(function ping() {
   wss.clients.forEach(function each(ws) {
-    if (ws.isAlive === false) {
-      console.log('Terminating dead WebSocket connection.');
-      return ws.terminate();
-    }
-
+    if (ws.isAlive === false) return ws.terminate();
     ws.isAlive = false; 
     ws.ping(); 
   });
@@ -82,22 +79,47 @@ app.use(express.static(CLIENT_BUILD_PATH));
 const verifyAdminToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; 
-
     if (token == null) return res.sendStatus(401); 
-
-    if (validAdmins.has(token)) {
-        next(); 
-    } else {
-        return res.sendStatus(403); 
-    }
+    if (validAdmins.has(token)) next(); 
+    else return res.sendStatus(403); 
 };
 
 // --- Utility Functions ---
-const getDataFilePath = (year) => {
+const ensureDataDir = () => {
     if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
     }
+};
+
+const getDataFilePath = (year) => {
+    ensureDataDir();
     return path.join(DATA_DIR, `${year}_data.json`);
+};
+
+// Config Reader
+const readConfig = () => {
+    ensureDataDir();
+    if (fs.existsSync(CONFIG_FILE)) {
+        try {
+            return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        } catch (e) {
+            console.error("Error reading config, using defaults:", e);
+        }
+    }
+    // Fallback to Env Vars / Defaults if file missing
+    return DEFAULT_CONFIG;
+};
+
+// Config Writer
+const writeConfig = (newConfig) => {
+    ensureDataDir();
+    try {
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        console.error("Error writing config:", e);
+        return false;
+    }
 };
 
 const readData = (year) => {
@@ -125,17 +147,22 @@ const writeData = (year, data) => {
 };
 
 const broadcastUpdate = (year, data) => {
-    // Console log removed to reduce noise, usually only needed for debugging
-    // console.log(`Broadcasting update for year ${year}`);
     const message = JSON.stringify({
         type: 'DATA_UPDATE',
         payload: { year: year, data: data }
     });
-
     wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            client.send(message);
-        }
+        if (client.readyState === 1) client.send(message);
+    });
+};
+
+const broadcastConfigUpdate = (config) => {
+    const message = JSON.stringify({
+        type: 'CONFIG_UPDATE',
+        payload: config
+    });
+    wss.clients.forEach((client) => {
+        if (client.readyState === 1) client.send(message);
     });
 };
 
@@ -143,37 +170,44 @@ const broadcastUpdate = (year, data) => {
 
 // 1. Get App Configuration
 app.get('/api/config', (req, res) => {
-    res.json({
-        headerName: PAGE_HEADER_NAME,
-        timezone: TIMEZONE,
-        bannerHtml: PAGE_BANNER_HTML 
-    });
+    res.json(readConfig());
 });
 
-// 2. Authentication
+// 2. Save App Configuration (Protected)
+app.post('/api/config', verifyAdminToken, (req, res) => {
+    const newConfig = req.body;
+    // Basic validation
+    if (!newConfig.timezone) return res.status(400).send('Timezone is required');
+    
+    if (writeConfig(newConfig)) {
+        broadcastConfigUpdate(newConfig);
+        res.json(newConfig);
+    } else {
+        res.status(500).send('Failed to save config');
+    }
+});
+
+// 3. Authentication
 app.post('/api/auth/login', (req, res) => {
     const { password } = req.body;
     if (password === ADMIN_PASSWORD) {
         const token = crypto.randomBytes(32).toString('hex');
         validAdmins.add(token);
-        
-        // 8-hour session
         setTimeout(() => validAdmins.delete(token), 1000 * 60 * 60 * 8); 
-
         res.json({ role: 'admin', token: token });
     } else {
         res.status(401).json({ role: 'view', token: null });
     }
 });
 
-// 3. Get Data
+// 4. Get Data
 app.get('/api/data/:year', (req, res) => {
     const { year } = req.params;
     const data = readData(year);
     res.json(data || {});
 });
 
-// 4. Save Data (Protected)
+// 5. Save Data (Protected)
 app.post('/api/data/:year', verifyAdminToken, (req, res) => {
     const { year } = req.params;
     const data = req.body;
