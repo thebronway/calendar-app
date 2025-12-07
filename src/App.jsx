@@ -901,11 +901,27 @@ export default function App() {
     const isTodayYear = new Date().getFullYear() === year;
     const firstDay = new Date(Date.UTC(year, mIdx, 1)).getUTCDay();
     const daysInMonth = new Date(Date.UTC(year, mIdx+1, 0)).getUTCDate();
-    const cells = [];
-    let monthHighCount = 0; 
-    
-    for(let i=0; i<firstDay; i++) cells.push(<td key={`p-${i}`} className="p-1 bg-gray-50 dark:bg-gray-800/50"></td>);
 
+    const cellBaseClass = "border-r border-b border-gray-300 dark:border-gray-700";
+
+    const allCells = [];
+
+    // 1. Headers
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(h => {
+        allCells.push(
+            <div key={`h-${h}`} className={`p-2 bg-gray-200 dark:bg-gray-800 font-bold text-center text-gray-700 dark:text-gray-300 ${cellBaseClass}`}>
+                {h}
+            </div>
+        );
+    });
+
+    // 2. Empty cells at start
+    for(let i=0; i<firstDay; i++) {
+        allCells.push(<div key={`p-${i}`} className={`bg-gray-50 dark:bg-gray-800/50 h-28 ${cellBaseClass}`}></div>);
+    }
+
+    // 3. Days
+    let monthHighCount = 0;
     for(let d=1; d<=daysInMonth; d++) {
         const key = createDateKey(year, mIdx, d);
         const day = calendarData[key] || { day: d, month: mName, locations: '', icons: [], colorId: 'none' };
@@ -924,11 +940,11 @@ export default function App() {
         const isHigh = shouldHighlightCell(day);
         const icons = (day.icons||[]).filter(i=>i.value!=='None');
         
-        cells.push(
-            <td key={key} onClick={()=>setActiveCell(key)} className={`p-0.5 border border-gray-200 dark:border-gray-700 h-28 w-1/7 cursor-pointer ${colorClass}`}>
-                <div className={`h-full flex flex-col justify-between p-1 ${isHigh ? 'relative ring-4 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900 z-10' : ''}`}>
+        allCells.push(
+            <div key={key} onClick={()=>setActiveCell(key)} className={`h-28 cursor-pointer relative ${colorClass} ${cellBaseClass}`}>
+                <div className={`h-full w-full flex flex-col justify-between p-1 ${isHigh ? 'ring-4 ring-blue-500 ring-inset z-10' : ''}`}>
                     <div className="flex flex-col items-center">
-                        <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : (day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100')}`}>{d}</span>
+                         <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : (day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100')}`}>{d}</span>
                         {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).length > 0 && (
                             <div className="flex flex-wrap justify-center gap-1 mt-1.5 w-full">
                                 {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).map((l,i) => 
@@ -946,26 +962,29 @@ export default function App() {
                         })}
                     </div>
                 </div>
-            </td>
+            </div>
         );
     }
-    while(cells.length % 7 !== 0) cells.push(<td key={`pe-${cells.length}`} className="p-1 bg-gray-50 dark:bg-gray-800/50"></td>);
-    const rows = [];
-    for(let i=0; i<cells.length; i+=7) rows.push(<tr key={i}>{cells.slice(i, i+7)}</tr>);
 
-    // Accordion Logic
+    // 4. Empty cells at end
+    const totalCells = allCells.length;
+    const remainder = totalCells % 7;
+    if (remainder !== 0) {
+        for(let i=0; i < (7 - remainder); i++) {
+             allCells.push(<div key={`pe-${i}`} className={`bg-gray-50 dark:bg-gray-800/50 h-28 ${cellBaseClass}`}></div>);
+        }
+    }
+
     const isExpanded = expandedMonths[mIdx];
 
     return (
         <div key={mName} id={`month-${mIdx}`} className="w-full lg:w-1/3 p-2">
-             {/* Header: Clickable on mobile to toggle, normal on desktop */}
              <div 
                 className="flex justify-between items-center mb-2 mt-4 cursor-pointer md:cursor-default"
                 onClick={() => toggleMonth(mIdx)}
              >
                  <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
                      {mName}
-                     {/* Mobile Chevron */}
                      <span className="md:hidden ml-2 text-gray-500">
                         {isExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
                      </span>
@@ -975,14 +994,10 @@ export default function App() {
                  </span>
              </div>
 
-             {/* Content: Hidden on mobile unless expanded, Always Block on Desktop (md:block) */}
-             <div className={`${isExpanded ? 'block' : 'hidden'} md:block rounded-lg shadow-sm overflow-hidden border border-gray-300 dark:border-gray-700`}>
-                 <table className="w-full table-fixed border-collapse">
-                     <thead><tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(h=><th key={h} className="p-2 border-b border-gray-300 dark:border-gray-600">{h}</th>)}
-                     </tr></thead>
-                     <tbody>{rows}</tbody>
-                 </table>
+             <div className={`${isExpanded ? 'block' : 'hidden'} md:block rounded-lg overflow-hidden border-t border-l border-gray-300 dark:border-gray-700`}>
+                 <div className="grid grid-cols-7">
+                     {allCells}
+                 </div>
              </div>
         </div>
     );
@@ -1041,7 +1056,7 @@ export default function App() {
                 </p>
             </header>
 
-            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
+            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
             <div 
                 className="flex justify-between items-center mb-4 cursor-pointer md:cursor-default"
                 onClick={() => setIsKeyExpanded(!isKeyExpanded)}
@@ -1113,7 +1128,7 @@ export default function App() {
             </div>
         </section>
 
-            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
+            <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
                 <h2 className="text-2xl font-bold mb-4 cursor-pointer flex justify-between" onClick={()=>setIsStatsExpanded(!isStatsExpanded)}>
                     {year} Stats <span className="md:hidden">{isStatsExpanded?<ChevronUp/>:<ChevronDown/>}</span>
                 </h2>
@@ -1143,7 +1158,7 @@ export default function App() {
                 </div>
             </section>
 
-            <div className="flex flex-wrap -m-2">
+            <div className="flex flex-wrap -m-2 relative z-0">
                 {MONTHS.map((_, i) => renderMonth(i))}
             </div>
         </div>
