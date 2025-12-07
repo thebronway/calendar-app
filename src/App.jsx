@@ -133,12 +133,16 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
 }
 
 // --- Component: Configure Modal ---
-const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKeyItemsSave }) => {
+const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKeyItemsSave, year, onYearChange }) => {
     if (!isOpen) return null;
 
     const [activeTab, setActiveTab] = useState('general');
     const [localConfig, setLocalConfig] = useState(config);
     const [localKeyItems, setLocalKeyItems] = useState(keyItems);
+
+    // Sync state when year/data changes while modal is open
+    useEffect(() => { setLocalKeyItems(keyItems); }, [keyItems]);
+    useEffect(() => { setLocalConfig(config); }, [config]);
 
     const categories = localKeyItems.filter(i => i.isColorKey);
     const icons = localKeyItems.filter(i => !i.isColorKey);
@@ -209,7 +213,20 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Settings size={24} className="mr-3 text-blue-500"/> Configuration</h3>
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                            <Settings size={24} className="mr-3 text-blue-500"/> 
+                            <span className="hidden sm:inline">Configuration</span>
+                            <span className="sm:hidden">Config</span>
+                        </h3>
+                        
+                        {/* Year Switcher */}
+                        <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm ml-2">
+                             <button onClick={() => onYearChange(year - 1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronLeft size={16}/></button>
+                             <span className="px-3 font-bold text-gray-800 dark:text-gray-100">{year}</span>
+                             <button onClick={() => onYearChange(year + 1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg border-l dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronRight size={16}/></button>
+                        </div>
+                    </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
                 </div>
                 <div className="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
@@ -406,7 +423,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
                 </div>
                 {isAdmin && (
-                     <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700">
+                      <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700">
                         {[
                             { id: 'category', label: 'Category', icon: Tag },
                             { id: 'activities', label: 'Activities', icon: Activity },
@@ -500,7 +517,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                                                      </div>
                                                  </div>
                                              )
-                                         })}
+                                        })}
                                     </div>
                                     
                                     {/* Add New Activity */}
@@ -558,36 +575,72 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
     );
 });
 
-
 // --- Authentication Modal ---
-const AuthModal = ({ isOpen, onClose, onAuthenticate, isLoading, setIsLoading, authError }) => {
+const AuthModal = ({ isOpen, onClose, onAuthenticate }) => {
   const [password, setPassword] = useState('');
-  useEffect(() => { if (isOpen) setPassword(''); }, [isOpen]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState(null);
+
+  // Reset state when modal opens
+  useEffect(() => { 
+    if (isOpen) {
+        setPassword('');
+        setLocalError(null);
+        setIsLoading(false);
+    } 
+  }, [isOpen]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setLocalError(null);
+
     try {
-        const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+        const response = await fetch('/api/auth/login', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ password }) 
+        });
+
         if (response.ok) {
             const { role, token } = await response.json();
             onAuthenticate(role, token);
             onClose();
         } else {
-            onAuthenticate('view', null);
+            // Set error locally - immediate feedback
+            setLocalError("Incorrect admin password.");
         }
-    } catch (e) { console.error("Auth error:", e); onAuthenticate('view', null); } 
+    } catch (e) { 
+        console.error("Auth error:", e); 
+        setLocalError("Connection error."); 
+    } 
     finally { setIsLoading(false); }
   };
+
   if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-90 z-[80] flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 relative">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400"><X size={24} /></button>
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center"><Lock size={24} className="mr-2 text-blue-500" /> Admin Access</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border rounded-lg p-3 text-lg dark:bg-gray-700 dark:text-white" placeholder="Enter Password" disabled={isLoading} />
-          {authError && <p className="text-red-500 text-sm">{authError}</p>}
-          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg flex items-center justify-center">{isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}<span className="ml-2">Authenticate</span></button>
+          <div>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => { setPassword(e.target.value); setLocalError(null); }} 
+                className={`w-full border rounded-lg p-3 text-lg dark:bg-gray-700 dark:text-white transition-colors ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`} 
+                placeholder="Enter Password" 
+                disabled={isLoading} 
+                autoFocus
+              />
+              {localError && <p className="text-red-500 text-sm mt-2 font-bold">{localError}</p>}
+          </div>
+          <button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors">
+            {isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}
+            <span className="ml-2">Authenticate</span>
+          </button>
         </form>
       </div>
     </div>
@@ -612,9 +665,40 @@ export default function App() {
   const [lastUpdatedText, setLastUpdatedText] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
   const [isStatsExpanded, setIsStatsExpanded] = useState(false);
-  const [highlightFilters, setHighlightFilters] = useState({ locations: [], icons: [] }); 
+  const [isKeyExpanded, setIsKeyExpanded] = useState(false);
+  const [highlightFilters, setHighlightFilters] = useState({ locations: [], icons: [] });
+  const [expandedMonths, setExpandedMonths] = useState({});
   const [apiError, setApiError] = useState(null);
   const wsRef = useRef(null);
+
+  // Effect to Initialize Mobile View (Expand current month & Scroll)
+  useEffect(() => {
+    // Determine current month based on config timezone
+    let now;
+    try {
+        now = new Date(new Date().toLocaleString('en-US', { timeZone: config.timezone }));
+    } catch (e) {
+        now = new Date();
+    }
+    const currentMonthIdx = now.getMonth();
+    
+    // 1. Expand only the current month initially
+    setExpandedMonths({ [currentMonthIdx]: true });
+
+    // 2. Auto-scroll to current month ONLY on mobile (width < 768px)
+    if (window.innerWidth < 768) {
+        setTimeout(() => {
+            const element = document.getElementById(`month-${currentMonthIdx}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 500);
+    }
+  }, [config.timezone]);
+
+  const toggleMonth = (idx) => {
+      setExpandedMonths(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
 
   // Dark Mode
   useEffect(() => {
@@ -858,8 +942,7 @@ export default function App() {
                             const IC = ICON_MAP[i.value||i.icon];
                             const isYellow = i.color === 'text-yellow-500';
                             const shadowClass = isYellow ? 'dark:[filter:drop-shadow(0px_0px_1px_rgba(0,0,0,1))]' : '';
-                            
-                            return IC ? <div key={idx} className="w-1/2 flex justify-center shrink-0 h-6"><IC size={24} className={`${i.color} ${shadowClass} shrink-0`} strokeWidth={2.5} /></div> : null;
+                            return IC ? <div key={idx} className="w-1/2 flex justify-center shrink-0 h-[18px] sm:h-6"><IC className={`${i.color} ${shadowClass} shrink-0 w-[18px] h-[18px] sm:w-6 sm:h-6`} strokeWidth={2.5} /></div> : null;
                         })}
                     </div>
                 </div>
@@ -870,20 +953,37 @@ export default function App() {
     const rows = [];
     for(let i=0; i<cells.length; i+=7) rows.push(<tr key={i}>{cells.slice(i, i+7)}</tr>);
 
+    // Accordion Logic
+    const isExpanded = expandedMonths[mIdx];
+
     return (
-        <div key={mName} className="w-full lg:w-1/3 p-2">
-             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 flex justify-between items-center">
-                 {mName}
+        <div key={mName} id={`month-${mIdx}`} className="w-full lg:w-1/3 p-2">
+             {/* Header: Clickable on mobile to toggle, normal on desktop */}
+             <div 
+                className="flex justify-between items-center mb-2 mt-4 cursor-pointer md:cursor-default"
+                onClick={() => toggleMonth(mIdx)}
+             >
+                 <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                     {mName}
+                     {/* Mobile Chevron */}
+                     <span className="md:hidden ml-2 text-gray-500">
+                        {isExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
+                     </span>
+                 </h2>
                  <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
                     {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount/daysInMonth)*100)}%)
                  </span>
-             </h2>
-             <table className="w-full table-fixed border-collapse border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm">
-                 <thead><tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                     {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(h=><th key={h} className="p-2 border dark:border-gray-600">{h}</th>)}
-                 </tr></thead>
-                 <tbody>{rows}</tbody>
-             </table>
+             </div>
+
+             {/* Content: Hidden on mobile unless expanded, Always Block on Desktop (md:block) */}
+             <div className={`${isExpanded ? 'block' : 'hidden'} md:block rounded-lg shadow-sm overflow-hidden border border-gray-300 dark:border-gray-700`}>
+                 <table className="w-full table-fixed border-collapse">
+                     <thead><tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(h=><th key={h} className="p-2 border-b border-gray-300 dark:border-gray-600">{h}</th>)}
+                     </tr></thead>
+                     <tbody>{rows}</tbody>
+                 </table>
+             </div>
         </div>
     );
   };
@@ -942,57 +1042,76 @@ export default function App() {
             </header>
 
             <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold">Key</h2>
-                    {(highlightFilters.locations.length>0 || highlightFilters.icons.length>0) && <button onClick={()=>setHighlightFilters({locations:[], icons:[]})} className="text-blue-500 flex items-center"><X size={16} className="mr-1"/> Clear Filters</button>}
+            <div 
+                className="flex justify-between items-center mb-4 cursor-pointer md:cursor-default"
+                onClick={() => setIsKeyExpanded(!isKeyExpanded)}
+            >
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
+
+                <div className="flex items-center gap-3">
+                    {(highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0) && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setHighlightFilters({locations:[], icons:[]}); }}
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
+                    >
+                        <X size={16} className="mr-1" />
+                        Clear Filters
+                    </button>
+                    )}
+                    
+                    <span className="md:hidden text-gray-800 dark:text-gray-100">
+                        {isKeyExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                    </span>
                 </div>
-                <div className="space-y-6">
-                    {/* Categories Section */}
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            {keyCategories.map(item => {
-                                const cDef = CATEGORY_COLORS.find(c=>c.id === item.colorCode);
-                                let boxClass = 'bg-gray-100';
-                                if (cDef) boxClass = `${cDef.bg} text-white dark:text-gray-100`;
+            </div>
 
-                                return (
-                                    <div key={item.id} className="flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-default">
-                                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}></div>
-                                        <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
-                                        {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{stats.categories[item.id]||0}</span>}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+            {/* Collapsible Content Wrapper */}
+            <div className={`${isKeyExpanded ? 'block' : 'hidden'} md:block space-y-6`}>
+                {/* Categories Section */}
+                <div>
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {keyCategories.map(item => {
+                            const cDef = CATEGORY_COLORS.find(c=>c.id === item.colorCode);
+                            let boxClass = 'bg-gray-100';
+                            if (cDef) boxClass = `${cDef.bg} text-white dark:text-gray-100`;
 
-                    <div className="border-t dark:border-gray-700"></div>
-
-                    {/* Activities Section */}
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Activities</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            {keyActivities.map(item => {
-                                const IconC = ICON_MAP[item.icon];
-                                const isSelected = highlightFilters.icons.some(f => f.icon === item.icon && f.iconColor === item.iconColor);
-                                // Force color if none/empty so it shows in key
-                                const dispColor = (!item.iconColor || item.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
-
-                                return (
-                                    <div key={item.id} onClick={()=>handleIconFilterToggle(item)} className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
-                                        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-500 flex-shrink-0">
-                                            {IconC && <IconC size={20} className={dispColor} />}
-                                        </div>
-                                        <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
-                                        {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{iconCounts[`${item.icon}-${item.iconColor}`]||0}</span>}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                            return (
+                                <div key={item.id} className="flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-default">
+                                    <div className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}></div>
+                                    <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
+                                    {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{stats.categories[item.id]||0}</span>}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
-            </section>
+
+                <div className="border-t dark:border-gray-700"></div>
+
+                {/* Activities Section */}
+                <div>
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Activities</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {keyActivities.map(item => {
+                            const IconC = ICON_MAP[item.icon];
+                            const isSelected = highlightFilters.icons.some(f => f.icon === item.icon && f.iconColor === item.iconColor);
+                            const dispColor = (!item.iconColor || item.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
+
+                            return (
+                                <div key={item.id} onClick={()=>handleIconFilterToggle(item)} className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+                                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-500 flex-shrink-0">
+                                        {IconC && <IconC size={20} className={dispColor} />}
+                                    </div>
+                                    <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">{item.label}</span>
+                                    {item.showCount && <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">{iconCounts[`${item.icon}-${item.iconColor}`]||0}</span>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </section>
 
             <section className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8">
                 <h2 className="text-2xl font-bold mb-4 cursor-pointer flex justify-between" onClick={()=>setIsStatsExpanded(!isStatsExpanded)}>
@@ -1030,12 +1149,12 @@ export default function App() {
         </div>
 
         <CellEditor isOpen={!!activeCell} onClose={()=>setActiveCell(null)} dayData={activeCell?calendarData[activeCell]:null} onSave={handleDayUpdate} isAdmin={role==='admin'} keyItems={keyItems} />
-        <ConfigureModal isOpen={showConfigureModal} onClose={()=>setShowConfigureModal(false)} config={config} onConfigSave={saveConfig} keyItems={keyItems} onKeyItemsSave={handleKeyUpdate} />
+        <ConfigureModal isOpen={showConfigureModal} onClose={()=>setShowConfigureModal(false)} config={config} onConfigSave={saveConfig} keyItems={keyItems} onKeyItemsSave={handleKeyUpdate} year={year} onYearChange={setYear} />
         <AuthModal isOpen={showAuthModal} onClose={()=>setShowAuthModal(false)} onAuthenticate={(r,t)=>{setRole(r);setAdminToken(t);}} isLoading={authLoading} setIsLoading={setAuthLoading} authError={authError} />
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.42</span>
+                <span>v0.5</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub
