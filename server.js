@@ -99,15 +99,25 @@ const getDataFilePath = (year) => {
 // Config Reader
 const readConfig = () => {
     ensureDataDir();
+    // 1. Start with defaults (which includes ENV vars like TIMEZONE and PAGE_BANNER_HTML)
+    let finalConfig = { ...DEFAULT_CONFIG };
+
+    // 2. Overlay saved config.json if it exists
     if (fs.existsSync(CONFIG_FILE)) {
         try {
-            return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+            const fileConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+            finalConfig = { ...finalConfig, ...fileConfig };
         } catch (e) {
             console.error("Error reading config, using defaults:", e);
         }
     }
-    // Fallback to Env Vars / Defaults if file missing
-    return DEFAULT_CONFIG;
+
+    // 3. Force Docker ENV to override for the banner
+    if (process.env.PAGE_BANNER_HTML) {
+        finalConfig.bannerHtml = process.env.PAGE_BANNER_HTML;
+    }
+
+    return finalConfig;
 };
 
 // Config Writer
