@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import { 
-    Plane, Car, Train, Activity, Mountain, Music, Flag, Heart, Calendar, CalendarDays, Lock, 
-    User, Check, Edit, Save, Plus, X, Footprints, Bike, Palette, AlertTriangle, CloudOff, Loader,
-    Hotel, Map, Globe, Anchor, Ticket, Tent, Home, Truck, Users, Briefcase, ChevronLeft, ChevronRight, Gift,
-    LogIn, LogOut, ArrowUp, ArrowDown, Moon, Sun, Settings, ChevronDown, ChevronUp, Github, Database,
-    Layout, List, Image as ImageIcon, MapPin, Tag
+    Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, Beer, Bike, 
+    BookOpen, Briefcase, Calendar, CalendarDays, Camera, Car, Check, ChevronDown, 
+    ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Database, Dumbbell, 
+    Edit, Fish, Flag, Footprints, Gamepad2, Gift, Github, Globe, Headphones, 
+    Heart, Home, Hotel, Image as ImageIcon, Layout, List, Loader, Lock, LogIn, 
+    LogOut, Map, MapPin, Moon, Mountain, Music, Palette, Palmtree, PartyPopper, 
+    Pizza, Plane, Plus, Sailboat, Save, Settings, ShoppingBag, Sofa, Sun, Tag, 
+    Tent, Ticket, Train, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X 
 } from 'lucide-react';
 
 // --- Available Colors ---
@@ -29,12 +32,23 @@ const ICON_COLOR_OPTIONS = [
 ];
 
 const ICON_MAP = {
-  None: null,
-  Plane: Plane, Car: Car, Train: Train, Activity: Activity, Mountain: Mountain, Music: Music,
-  Flag: Flag, Heart: Heart, Calendar: Calendar, Footprints: Footprints, Bike: Bike,
-  Hotel: Hotel, Map: Map, Globe: Globe, Anchor: Anchor, Ticket: Ticket, Tent: Tent, Home: Home, Truck: Truck, Users: Users, Briefcase: Briefcase,
-  Gift: Gift, CalendarDays: CalendarDays,
+  Activity: Activity, AlertTriangle: AlertTriangle, Anchor: Anchor, Armchair: Armchair, ArrowDown: ArrowDown,
+  ArrowUp: ArrowUp, Beer: Beer, Bike: Bike, BookOpen: BookOpen, Briefcase: Briefcase,
+  Calendar: Calendar, CalendarDays: CalendarDays, Camera: Camera, Car: Car, Check: Check,
+  ChevronDown: ChevronDown, ChevronLeft: ChevronLeft, ChevronRight: ChevronRight, ChevronUp: ChevronUp, CloudOff: CloudOff,
+  Coffee: Coffee, Database: Database, Dumbbell: Dumbbell, Edit: Edit, Fish: Fish,
+  Flag: Flag, Footprints: Footprints, Gamepad: Gamepad2, Gift: Gift, Github: Github,
+  Globe: Globe, Headphones: Headphones, Heart: Heart, Home: Home, Hotel: Hotel,
+  ImageIcon: ImageIcon, Layout: Layout, List: List, Loader: Loader, Lock: Lock,
+  LogIn: LogIn, LogOut: LogOut, Map: Map, MapPin: MapPin, Moon: Moon,
+  Mountain: Mountain, Music: Music, None: null, Palette: Palette, Palmtree: Palmtree,
+  PartyPopper: PartyPopper, Pizza: Pizza, Plane: Plane, Plus: Plus, Sailboat: Sailboat,
+  Save: Save, Settings: Settings, ShoppingBag: ShoppingBag, Sofa: Sofa, Sun: Sun,
+  Tag: Tag, Tent: Tent, Ticket: Ticket, Train: Train, Truck: Truck,
+  Umbrella: Umbrella, User: User, Users: Users, Utensils: Utensils, Waves: Waves,
+  Wine: Wine, X: X
 };
+
 const ICON_KEYS = Object.keys(ICON_MAP);
 
 const MONTHS = [
@@ -132,15 +146,15 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
     );
 }
 
-// --- Component: Configure Modal ---
 const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKeyItemsSave, year, onYearChange }) => {
     if (!isOpen) return null;
 
     const [activeTab, setActiveTab] = useState('general');
     const [localConfig, setLocalConfig] = useState(config);
     const [localKeyItems, setLocalKeyItems] = useState(keyItems);
+    
+    const scrollContainerRef = useRef(null);
 
-    // Sync state when year/data changes while modal is open
     useEffect(() => { setLocalKeyItems(keyItems); }, [keyItems]);
     useEffect(() => { setLocalConfig(config); }, [config]);
 
@@ -165,8 +179,13 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
     const handleAddCategory = () => {
         if (categories.length >= 5) return;
         setLocalKeyItems(prev => [...prev, {
-            id: `cat_${Date.now()}`, label: 'New Category', isColorKey: true, colorCode: 'blue', showCount: false, icon: 'None'
+            id: `cat_${Date.now()}`, label: 'New Category', isColorKey: true, colorCode: 'orange', showCount: false, icon: 'None'
         }]);
+        setTimeout(() => {
+            if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
+            }
+        }, 100);
     };
 
     const handleUpdateCategory = (id, field, value) => setLocalKeyItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
@@ -176,6 +195,11 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
         setLocalKeyItems(prev => [...prev, {
             id: `icon_${Date.now()}`, label: 'New Activity', isColorKey: false, icon: 'Star', iconColor: ICON_COLOR_OPTIONS[0].class, showCount: false
         }]);
+        setTimeout(() => {
+            if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
+            }
+        }, 100);
     };
     
     const handleIconEditClick = (id) => { setEditingIconId(id); setShowIconEditor(true); };
@@ -189,7 +213,6 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
 
     const handleKeyMove = (index, direction, isCategory) => {
         const items = isCategory ? categories : icons;
-        const itemToMove = items[index];
         const newIndex = index + direction;
         if (newIndex < 0 || newIndex >= items.length) return;
         
@@ -220,7 +243,6 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                             <span className="sm:hidden">Config</span>
                         </h3>
                         
-                        {/* Year Switcher */}
                         <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm ml-2">
                              <button onClick={() => onYearChange(year - 1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronLeft size={16}/></button>
                              <span className="px-3 font-bold text-gray-800 dark:text-gray-100">{year}</span>
@@ -240,7 +262,7 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                         </button>
                     ))}
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
+                <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900" ref={scrollContainerRef}>
                     {activeTab === 'general' && (
                         <div className="space-y-8 max-w-2xl mx-auto">
                             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
@@ -283,7 +305,7 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                                 <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50"><Plus size={16} className="mr-2"/> Add Category</button>
                             </div>
                             <div className="grid gap-4">
-                                {categories.map((cat) => (
+                                {categories.map((cat, index) => (
                                     <div key={cat.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4">
                                         <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                             {CATEGORY_COLORS.map(c => (
@@ -297,6 +319,10 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Show Count</span>
                                             <ToggleSwitch checked={cat.showCount} onChange={(val) => handleUpdateCategory(cat.id, 'showCount', val)} />
+                                        </div>
+                                        <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
+                                            <button onClick={() => handleKeyMove(index, -1, true)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowUp size={16}/></button>
+                                            <button onClick={() => handleKeyMove(index, 1, true)} disabled={index === categories.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowDown size={16}/></button>
                                         </div>
                                         <button onClick={() => handleDeleteCategory(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg"><X size={20} /></button>
                                     </div>
@@ -313,7 +339,6 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                             <div className="space-y-3">
                                 {icons.map((item, index) => {
                                     const IconC = ICON_MAP[item.icon];
-                                    // Ensure color is visible if none
                                     const displayColor = (!item.iconColor || item.iconColor === 'none') ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
                                     return (
                                         <div key={item.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4">
@@ -901,27 +926,19 @@ export default function App() {
     const isTodayYear = new Date().getFullYear() === year;
     const firstDay = new Date(Date.UTC(year, mIdx, 1)).getUTCDay();
     const daysInMonth = new Date(Date.UTC(year, mIdx+1, 0)).getUTCDate();
+    const cells = [];
+    let monthHighCount = 0; 
+    
+    const contentClass = "min-h-[7rem] h-full flex flex-col justify-between p-1";
 
-    const cellBaseClass = "border-r border-b border-gray-300 dark:border-gray-700";
-
-    const allCells = [];
-
-    // 1. Headers
-    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(h => {
-        allCells.push(
-            <div key={`h-${h}`} className={`p-2 bg-gray-200 dark:bg-gray-800 font-bold text-center text-gray-700 dark:text-gray-300 ${cellBaseClass}`}>
-                {h}
-            </div>
-        );
-    });
-
-    // 2. Empty cells at start
     for(let i=0; i<firstDay; i++) {
-        allCells.push(<div key={`p-${i}`} className={`bg-gray-50 dark:bg-gray-800/50 h-28 ${cellBaseClass}`}></div>);
+        cells.push(
+            <td key={`p-${i}`} className="p-1 bg-gray-50 dark:bg-gray-800/50">
+                <div className={contentClass}></div>
+            </td>
+        );
     }
 
-    // 3. Days
-    let monthHighCount = 0;
     for(let d=1; d<=daysInMonth; d++) {
         const key = createDateKey(year, mIdx, d);
         const day = calendarData[key] || { day: d, month: mName, locations: '', icons: [], colorId: 'none' };
@@ -940,11 +957,11 @@ export default function App() {
         const isHigh = shouldHighlightCell(day);
         const icons = (day.icons||[]).filter(i=>i.value!=='None');
         
-        allCells.push(
-            <div key={key} onClick={()=>setActiveCell(key)} className={`h-28 cursor-pointer relative ${colorClass} ${cellBaseClass}`}>
-                <div className={`h-full w-full flex flex-col justify-between p-1 ${isHigh ? 'ring-4 ring-blue-500 ring-inset z-10' : ''}`}>
+        cells.push(
+            <td key={key} onClick={()=>setActiveCell(key)} className={`w-1/7 cursor-pointer align-top ${colorClass}`}>
+                <div className={`${contentClass} ${isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}>
                     <div className="flex flex-col items-center">
-                         <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : (day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100')}`}>{d}</span>
+                        <span className={`text-xl font-bold ${createDateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : (day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100')}`}>{d}</span>
                         {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).length > 0 && (
                             <div className="flex flex-wrap justify-center gap-1 mt-1.5 w-full">
                                 {(day.locations||'').split(',').map(l=>l.trim()).filter(Boolean).map((l,i) => 
@@ -953,32 +970,34 @@ export default function App() {
                             </div>
                         )}
                     </div>
-                    <div className="flex flex-wrap justify-center items-end">
-                        {icons.slice(0,4).map((i,idx) => {
+                    <div className="flex flex-wrap justify-center items-end mt-1">
+                        {icons.map((i,idx) => {
                             const IC = ICON_MAP[i.value||i.icon];
                             const isYellow = i.color === 'text-yellow-500';
                             const shadowClass = isYellow ? 'dark:[filter:drop-shadow(0px_0px_1px_rgba(0,0,0,1))]' : '';
-                            return IC ? <div key={idx} className="w-1/2 flex justify-center shrink-0 h-[18px] sm:h-6"><IC className={`${i.color} ${shadowClass} shrink-0 w-[18px] h-[18px] sm:w-6 sm:h-6`} strokeWidth={2.5} /></div> : null;
+                            return IC ? <div key={idx} className="w-1/2 flex justify-center shrink-0 h-[18px] sm:h-6 mb-0.5"><IC className={`${i.color} ${shadowClass} shrink-0 w-[18px] h-[18px] sm:w-6 sm:h-6`} strokeWidth={2.5} /></div> : null;
                         })}
                     </div>
                 </div>
-            </div>
+            </td>
         );
     }
-
-    // 4. Empty cells at end
-    const totalCells = allCells.length;
-    const remainder = totalCells % 7;
-    if (remainder !== 0) {
-        for(let i=0; i < (7 - remainder); i++) {
-             allCells.push(<div key={`pe-${i}`} className={`bg-gray-50 dark:bg-gray-800/50 h-28 ${cellBaseClass}`}></div>);
-        }
+    
+    while(cells.length % 7 !== 0) {
+        cells.push(
+            <td key={`pe-${cells.length}`} className="p-1 bg-gray-50 dark:bg-gray-800/50">
+                 <div className={contentClass}></div>
+            </td>
+        );
     }
+    
+    const rows = [];
+    for(let i=0; i<cells.length; i+=7) rows.push(<tr key={i}>{cells.slice(i, i+7)}</tr>);
 
     const isExpanded = expandedMonths[mIdx];
 
     return (
-        <div key={mName} id={`month-${mIdx}`} className="w-full lg:w-1/3 p-2">
+        <div key={mName} id={`month-${mIdx}`} className="w-full md:w-1/2 2xl:w-1/3 p-2">
              <div 
                 className="flex justify-between items-center mb-2 mt-4 cursor-pointer md:cursor-default"
                 onClick={() => toggleMonth(mIdx)}
@@ -994,10 +1013,15 @@ export default function App() {
                  </span>
              </div>
 
-             <div className={`${isExpanded ? 'block' : 'hidden'} md:block rounded-lg overflow-hidden border-t border-l border-gray-300 dark:border-gray-700`}>
-                 <div className="grid grid-cols-7">
-                     {allCells}
-                 </div>
+             <div className={`${isExpanded ? 'block' : 'hidden'} md:block rounded-lg overflow-hidden bg-white dark:bg-gray-800 ring-1 ring-gray-300 dark:ring-gray-700 transform-gpu [backface-visibility:hidden]`}>
+                 <table className="w-full table-fixed border-separate border-spacing-[1px] bg-gray-300 dark:bg-gray-700">
+                     <thead><tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(h=><th key={h} className="p-2 bg-gray-200 dark:bg-gray-800">{h}</th>)}
+                     </tr></thead>
+                     <tbody className="bg-gray-300 dark:bg-gray-700">
+                        {rows}
+                     </tbody>
+                 </table>
              </div>
         </div>
     );
@@ -1169,7 +1193,7 @@ export default function App() {
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.5</span>
+                <span>v0.5 (05h)</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub
