@@ -2,13 +2,15 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import ReactQuill from 'react-quill';
 import { 
     Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, Beer, Bike, 
-    BookOpen, Briefcase, Calendar, CalendarDays, Camera, Car, Check, ChevronDown, 
-    ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Database, Dumbbell, 
-    Edit, Fish, Flag, Footprints, Gamepad2, Gift, Github, Globe, Headphones, 
-    Heart, Home, Hotel, Image as ImageIcon, Layout, List, Loader, Lock, LogIn, 
-    LogOut, Map, MapPin, Moon, Mountain, Music, Palette, Palmtree, PartyPopper, 
-    Pizza, Plane, Plus, Sailboat, Save, Settings, ShoppingBag, Sofa, Sun, Tag, 
-    Tent, Ticket, Train, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X 
+    BookOpen, Briefcase, Calendar, CalendarCheck, CalendarClock, CalendarDays, 
+    CalendarHeart, CalendarMinus, CalendarOff, CalendarPlus, CalendarRange, 
+    CalendarSearch, CalendarX, Camera, Car, Check, ChevronDown, ChevronLeft, 
+    ChevronRight, ChevronUp, CloudOff, Coffee, Database, Dumbbell, Edit, Fish, 
+    Flag, Footprints, Gamepad2, Gift, Github, Globe, Headphones, Heart, Home, 
+    Hotel, Image as ImageIcon, Key, Layout, List, Loader, Lock, LogIn, LogOut, 
+    Map, MapPin, Moon, Mountain, Music, Palette, Palmtree, PartyPopper, Pizza, 
+    Plane, Plus, Sailboat, Save, Settings, ShoppingBag, Sofa, Sun, Tag, Tent, 
+    Ticket, Train, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X 
 } from 'lucide-react';
 
 // --- Available Colors ---
@@ -34,12 +36,15 @@ const ICON_COLOR_OPTIONS = [
 const ICON_MAP = {
   Activity: Activity, AlertTriangle: AlertTriangle, Anchor: Anchor, Armchair: Armchair, ArrowDown: ArrowDown,
   ArrowUp: ArrowUp, Beer: Beer, Bike: Bike, BookOpen: BookOpen, Briefcase: Briefcase,
-  Calendar: Calendar, CalendarDays: CalendarDays, Camera: Camera, Car: Car, Check: Check,
+  Calendar: Calendar, CalendarCheck: CalendarCheck, CalendarClock: CalendarClock, CalendarDays: CalendarDays,
+  CalendarHeart: CalendarHeart, CalendarMinus: CalendarMinus, CalendarOff: CalendarOff, CalendarPlus: CalendarPlus,
+  CalendarRange: CalendarRange, CalendarSearch: CalendarSearch, CalendarX: CalendarX,
+  Camera: Camera, Car: Car, Check: Check,
   ChevronDown: ChevronDown, ChevronLeft: ChevronLeft, ChevronRight: ChevronRight, ChevronUp: ChevronUp, CloudOff: CloudOff,
   Coffee: Coffee, Database: Database, Dumbbell: Dumbbell, Edit: Edit, Fish: Fish,
   Flag: Flag, Footprints: Footprints, Gamepad: Gamepad2, Gift: Gift, Github: Github,
   Globe: Globe, Headphones: Headphones, Heart: Heart, Home: Home, Hotel: Hotel,
-  ImageIcon: ImageIcon, Layout: Layout, List: List, Loader: Loader, Lock: Lock,
+  ImageIcon: ImageIcon, Key: Key, Layout: Layout, List: List, Loader: Loader, Lock: Lock,
   LogIn: LogIn, LogOut: LogOut, Map: Map, MapPin: MapPin, Moon: Moon,
   Mountain: Mountain, Music: Music, None: null, Palette: Palette, Palmtree: Palmtree,
   PartyPopper: PartyPopper, Pizza: Pizza, Plane: Plane, Plus: Plus, Sailboat: Sailboat,
@@ -146,185 +151,281 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
     );
 }
 
-const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKeyItemsSave, year, onYearChange }) => {
+// --- Sub-Component: Settings Modal (Appearance & Timezone) ---
+const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
     if (!isOpen) return null;
-
-    const [activeTab, setActiveTab] = useState('general');
     const [localConfig, setLocalConfig] = useState(config);
-    const [localKeyItems, setLocalKeyItems] = useState(keyItems);
-    
-    const scrollContainerRef = useRef(null);
+    const [showIconPicker, setShowIconPicker] = useState(false);
 
-    useEffect(() => { setLocalKeyItems(keyItems); }, [keyItems]);
     useEffect(() => { setLocalConfig(config); }, [config]);
 
-    const categories = localKeyItems.filter(i => i.isColorKey);
-    const icons = localKeyItems.filter(i => !i.isColorKey);
-
-    const [showIconEditor, setShowIconEditor] = useState(false);
-    const [editingIconId, setEditingIconId] = useState(null);
-
     const handleConfigChange = (field, value) => setLocalConfig(prev => ({ ...prev, [field]: value }));
+    const handleSave = () => { onConfigSave(localConfig); onClose(); };
 
-    const previewTitle = () => {
+    // Filter icons for the Main Page Icon picker
+    const headerIcons = ICON_KEYS.filter(k => k.startsWith('Calendar') || ['Star', 'Heart', 'Home', 'Activity'].includes(k) || localConfig.headerIcon === k);
+
+    // Helper for generating text based on style
+    const generateText = (style) => {
         const y = new Date().getFullYear();
-        const n = localConfig.ownerName || 'John';
-        switch (localConfig.headerStyle) {
-            case 'possessive': return `${n}'s ${y} Calendar`;
+        const n = localConfig.ownerName || 'Name';
+        switch (style) {
+            case 'possessive': return `${n}'s Calendar`;
             case 'question': return `Where is ${n} in ${y}?`;
             default: return `${y} Calendar`;
         }
     };
 
+    const activeHeaderStyle = localConfig.headerStyle || 'simple';
+    const activeBrowserStyle = localConfig.browserTitleStyle || 'simple';
+    const HeaderIcon = ICON_MAP[localConfig.headerIcon || 'CalendarDays'];
+
+    return (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+                <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-xl">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                        <Settings size={24} className="mr-3 text-blue-500"/> Settings
+                    </h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                    {/* Page Appearance Section */}
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+                        <h4 className="text-lg font-bold mb-4 dark:text-white flex items-center"><Layout size={20} className="mr-2"/> Page Appearance</h4>
+                        
+                        {/* Main Icon Picker */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Page Icon</label>
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 flex items-center justify-center bg-blue-50 dark:bg-gray-700 rounded-xl border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400">
+                                    {React.createElement(HeaderIcon, { size: 32 })}
+                                </div>
+                                <button onClick={() => setShowIconPicker(!showIconPicker)} className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Change Icon</button>
+                            </div>
+                            {showIconPicker && (
+                                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border dark:border-gray-700 grid grid-cols-6 sm:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
+                                    {headerIcons.map(key => {
+                                        const Icon = ICON_MAP[key];
+                                        return (
+                                            <button key={key} onClick={() => { handleConfigChange('headerIcon', key); setShowIconPicker(false); }} className={`p-2 rounded hover:bg-white dark:hover:bg-gray-700 flex justify-center ${localConfig.headerIcon === key ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-500' : 'text-gray-600 dark:text-gray-400'}`}>
+                                                <Icon size={20} />
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Page Header Title Style */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Page Header Title</label>
+                            <div className="grid grid-cols-1 gap-2 mb-4">
+                                {[ { id: 'simple', label: '<Year> Calendar' }, { id: 'possessive', label: "<Name>'s Calendar" }, { id: 'question', label: 'Where is <Name> in <Year>?' } ].map(opt => (
+                                    <button key={opt.id} onClick={() => handleConfigChange('headerStyle', opt.id)} className={`p-3 text-left rounded-lg border text-sm font-medium transition-all ${activeHeaderStyle === opt.id ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' : 'border-gray-300 dark:border-gray-600'}`}>{opt.label}</button>
+                                ))}
+                            </div>
+                            {/* Header Live Preview */}
+                            <div className="p-4 bg-gray-100 dark:bg-gray-900 border dark:border-gray-700 rounded-lg flex flex-col items-center justify-center text-center">
+                                <span className="text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">Live Preview</span>
+                                <h1 className="text-2xl font-extrabold flex items-center text-gray-900 dark:text-white">
+                                    {React.createElement(HeaderIcon, { size: 28, className: "mr-3 text-blue-600" })}
+                                    <span>{generateText(activeHeaderStyle)}</span>
+                                </h1>
+                            </div>
+                        </div>
+
+                        {/* Browser Tab Title Style */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Browser Tab Title</label>
+                            <div className="grid grid-cols-1 gap-2 mb-4">
+                                {[ { id: 'simple', label: '<Year> Calendar' }, { id: 'possessive', label: "<Name>'s Calendar" }, { id: 'question', label: 'Where is <Name> in <Year>?' } ].map(opt => (
+                                    <button key={opt.id} onClick={() => handleConfigChange('browserTitleStyle', opt.id)} className={`p-3 text-left rounded-lg border text-sm font-medium transition-all ${activeBrowserStyle === opt.id ? 'bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' : 'border-gray-300 dark:border-gray-600'}`}>{opt.label}</button>
+                                ))}
+                            </div>
+                            {/* Browser Tab Live Preview */}
+                            <div className="p-4 bg-gray-200 dark:bg-black rounded-lg border dark:border-gray-700">
+                                <span className="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider text-center">Browser Tab Preview</span>
+                                <div className="bg-gray-300 dark:bg-gray-800 p-2 rounded-t-lg flex items-center gap-2">
+                                    <div className="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-t-md text-xs font-medium flex items-center shadow-sm w-48">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                        <span className="truncate">{generateText(activeBrowserStyle)}</span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                    </div>
+                                </div>
+                                <div className="bg-white dark:bg-gray-900 h-8 border-x border-b dark:border-gray-800"></div>
+                            </div>
+                        </div>
+
+                        {/* Owner Name Input (Show if EITHER is NOT simple) */}
+                        {(activeHeaderStyle !== 'simple' || activeBrowserStyle !== 'simple') && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                                <input type="text" value={localConfig.ownerName || ''} onChange={(e) => handleConfigChange('ownerName', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. John" />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Timezone Section */}
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+                        <h4 className="text-lg font-bold mb-4 dark:text-white flex items-center"><Globe size={20} className="mr-2"/> Regional Settings</h4>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
+                            <input type="text" value={localConfig.timezone} onChange={(e) => handleConfigChange('timezone', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. UTC, America/New_York" />
+                            <p className="text-xs text-gray-500 mt-1">Must be a valid timezone. <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">See List</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3 rounded-b-xl">
+                    <button onClick={onClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">Cancel</button>
+                    <button onClick={handleSave} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center"><Save size={18} className="mr-2" /> Save Settings</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Sub-Component: Key/Legend Config Modal ---
+const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYearChange }) => {
+    if (!isOpen) return null;
+
+    const [activeTab, setActiveTab] = useState('categories');
+    const [localKeyItems, setLocalKeyItems] = useState(keyItems);
+    const scrollContainerRef = useRef(null);
+    const [isImporting, setIsImporting] = useState(false);
+
+    useEffect(() => { setLocalKeyItems(keyItems); }, [keyItems]);
+
+    const categories = localKeyItems.filter(i => i.isColorKey);
+    const icons = localKeyItems.filter(i => !i.isColorKey);
+    
+    // Icon Editor State
+    const [showIconEditor, setShowIconEditor] = useState(false);
+    const [editingIconId, setEditingIconId] = useState(null);
+
+    // --- Actions ---
     const handleAddCategory = () => {
         if (categories.length >= 5) return;
-        setLocalKeyItems(prev => [...prev, {
-            id: `cat_${Date.now()}`, label: 'New Category', isColorKey: true, colorCode: 'orange', showCount: false, icon: 'None'
-        }]);
-        setTimeout(() => {
-            if (scrollContainerRef.current) {
-                scrollContainerRef.current.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
-            }
-        }, 100);
+        setLocalKeyItems(prev => [...prev, { id: `cat_${Date.now()}`, label: 'New Category', isColorKey: true, colorCode: 'orange', showCount: false, icon: 'None' }]);
+        setTimeout(() => scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' }), 100);
     };
-
-    const handleUpdateCategory = (id, field, value) => setLocalKeyItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
-    const handleDeleteCategory = (id) => setLocalKeyItems(prev => prev.filter(item => item.id !== id));
 
     const handleAddIconItem = () => {
-        setLocalKeyItems(prev => [...prev, {
-            id: `icon_${Date.now()}`, label: 'New Activity', isColorKey: false, icon: 'Star', iconColor: ICON_COLOR_OPTIONS[0].class, showCount: false
-        }]);
-        setTimeout(() => {
-            if (scrollContainerRef.current) {
-                scrollContainerRef.current.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' });
-            }
-        }, 100);
-    };
-    
-    const handleIconEditClick = (id) => { setEditingIconId(id); setShowIconEditor(true); };
-    const handleIconSaveFromEditor = (iconData) => {
-        if (editingIconId) {
-            handleUpdateCategory(editingIconId, 'icon', iconData.value);
-            handleUpdateCategory(editingIconId, 'iconColor', iconData.color);
-        }
-        setShowIconEditor(false); setEditingIconId(null);
+        setLocalKeyItems(prev => [...prev, { id: `icon_${Date.now()}`, label: 'New Activity', isColorKey: false, icon: 'Star', iconColor: ICON_COLOR_OPTIONS[0].class, showCount: false }]);
+        setTimeout(() => scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' }), 100);
     };
 
+    const handleUpdateItem = (id, field, value) => setLocalKeyItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+    const handleDeleteItem = (id) => setLocalKeyItems(prev => prev.filter(item => item.id !== id));
+    
     const handleKeyMove = (index, direction, isCategory) => {
         const items = isCategory ? categories : icons;
         const newIndex = index + direction;
         if (newIndex < 0 || newIndex >= items.length) return;
-        
-        const swappedItems = [...items];
-        [swappedItems[index], swappedItems[newIndex]] = [swappedItems[newIndex], swappedItems[index]];
-        
-        if (isCategory) {
-            setLocalKeyItems([...swappedItems, ...icons]);
-        } else {
-            setLocalKeyItems([...categories, ...swappedItems]);
-        }
+        const swapped = [...items];
+        [swapped[index], swapped[newIndex]] = [swapped[newIndex], swapped[index]];
+        setLocalKeyItems(isCategory ? [...swapped, ...icons] : [...categories, ...swapped]);
     };
 
-    const handleSaveAll = () => {
-        onConfigSave(localConfig);
-        onKeyItemsSave(localKeyItems);
-        onClose();
+    const handleIconEditClick = (id) => { setEditingIconId(id); setShowIconEditor(true); };
+    const handleIconSaveFromEditor = (iconData) => {
+        if (editingIconId) {
+            handleUpdateItem(editingIconId, 'icon', iconData.value);
+            handleUpdateItem(editingIconId, 'iconColor', iconData.color);
+        }
+        setShowIconEditor(false); setEditingIconId(null);
+    };
+
+    const handleSaveAll = () => { onKeyItemsSave(localKeyItems); onClose(); };
+
+    // --- Import Logic ---
+    const importFromPreviousYear = async () => {
+        setIsImporting(true);
+        try {
+            const res = await fetch(`/api/data/${year - 1}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.keyItems && data.keyItems.length > 0) {
+                   const imported = data.keyItems.map(k => ({...k, id: k.id + '_imp'})); // Prevent ID collision
+                   setLocalKeyItems(imported);
+                }
+            }
+        } catch (e) { console.error("Import failed", e); }
+        setIsImporting(false);
     };
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
-                <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-                    <div className="flex items-center gap-4">
-                        <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-                            <Settings size={24} className="mr-3 text-blue-500"/> 
-                            <span className="hidden sm:inline">Configuration</span>
-                            <span className="sm:hidden">Config</span>
-                        </h3>
-                        
-                        <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm ml-2">
-                             <button onClick={() => onYearChange(year - 1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronLeft size={16}/></button>
-                             <span className="px-3 font-bold text-gray-800 dark:text-gray-100">{year}</span>
-                             <button onClick={() => onYearChange(year + 1)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg border-l dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronRight size={16}/></button>
-                        </div>
+                {/* Header with Year Picker */}
+                <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-4">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+                        <Key size={24} className="mr-3 text-blue-500"/> Key Configuration
+                    </h3>
+                    
+                    <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm">
+                        <button onClick={() => onYearChange(year - 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronLeft size={20}/></button>
+                        <span className="px-4 font-bold text-lg text-gray-800 dark:text-gray-100">{year}</span>
+                        <button onClick={() => onYearChange(year + 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg border-l dark:border-gray-600 text-gray-600 dark:text-gray-300"><ChevronRight size={20}/></button>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
+
+                    <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"><X size={24} /></button>
                 </div>
+
+                {/* Tabs */}
                 <div className="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
-                    {[
-                        { id: 'general', label: 'General', icon: Layout },
-                        { id: 'categories', label: 'Categories', icon: Palette },
-                        { id: 'activities', label: 'Activities', icon: List }
-                    ].map(tab => (
-                        <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center py-4 px-6 border-b-2 font-medium transition-colors ${activeTab === tab.id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
-                            <tab.icon size={18} className="mr-2" /> {tab.label}
-                        </button>
-                    ))}
+                    <button onClick={() => setActiveTab('categories')} className={`flex items-center py-4 px-6 border-b-2 font-medium transition-colors ${activeTab === 'categories' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
+                        <Palette size={18} className="mr-2" /> Categories
+                    </button>
+                    <button onClick={() => setActiveTab('activities')} className={`flex items-center py-4 px-6 border-b-2 font-medium transition-colors ${activeTab === 'activities' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}>
+                        <List size={18} className="mr-2" /> Activities
+                    </button>
                 </div>
+
+                {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900" ref={scrollContainerRef}>
-                    {activeTab === 'general' && (
-                        <div className="space-y-8 max-w-2xl mx-auto">
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
-                                <h4 className="text-lg font-bold mb-4 dark:text-white">Page Appearance</h4>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Header Style</label>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            {[ { id: 'simple', label: '<Year> Calendar' }, { id: 'possessive', label: '<Name>\'s Calendar' }, { id: 'question', label: 'Where is <Name>?' } ].map(opt => (
-                                                <button key={opt.id} onClick={() => handleConfigChange('headerStyle', opt.id)} className={`p-3 rounded-lg border text-sm font-medium transition-all ${localConfig.headerStyle === opt.id ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' : 'border-gray-300 dark:border-gray-600'}`}>{opt.label}</button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {(localConfig.headerStyle === 'possessive' || localConfig.headerStyle === 'question') && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
-                                            <input type="text" value={localConfig.ownerName || ''} onChange={(e) => handleConfigChange('ownerName', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. John" />
-                                        </div>
-                                    )}
-                                    <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg text-center">
-                                        <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Live Preview</span>
-                                        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white mt-1">{previewTitle()}</h1>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
-                                <h4 className="text-lg font-bold mb-4 dark:text-white">Regional Settings</h4>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
-                                    <input type="text" value={localConfig.timezone} onChange={(e) => handleConfigChange('timezone', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. UTC, America/New_York" />
-                                    <p className="text-xs text-gray-500 mt-1">Must be a valid IANA timezone. <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" className="text-blue-500 hover:underline">See List</a></p>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Import Prompt */}
+                    {localKeyItems.length === 0 && (
+                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 text-center mb-6">
+                            <p className="text-gray-700 dark:text-blue-100 mb-4">No key defined for {year} yet.</p>
+                            <button onClick={importFromPreviousYear} disabled={isImporting} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold flex items-center justify-center mx-auto hover:bg-blue-700 transition-colors">
+                                {isImporting ? <Loader size={18} className="animate-spin mr-2"/> : <CalendarSearch size={18} className="mr-2"/>}
+                                Import from {year - 1}
+                            </button>
+                         </div>
                     )}
+
                     {activeTab === 'categories' && (
                         <div className="max-w-4xl mx-auto space-y-6">
                             <div className="flex justify-between items-center">
                                 <p className="text-sm text-gray-600 dark:text-gray-300">Categories color the background of the day cell. (Max 5)</p>
-                                <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50"><Plus size={16} className="mr-2"/> Add Category</button>
+                                <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50"><Plus size={16} className="mr-2"/> Add</button>
                             </div>
                             <div className="grid gap-4">
                                 {categories.map((cat, index) => (
                                     <div key={cat.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4">
                                         <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                             {CATEGORY_COLORS.map(c => (
-                                                <button key={c.id} onClick={() => handleUpdateCategory(cat.id, 'colorCode', c.id)} className={`w-8 h-8 rounded-full ${c.bg} ${cat.colorCode === c.id ? 'ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200' : 'opacity-50 hover:opacity-100'}`} title={c.label} />
+                                                <button key={c.id} onClick={() => handleUpdateItem(cat.id, 'colorCode', c.id)} className={`w-8 h-8 rounded-full ${c.bg} ${cat.colorCode === c.id ? 'ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200' : 'opacity-50 hover:opacity-100'}`} />
                                             ))}
                                         </div>
                                         <div className="flex-1 w-full">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">Label</label>
-                                            <input type="text" value={cat.label} onChange={(e) => handleUpdateCategory(cat.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" />
+                                            <input type="text" value={cat.label} onChange={(e) => handleUpdateItem(cat.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" />
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Show Count</span>
-                                            <ToggleSwitch checked={cat.showCount} onChange={(val) => handleUpdateCategory(cat.id, 'showCount', val)} />
+                                            <span className="text-xs font-bold text-gray-500 uppercase">Count</span>
+                                            <ToggleSwitch checked={cat.showCount} onChange={(val) => handleUpdateItem(cat.id, 'showCount', val)} />
                                         </div>
                                         <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
                                             <button onClick={() => handleKeyMove(index, -1, true)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowUp size={16}/></button>
                                             <button onClick={() => handleKeyMove(index, 1, true)} disabled={index === categories.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowDown size={16}/></button>
                                         </div>
-                                        <button onClick={() => handleDeleteCategory(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg"><X size={20} /></button>
+                                        <button onClick={() => handleDeleteItem(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg"><X size={20} /></button>
                                     </div>
                                 ))}
                             </div>
@@ -332,9 +433,9 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                     )}
                     {activeTab === 'activities' && (
                         <div className="max-w-4xl mx-auto space-y-6">
-                             <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center">
                                 <p className="text-sm text-gray-600 dark:text-gray-300">Activities appear as small symbols on the day cell.</p>
-                                <button onClick={handleAddIconItem} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center"><Plus size={16} className="mr-2"/> Add Activity</button>
+                                <button onClick={handleAddIconItem} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center"><Plus size={16} className="mr-2"/> Add</button>
                             </div>
                             <div className="space-y-3">
                                 {icons.map((item, index) => {
@@ -346,17 +447,17 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                                                 {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs">None</span>}
                                             </button>
                                             <div className="flex-1">
-                                                <input type="text" value={item.label} onChange={(e) => handleUpdateCategory(item.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" placeholder="Activity Name" />
+                                                <input type="text" value={item.label} onChange={(e) => handleUpdateItem(item.id, 'label', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white" />
                                             </div>
                                             <div className="flex items-center gap-2 border-l pl-4 dark:border-gray-700">
-                                                <span className="text-xs font-medium text-gray-500 uppercase">Count</span>
-                                                <ToggleSwitch checked={item.showCount} onChange={(val) => handleUpdateCategory(item.id, 'showCount', val)} />
+                                                <span className="text-xs font-bold text-gray-500 uppercase">Count</span>
+                                                <ToggleSwitch checked={item.showCount} onChange={(val) => handleUpdateItem(item.id, 'showCount', val)} />
                                             </div>
                                             <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
                                                 <button onClick={() => handleKeyMove(index, -1, false)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowUp size={16}/></button>
                                                 <button onClick={() => handleKeyMove(index, 1, false)} disabled={index === icons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"><ArrowDown size={16}/></button>
                                             </div>
-                                            <button onClick={() => handleDeleteCategory(item.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg"><X size={18} /></button>
+                                            <button onClick={() => handleDeleteItem(item.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg"><X size={18} /></button>
                                         </div>
                                     )
                                 })}
@@ -366,7 +467,7 @@ const ConfigureModal = ({ isOpen, onClose, config, onConfigSave, keyItems, onKey
                 </div>
                 <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3">
                     <button onClick={onClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">Cancel</button>
-                    <button onClick={handleSaveAll} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center"><Save size={18} className="mr-2" /> Save Configuration</button>
+                    <button onClick={handleSaveAll} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center"><Save size={18} className="mr-2" /> Save Key</button>
                 </div>
             </div>
             <IconEditor isOpen={showIconEditor} onClose={() => setShowIconEditor(false)} onSave={handleIconSaveFromEditor} initialIconData={editingIconId ? localKeyItems.find(i => i.id === editingIconId) : null} />
@@ -403,7 +504,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
             setLocalIcons(dayData.icons || dayData.content || []); 
         }
     }, [dayData]);
-  
+   
     const [activeTab, setActiveTab] = useState('category'); // Default tab
 
     const handleSave = () => {
@@ -416,7 +517,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
         });
         onClose();
     };
-  
+   
     // Add Activity: Copies properties from the Key Item (Allows multiples)
     const handleAddActivity = (keyItem) => {
         if (localIcons.length >= 4) return;
@@ -426,7 +527,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
             color: keyItem.iconColor
         }]);
     };
-  
+   
     const handleIconDelete = (index) => setLocalIcons(prev => prev.filter((_, i) => i !== index));
     
     // Reorder Handlers for the Cell
@@ -531,15 +632,15 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                                              const keyDef = keyItems.find(k => k.icon === iconValue && k.iconColor === item.color);
                                              return (
                                                  <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                                                     <div className="flex items-center space-x-2">
-                                                         <IconComponent size={20} className={item.color} />
-                                                         <span className="text-sm font-medium dark:text-gray-200">{keyDef ? keyDef.label : iconValue}</span>
-                                                     </div>
-                                                     <div className="flex items-center space-x-1">
-                                                        <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowUp size={16}/></button>
-                                                        <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowDown size={16}/></button>
-                                                        <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X size={16}/></button>
-                                                     </div>
+                                                      <div className="flex items-center space-x-2">
+                                                          <IconComponent size={20} className={item.color} />
+                                                          <span className="text-sm font-medium dark:text-gray-200">{keyDef ? keyDef.label : iconValue}</span>
+                                                      </div>
+                                                      <div className="flex items-center space-x-1">
+                                                         <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowUp size={16}/></button>
+                                                         <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><ArrowDown size={16}/></button>
+                                                         <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded"><X size={16}/></button>
+                                                      </div>
                                                  </div>
                                              )
                                         })}
@@ -674,7 +775,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticate }) => {
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-  const [config, setConfig] = useState({ timezone: 'UTC', headerStyle: 'simple', ownerName: '' });
+  const [config, setConfig] = useState({ timezone: 'UTC', headerStyle: 'simple', browserTitleStyle: 'simple', ownerName: '', headerIcon: 'CalendarDays' });
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [role, setRole] = useState('view');
   const [adminToken, setAdminToken] = useState(null);
@@ -685,7 +786,10 @@ export default function App() {
   const [isSaving, setIsSaving] =useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [activeCell, setActiveCell] = useState(null); 
-  const [showConfigureModal, setShowConfigureModal] = useState(false);
+  
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+
   const [keyItems, setKeyItems] = useState(DEFAULT_KEY_ITEMS);
   const [lastUpdatedText, setLastUpdatedText] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -747,14 +851,14 @@ export default function App() {
   // Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-        if (activeCell || showConfigureModal || showAuthModal) return; 
+        if (activeCell || showSettingsModal || showKeyModal || showAuthModal) return; 
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.key === 'ArrowLeft') setYear(y => y - 1);
         if (e.key === 'ArrowRight') setYear(y => y + 1);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeCell, showConfigureModal, showAuthModal]);
+  }, [activeCell, showSettingsModal, showKeyModal, showAuthModal]);
 
   // Config Fetch
   useEffect(() => {
@@ -821,11 +925,18 @@ export default function App() {
 
   useEffect(() => { fetchData(year); }, [year, fetchData]);
 
-  // Page Title
+  // Page Title Update
   useEffect(() => { 
-      let title = `${year} Calendar`;
-      if (config.headerStyle === 'possessive' && config.ownerName) title = `${config.ownerName}'s ${year} Calendar`;
-      else if (config.headerStyle === 'question' && config.ownerName) title = `Where is ${config.ownerName}?`;
+      const y = year;
+      const n = config.ownerName || 'Name';
+      const style = config.browserTitleStyle || 'simple';
+      let title = '';
+      
+      switch(style) {
+          case 'possessive': title = `${n}'s Calendar`; break;
+          case 'question': title = `Where is ${n} in ${y}?`; break;
+          default: title = `${y} Calendar`;
+      }
       document.title = title;
   }, [year, config]);
 
@@ -1029,9 +1140,11 @@ export default function App() {
 
   const renderHeaderTitle = () => {
       const y = year;
-      const n = config.ownerName || '';
-      if (config.headerStyle === 'possessive' && n) return <>{n}'s <span className="text-blue-600 ml-1">{y}</span> Calendar</>;
-      if (config.headerStyle === 'question' && n) return <>Where is {n} in <span className="text-blue-600">{y}</span>?</>;
+      const n = config.ownerName || 'Name';
+      const style = config.headerStyle || 'simple';
+      
+      if (style === 'possessive') return <>{n}'s Calendar</>;
+      if (style === 'question') return <>Where is {n} in <span className="text-blue-600">{y}</span>?</>;
       return <><span className="text-blue-600 mr-2">{y}</span> Calendar</>;
   };
 
@@ -1047,7 +1160,7 @@ export default function App() {
             <header className="mb-8 border-b dark:border-gray-700 pb-4">
                 <div className="flex flex-col sm:flex-row justify-between items-center">
                     <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center">
-                        <CalendarDays size={36} className="mr-3 text-blue-600 hidden sm:block" />
+                        {React.createElement(ICON_MAP[config.headerIcon || 'CalendarDays'], { size: 36, className: "mr-3 text-blue-600 hidden sm:block" })}
                         <span>{renderHeaderTitle()}</span>
                     </h1>
                     <div className="flex items-center space-x-4 mt-4 sm:mt-0">
@@ -1059,11 +1172,15 @@ export default function App() {
                         <button onClick={toggleDarkMode} className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors">{isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}</button>
                         {role==='admin' ? (
                             <>
-                                <button onClick={()=>setShowConfigureModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    <Settings size={20} className="sm:mr-2"/>
-                                    <span className="hidden sm:inline">Configure</span>
+                                <button onClick={()=>setShowKeyModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" title="Edit Key">
+                                    <Key size={20} className="sm:mr-2"/>
+                                    <span className="hidden sm:inline">Key</span>
                                 </button>
-                                <button onClick={()=>{setRole('view'); setAdminToken(null);}} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                                <button onClick={()=>setShowSettingsModal(true)} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" title="Settings">
+                                    <Settings size={20} className="sm:mr-2"/>
+                                    <span className="hidden sm:inline">Settings</span>
+                                </button>
+                                <button onClick={()=>{setRole('view'); setAdminToken(null);}} className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors" title="Logout">
                                     <LogOut size={20} className="sm:mr-2"/>
                                     <span className="hidden sm:inline">Logout</span>
                                 </button>
@@ -1173,8 +1290,8 @@ export default function App() {
                          <div className="flex flex-wrap gap-2">
                              {locationCounts.map(([loc, count]) => (
                                  <button type="button" key={loc} onClick={()=>handleLocationFilterToggle(loc)} className={`px-3 py-1 rounded-lg flex items-center space-x-2 transition-all border ${highlightFilters.locations.includes(loc)?'bg-blue-600 text-white border-transparent shadow-lg':'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                                     <span className="font-medium dark:text-gray-200">{loc}</span>
-                                     <span className="ml-2 bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">{count}</span>
+                                      <span className="font-medium dark:text-gray-200">{loc}</span>
+                                      <span className="ml-2 bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">{count}</span>
                                  </button>
                              ))}
                          </div>
@@ -1188,7 +1305,8 @@ export default function App() {
         </div>
 
         <CellEditor isOpen={!!activeCell} onClose={()=>setActiveCell(null)} dayData={activeCell?calendarData[activeCell]:null} onSave={handleDayUpdate} isAdmin={role==='admin'} keyItems={keyItems} />
-        <ConfigureModal isOpen={showConfigureModal} onClose={()=>setShowConfigureModal(false)} config={config} onConfigSave={saveConfig} keyItems={keyItems} onKeyItemsSave={handleKeyUpdate} year={year} onYearChange={setYear} />
+        <SettingsModal isOpen={showSettingsModal} onClose={()=>setShowSettingsModal(false)} config={config} onConfigSave={saveConfig} />
+        <KeyConfigModal isOpen={showKeyModal} onClose={()=>setShowKeyModal(false)} keyItems={keyItems} onKeyItemsSave={handleKeyUpdate} year={year} onYearChange={setYear} />
         <AuthModal isOpen={showAuthModal} onClose={()=>setShowAuthModal(false)} onAuthenticate={(r,t)=>{setRole(r);setAdminToken(t);}} isLoading={authLoading} setIsLoading={setAuthLoading} authError={authError} />
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
