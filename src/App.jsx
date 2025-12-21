@@ -261,10 +261,9 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                             </div>
                         </div>
 
-                        {/* Owner Name Input (Show if EITHER is NOT simple) */}
                         {(activeHeaderStyle !== 'simple' || activeBrowserStyle !== 'simple') && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                                 <input type="text" value={localConfig.ownerName || ''} onChange={(e) => handleConfigChange('ownerName', e.target.value)} className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g. John" />
                             </div>
                         )}
@@ -1311,7 +1310,7 @@ export default function App() {
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.5 (05h)</span>
+                <span>v0.6 (06b)</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub
