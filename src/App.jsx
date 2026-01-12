@@ -818,7 +818,8 @@ export default function App() {
         setTimeout(() => {
             const element = document.getElementById(`month-${currentMonthIdx}`);
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Changed block to 'start' so it aligns to the top (respecting scroll-padding)
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }, 500);
     }
@@ -1153,7 +1154,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
-        {config.bannerHtml && <div className="sticky top-0 z-[70] bg-yellow-100 border-b-4 border-yellow-500 text-yellow-900 p-4 text-center font-semibold" dangerouslySetInnerHTML={{ __html: config.bannerHtml }} />}
+        {config.bannerHtml && <div className="sticky top-0 z-[70] bg-yellow-50 border-b border-yellow-300 text-yellow-800 py-2 px-4 text-center text-sm font-medium shadow-sm" dangerouslySetInnerHTML={{ __html: config.bannerHtml }} />}
         
         <div className="max-w-screen-2xl mx-auto p-4 sm:p-6">
             <header className="mb-8 border-b dark:border-gray-700 pb-4">
@@ -1310,7 +1311,7 @@ export default function App() {
         
         <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <span>v0.6 (06b)</span>
+                <span>v0.7 (07a)</span>
                 <span className="hidden sm:inline">|</span>
                 <a href="https://github.com/thebronway/calendar-app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                     <Github size={16} /> GitHub

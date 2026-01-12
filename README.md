@@ -1,4 +1,8 @@
-# Simple Calendar App
+# A Simple Self-Hosted Calendar App
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+Try it yourself: **[Live Demo](https://calendar-demo.conway.im/)**
 
 A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
 
@@ -6,22 +10,36 @@ This project was developed with AI assistance to help build, refactor, and enhan
 
 ## Features
 
-* **Year-at-a-glance:** View all 12 months on a single page.
-* **Activity Tracking:** Click on any day to log your location, notes, or activity icons.
-* **Customizable Key:** Define your own travel categories (like Work, Personal, or Sick Time) and activities (like Flights or Beach Days) with custom colors and icons.
-* **Stats Dashboard:** Automatically tracks days and time spent traveling.
-* **Real-time:** Updates are pushed via WebSockets to all connected clients.
-* **Responsive & Mobile-Friendly:** Optimized for any sized device.
+* **Year-at-a-Glance:** Visual dashboard for the entire year.
+* **Deep Customization:** Define color-coded categories and custom activity icons.
+* **Smart Tracking:** Log locations, rich text notes, and visualize travel stats.
+* **Interactive Filters:** Click stats or key items to highlight specific days instantly.
+* **Real-Time Sync:** Updates are pushed via WebSockets to all connected clients.
+* **Admin Mode:** Password-protected editing with a public read-only view.
+* **Responsive & Dark Mode:** Optimized for mobile with automatic dark theme support.
+
+* **Note:** For production use, it is strongly recommended to protect your instance using a reverse proxy and authentication service (e.g., Nginx and Authentik).
 
 ## Screenshots
 
-#### Deafult View Mode
+#### Deafult View Mode (Desktop)
 
-![Calendar Screenshot](./screenshots/0.5-view.png)
+<img src="./screenshots/0.7-view.png" alt="Calendar Screenshot" width="600">
 
-#### Admin Day Edit View
+#### Deafult View Mode (Mobile)
 
-![Calendar Screenshot](./screenshots/0.5-edit1.png)
+<img src="./screenshots/0.7-view-mobile.png" alt="Calendar Screenshot" width="200">
+
+#### Admin Edit Day
+
+<img src="./screenshots/0.7-day-1.png" alt="Calendar Screenshot" width="400">
+<img src="./screenshots/0.7-day-2.png" alt="Calendar Screenshot" width="400">
+<img src="./screenshots/0.7-day-3.png" alt="Calendar Screenshot" width="400">
+
+#### Admin Settings
+
+<img src="./screenshots/0.7-edit-2.png" alt="Calendar Screenshot" width="400">
+<img src="./screenshots/0.7-edit-1.png" alt="Calendar Screenshot" width="400">
 
 ## Quick Start
 
@@ -44,9 +62,6 @@ This application is designed to be run with **Docker**, or compile the code your
         environment:
           # REQUIRED: Set this to a secure password
           - ADMIN_PASSWORD=your_secure_password_here
-          
-          # OPTIONAL: Set your local timezone (e.g., "America/New_York")
-          - TIMEZONE=UTC
     ```
 
 2.  Create the data directory and run the container:
@@ -63,3 +78,10 @@ Your calendar will be running at `http://localhost:8080`.
 | Variable | Required | Default | Description |
 | :--- | :--- | :--- | :--- |
 | **`ADMIN_PASSWORD`** | **Yes** | `null` | A secure password to enable Admin Mode (editing/saving). |
+
+---
+
+### Author
+Check out my other projects at [brian.conway.im](https://brian.conway.im/).
+
+*This software is provided "as is", without warranty of any kind, express or implied.*
