@@ -9,6 +9,9 @@ import {
   Armchair,
   ArrowDown,
   ArrowUp,
+  ArrowUpAZ,
+  ArrowDownZA,
+  ArrowUpDown,
   Beer,
   Bike,
   BookOpen,
@@ -84,6 +87,7 @@ import {
   Waves,
   Wine,
   X,
+  Search,
 } from 'lucide-react';
 
 // --- Available Colors ---
@@ -258,6 +262,41 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
   if (!isOpen) return null;
   const [iconType, setIconType] = useState(initialIconData?.value || ICON_KEYS[0]);
   const [iconColor, setIconColor] = useState(initialIconData?.color || ICON_COLOR_OPTIONS[0].class);
+  const [iconSearch, setIconSearch] = useState('');
+  const [iconSort, setIconSort] = useState('key'); // 'key', 'a-z', 'z-a'
+
+  // Filtered and sorted icons
+  const filteredIcons = useMemo(() => {
+    let filtered = ICON_KEYS;
+    
+    // Apply search
+    if (iconSearch.trim()) {
+      const query = iconSearch.toLowerCase();
+      filtered = filtered.filter(key => 
+        key.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      switch (iconSort) {
+        case 'a-z':
+          return a.localeCompare(b);
+        case 'z-a':
+          return b.localeCompare(a);
+        case 'key':
+        default:
+          return 0; // Maintain original order
+      }
+    });
+  }, [iconSearch, iconSort]);
+
+  const handleSortChange = () => {
+    const orders = ['key', 'a-z', 'z-a'];
+    const currentIndex = orders.indexOf(iconSort);
+    const nextIndex = (currentIndex + 1) % orders.length;
+    setIconSort(orders[nextIndex]);
+  };
 
   const handleSave = () => {
     onSave({ type: 'icon', value: iconType, color: iconColor });
@@ -281,24 +320,67 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
             Selected: {iconType}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900">
-          {ICON_KEYS.map((key) => {
-            const Icon = ICON_MAP[key];
-            return (
-              <button
-                key={key}
-                onClick={() => setIconType(key)}
-                className={`p-2 rounded-lg border transition-all ${iconType === key ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-500' : 'bg-white dark:bg-gray-800 dark:border-gray-700'}`}
-              >
-                {key === 'None' ? (
-                  <span className="text-xs">None</span>
-                ) : (
-                  <Icon size={20} className={iconColor} />
-                )}
-              </button>
-            );
-          })}
+        
+        {/* Search and Sort Controls */}
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search icons..."
+              value={iconSearch}
+              onChange={(e) => setIconSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <button
+            onClick={handleSortChange}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+            title={`Sort: ${iconSort === 'key' ? 'Key Order' : iconSort === 'a-z' ? 'A → Z' : 'Z → A'}`}
+          >
+            {iconSort === 'key' && <ArrowUpDown size={16} />}
+            {iconSort === 'a-z' && <ArrowUpAZ size={16} />}
+            {iconSort === 'z-a' && <ArrowDownZA size={16} />}
+            <span className="text-sm font-medium">
+              {iconSort === 'key' ? 'Key' : iconSort === 'a-z' ? 'A-Z' : 'Z-A'}
+            </span>
+          </button>
         </div>
+        
+        {/* Icons Grid */}
+        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900">
+          {filteredIcons.length > 0 ? (
+            filteredIcons.map((key) => {
+              const Icon = ICON_MAP[key];
+              return (
+                <button
+                  key={key}
+                  onClick={() => setIconType(key)}
+                  className={`p-2 rounded-lg border transition-all ${iconType === key ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-500' : 'bg-white dark:bg-gray-800 dark:border-gray-700'}`}
+                >
+                  {key === 'None' ? (
+                    <span className="text-xs">None</span>
+                  ) : (
+                    <Icon size={20} className={iconColor} />
+                  )}
+                </button>
+              );
+            })
+          ) : (
+            <div className="w-full text-center py-4 text-gray-500 dark:text-gray-400">
+              {iconSearch.trim() 
+                ? `No icons match "${iconSearch}"`
+                : 'No icons available'}
+            </div>
+          )}
+        </div>
+        
+        {/* Results count */}
+        <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+          {filteredIcons.length} of {ICON_KEYS.length} icons
+          {iconSearch.trim() && ` match "${iconSearch}"`}
+        </div>
+        
         <div className="flex flex-wrap gap-2">
           {ICON_COLOR_OPTIONS.map((color) => (
             <button
@@ -502,7 +584,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                 <input
                   type="text"
                   value={localConfig.ownerName || ''}
-                  onChange={(_e) => handleConfigChange('ownerName', e.target.value)}
+                  onChange={(e) => handleConfigChange('ownerName', e.target.value)}
                   className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   placeholder="e.g. John"
                 />
@@ -522,7 +604,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
               <input
                 type="text"
                 value={localConfig.timezone}
-                onChange={(_e) => handleConfigChange('timezone', e.target.value)}
+                onChange={(e) => handleConfigChange('timezone', e.target.value)}
                 className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="e.g. UTC, America/New_York"
               />
@@ -579,6 +661,21 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
   // Icon Editor State
   const [showIconEditor, setShowIconEditor] = useState(false);
   const [editingIconId, setEditingIconId] = useState(null);
+
+  // Activities search state (Key page)
+  const [keyActivitySearch, setKeyActivitySearch] = useState('');
+
+  // Filtered activities for Key page (search only, maintain manual order)
+  const filteredKeyActivities = useMemo(() => {
+    if (!keyActivitySearch.trim()) {
+      return icons; // Return all in original order
+    }
+    
+    const query = keyActivitySearch.toLowerCase();
+    return icons.filter(item => 
+      item.label.toLowerCase().includes(query)
+    );
+  }, [icons, keyActivitySearch]);
 
   // --- Actions ---
   const handleAddCategory = () => {
@@ -786,7 +883,7 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                       <input
                         type="text"
                         value={cat.label}
-                        onChange={(_e) => handleUpdateItem(cat.id, 'label', e.target.value)}
+                        onChange={(e) => handleUpdateItem(cat.id, 'label', e.target.value)}
                         className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                       />
                     </div>
@@ -821,6 +918,22 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                     </button>
                   </div>
                 ))}
+                
+                {/* Bottom Add Button for Categories */}
+                <div className="mt-6 pt-6 border-t dark:border-gray-700">
+                  <button
+                    onClick={handleAddCategory}
+                    disabled={categories.length >= 5}
+                    className="w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed border border-dashed border-blue-300 dark:border-blue-700"
+                  >
+                    <Plus size={16} className="mr-2" /> Add Category
+                  </button>
+                  {categories.length >= 5 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                      Maximum 5 categories reached
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -837,8 +950,24 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                   <Plus size={16} className="mr-2" /> Add
                 </button>
               </div>
+              
+              {/* Search Control (no sort to maintain manual order) */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search activities..."
+                  value={keyActivitySearch}
+                  onChange={(e) => setKeyActivitySearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
               <div className="space-y-3">
-                {icons.map((item, index) => {
+                {filteredKeyActivities.length > 0 ? (
+                  filteredKeyActivities.map((item) => {
+                    // Find original index for move buttons
+                    const originalIndex = icons.findIndex(i => i.id === item.id);
                   const IconC = ICON_MAP[item.icon];
                   const displayColor =
                     !item.iconColor || item.iconColor === 'none'
@@ -863,7 +992,7 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                         <input
                           type="text"
                           value={item.label}
-                          onChange={(_e) => handleUpdateItem(item.id, 'label', e.target.value)}
+                          onChange={(e) => handleUpdateItem(item.id, 'label', e.target.value)}
                           className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                         />
                       </div>
@@ -876,15 +1005,15 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                       </div>
                       <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
                         <button
-                          onClick={() => handleKeyMove(index, -1, false)}
-                          disabled={index === 0}
+                          onClick={() => handleKeyMove(originalIndex, -1, false)}
+                          disabled={originalIndex === 0}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"
                         >
                           <ArrowUp size={16} />
                         </button>
                         <button
-                          onClick={() => handleKeyMove(index, 1, false)}
-                          disabled={index === icons.length - 1}
+                          onClick={() => handleKeyMove(originalIndex, 1, false)}
+                          disabled={originalIndex === icons.length - 1}
                           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30"
                         >
                           <ArrowDown size={16} />
@@ -898,7 +1027,32 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
                       </button>
                     </div>
                   );
-                })}
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                    {keyActivitySearch.trim() 
+                      ? `No activities match "${keyActivitySearch}"`
+                      : 'No activities defined yet. Add your first activity!'}
+                  </div>
+                )}
+                
+                {/* Results count */}
+                {icons.length > 0 && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                    {filteredKeyActivities.length} of {icons.length} activities
+                    {keyActivitySearch.trim() && ` match "${keyActivitySearch}"`}
+                  </div>
+                )}
+                
+                {/* Bottom Add Button for Activities */}
+                <div className="mt-6 pt-6 border-t dark:border-gray-700">
+                  <button
+                    onClick={handleAddIconItem}
+                    className="w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-dashed border-blue-300 dark:border-blue-700"
+                  >
+                    <Plus size={16} className="mr-2" /> Add Activity
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -996,6 +1150,43 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
         color: keyItem.iconColor,
       },
     ]);
+  };
+
+  // Activities search and sort state
+  const [activitySearch, setActivitySearch] = useState('');
+  const [activitySort, setActivitySort] = useState('key'); // 'key', 'a-z', 'z-a'
+
+  // Filtered and sorted activities
+  const filteredActivities = useMemo(() => {
+    let filtered = availableActivities;
+    
+    // Apply search
+    if (activitySearch.trim()) {
+      const query = activitySearch.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.label.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      switch (activitySort) {
+        case 'a-z':
+          return a.label.localeCompare(b.label);
+        case 'z-a':
+          return b.label.localeCompare(a.label);
+        case 'key':
+        default:
+          return 0; // Maintain original order
+      }
+    });
+  }, [availableActivities, activitySearch, activitySort]);
+
+  const handleSortChange = () => {
+    const orders = ['key', 'a-z', 'z-a'];
+    const currentIndex = orders.indexOf(activitySort);
+    const nextIndex = (currentIndex + 1) % orders.length;
+    setActivitySort(orders[nextIndex]);
   };
 
   const handleIconDelete = (index) => setLocalIcons((prev) => prev.filter((_, i) => i !== index));
@@ -1182,12 +1373,47 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                   {/* Add New Activity */}
                   {localIcons.length < 4 && (
                     <div className="space-y-2 pt-4 border-t dark:border-gray-700">
-                      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                        Add Activity
-                      </h4>
-                      {availableActivities.length > 0 ? (
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                          Add Activity
+                        </h4>
+                        <div className="text-xs text-gray-500">
+                          {localIcons.length}/4 used
+                        </div>
+                      </div>
+                      
+                      {/* Search and Sort Controls */}
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input
+                            type="text"
+                            placeholder="Search activities..."
+                            value={activitySearch}
+                            onChange={(e) => setActivitySearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            disabled={localIcons.length >= 4}
+                          />
+                        </div>
+                        <button
+                          onClick={handleSortChange}
+                          className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5"
+                          disabled={localIcons.length >= 4}
+                          title={`Sort: ${activitySort === 'key' ? 'Key Order' : activitySort === 'a-z' ? 'A → Z' : 'Z → A'}`}
+                        >
+                          {activitySort === 'key' && <ArrowUpDown size={14} />}
+                          {activitySort === 'a-z' && <ArrowUpAZ size={14} />}
+                          {activitySort === 'z-a' && <ArrowDownZA size={14} />}
+                          <span className="hidden sm:inline">
+                            {activitySort === 'key' ? 'Key' : activitySort === 'a-z' ? 'A-Z' : 'Z-A'}
+                          </span>
+                        </button>
+                      </div>
+                      
+                      {/* Activities List */}
+                      {filteredActivities.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                          {availableActivities.map((keyItem) => {
+                          {filteredActivities.map((keyItem) => {
                             const IconC = ICON_MAP[keyItem.icon];
                             const displayColor =
                               !keyItem.iconColor || keyItem.iconColor === 'none'
@@ -1197,7 +1423,8 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                               <button
                                 key={keyItem.id}
                                 onClick={() => handleAddActivity(keyItem)}
-                                className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left"
+                                disabled={localIcons.length >= 4}
+                                className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {IconC && <IconC size={16} className={`${displayColor} mr-2`} />}
                                 <span className="text-xs font-medium truncate dark:text-gray-200">
@@ -1208,8 +1435,18 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                           })}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500 italic p-2 border border-dashed border-gray-300 rounded-lg">
-                          No activities defined in Key. Go to Configure &gt; Activities to add some.
+                        <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+                          {activitySearch.trim() 
+                            ? `No activities match "${activitySearch}"`
+                            : 'No activities defined in Key. Go to Configure > Activities to add some.'}
+                        </div>
+                      )}
+                      
+                      {/* Results count */}
+                      {availableActivities.length > 0 && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                          {filteredActivities.length} of {availableActivities.length} activities
+                          {activitySearch.trim() && ` match "${activitySearch}"`}
                         </div>
                       )}
                     </div>
@@ -1226,7 +1463,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                     <input
                       type="text"
                       value={localLocations}
-                      onChange={(_e) => setLocalLocations(e.target.value)}
+                      onChange={(e) => setLocalLocations(e.target.value)}
                       className="w-full border rounded-lg p-2 font-bold dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       placeholder="e.g. NYC, London"
                     />
@@ -1330,7 +1567,7 @@ const AuthModal = ({ isOpen, onClose, onAuthenticate }) => {
             <input
               type="password"
               value={password}
-              onChange={(_e) => {
+              onChange={(e) => {
                 setPassword(e.target.value);
                 setLocalError(null);
               }}

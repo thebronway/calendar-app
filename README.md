@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v0.7.2-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.7.3-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 **Try it yourself:** [Live Demo](https://calendar-demo.conway.im/)  
