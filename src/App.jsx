@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import ReactQuill from 'react-quill';
+import ToggleSwitch from './components/ToggleSwitch';
+import Footer from './components/Footer';
 import {
   Activity,
   AlertTriangle,
@@ -250,18 +252,6 @@ const generateCalendarForYear = (year) => {
 };
 
 const DEFAULT_KEY_ITEMS = [];
-
-const ToggleSwitch = ({ checked, onChange, disabled }) => (
-  <button
-    type="button"
-    onClick={() => !disabled && onChange(!checked)}
-    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-  >
-    <span
-      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`}
-    />
-  </button>
-);
 
 // --- Sub-Component: Icon Picker/Editor Modal ---
 const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
@@ -2166,29 +2156,7 @@ export default function App() {
         authError={authError}
       />
 
-      <footer className="max-w-screen-2xl mx-auto p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-gray-300 dark:border-gray-700 mt-12">
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <span>v0.7.1</span>
-          <span className="hidden sm:inline">|</span>
-          <a
-            href="https://github.com/thebronway/calendar-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <Github size={16} /> GitHub
-          </a>
-          <span className="hidden sm:inline">|</span>
-          <a
-            href="https://hub.docker.com/r/thebronway/calendar-app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-          >
-            <Database size={16} /> Docker Hub
-          </a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
