@@ -9,6 +9,9 @@ import {
   Armchair,
   ArrowDown,
   ArrowUp,
+  ArrowUpAZ,
+  ArrowDownZA,
+  ArrowUpDown,
   Beer,
   Bike,
   BookOpen,
@@ -84,6 +87,7 @@ import {
   Waves,
   Wine,
   X,
+  Search,
 } from 'lucide-react';
 
 // --- Available Colors ---
@@ -998,6 +1002,43 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
     ]);
   };
 
+  // Activities search and sort state
+  const [activitySearch, setActivitySearch] = useState('');
+  const [activitySort, setActivitySort] = useState('key'); // 'key', 'a-z', 'z-a'
+
+  // Filtered and sorted activities
+  const filteredActivities = useMemo(() => {
+    let filtered = availableActivities;
+    
+    // Apply search
+    if (activitySearch.trim()) {
+      const query = activitySearch.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.label.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      switch (activitySort) {
+        case 'a-z':
+          return a.label.localeCompare(b.label);
+        case 'z-a':
+          return b.label.localeCompare(a.label);
+        case 'key':
+        default:
+          return 0; // Maintain original order
+      }
+    });
+  }, [availableActivities, activitySearch, activitySort]);
+
+  const handleSortChange = () => {
+    const orders = ['key', 'a-z', 'z-a'];
+    const currentIndex = orders.indexOf(activitySort);
+    const nextIndex = (currentIndex + 1) % orders.length;
+    setActivitySort(orders[nextIndex]);
+  };
+
   const handleIconDelete = (index) => setLocalIcons((prev) => prev.filter((_, i) => i !== index));
 
   // Reorder Handlers for the Cell
@@ -1182,12 +1223,47 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                   {/* Add New Activity */}
                   {localIcons.length < 4 && (
                     <div className="space-y-2 pt-4 border-t dark:border-gray-700">
-                      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                        Add Activity
-                      </h4>
-                      {availableActivities.length > 0 ? (
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                          Add Activity
+                        </h4>
+                        <div className="text-xs text-gray-500">
+                          {localIcons.length}/4 used
+                        </div>
+                      </div>
+                      
+                      {/* Search and Sort Controls */}
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input
+                            type="text"
+                            placeholder="Search activities..."
+                            value={activitySearch}
+                            onChange={(e) => setActivitySearch(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            disabled={localIcons.length >= 4}
+                          />
+                        </div>
+                        <button
+                          onClick={handleSortChange}
+                          className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5"
+                          disabled={localIcons.length >= 4}
+                          title={`Sort: ${activitySort === 'key' ? 'Key Order' : activitySort === 'a-z' ? 'A → Z' : 'Z → A'}`}
+                        >
+                          {activitySort === 'key' && <ArrowUpDown size={14} />}
+                          {activitySort === 'a-z' && <ArrowUpAZ size={14} />}
+                          {activitySort === 'z-a' && <ArrowDownZA size={14} />}
+                          <span className="hidden sm:inline">
+                            {activitySort === 'key' ? 'Key' : activitySort === 'a-z' ? 'A-Z' : 'Z-A'}
+                          </span>
+                        </button>
+                      </div>
+                      
+                      {/* Activities List */}
+                      {filteredActivities.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                          {availableActivities.map((keyItem) => {
+                          {filteredActivities.map((keyItem) => {
                             const IconC = ICON_MAP[keyItem.icon];
                             const displayColor =
                               !keyItem.iconColor || keyItem.iconColor === 'none'
@@ -1197,7 +1273,8 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                               <button
                                 key={keyItem.id}
                                 onClick={() => handleAddActivity(keyItem)}
-                                className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left"
+                                disabled={localIcons.length >= 4}
+                                className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {IconC && <IconC size={16} className={`${displayColor} mr-2`} />}
                                 <span className="text-xs font-medium truncate dark:text-gray-200">
@@ -1208,8 +1285,18 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
                           })}
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500 italic p-2 border border-dashed border-gray-300 rounded-lg">
-                          No activities defined in Key. Go to Configure &gt; Activities to add some.
+                        <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+                          {activitySearch.trim() 
+                            ? `No activities match "${activitySearch}"`
+                            : 'No activities defined in Key. Go to Configure > Activities to add some.'}
+                        </div>
+                      )}
+                      
+                      {/* Results count */}
+                      {availableActivities.length > 0 && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
+                          {filteredActivities.length} of {availableActivities.length} activities
+                          {activitySearch.trim() && ` match "${activitySearch}"`}
                         </div>
                       )}
                     </div>
