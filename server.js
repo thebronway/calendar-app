@@ -38,7 +38,7 @@ const wss = new WebSocketServer({
 
 // --- Security Best Practice ---
 if (!ADMIN_PASSWORD) {
-  console.error('FATAL ERROR: ADMIN_PASSWORD environment variable is not set.');
+  logError('Startup validation', new Error('ADMIN_PASSWORD environment variable is not set'));
   process.exit(1);
 }
 
@@ -55,7 +55,7 @@ wss.on('connection', (ws, req) => {
   ws.isAlive = true;
   ws.on('pong', heartbeat);
 
-  ws.on('error', (err) => console.error('WebSocket client error:', err));
+  ws.on('error', (err) => logError('WebSocket client', err));
   ws.on('close', (code, reason) => {
     // console.log(`Client disconnected. Code: ${code}`); // Optional logging
   });
@@ -111,7 +111,7 @@ const readConfig = () => {
       const fileConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
       finalConfig = { ...finalConfig, ...fileConfig };
     } catch (e) {
-      console.error('Error reading config, using defaults:', e);
+      logError('Config read', e);
     }
   }
 
@@ -130,7 +130,7 @@ const writeConfig = (newConfig) => {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), 'utf8');
     return true;
   } catch (e) {
-    console.error('Error writing config:', e);
+    logError('Config write', e);
     return false;
   }
 };
@@ -141,7 +141,7 @@ const readData = (year) => {
     try {
       return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     } catch (e) {
-      console.error(`Error reading data file for year ${year}:`, e);
+      logError(`Data read for year ${year}`, e);
       return null;
     }
   }
@@ -165,7 +165,7 @@ const writeData = async (year, data) => {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
     return true;
   } catch (e) {
-    console.error(`Error writing data file for year ${year}:`, e);
+    logError(`Data write for year ${year}`, e);
     return false;
   } finally {
     writeLocks.delete(year);
@@ -240,15 +240,25 @@ app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
   const { year } = req.params;
   const data = req.body;
 
+  // Validate request data
   if (!data.dayData || !data.keyItems || data.lastUpdatedText === undefined) {
-    return res.status(400).send('Invalid data structure.');
+    logError('Data validation failed', new Error('Invalid data structure'), { year, hasDayData: !!data.dayData, hasKeyItems: !!data.keyItems, hasLastUpdatedText: data.lastUpdatedText !== undefined });
+    return res.status(400).json({ error: 'Invalid data structure', details: 'Missing required fields: dayData, keyItems, or lastUpdatedText' });
   }
 
-  if (await writeData(year, data)) {
-    broadcastUpdate(parseInt(year), data);
-    res.status(200).send('Data saved successfully.');
+  // Validate year parameter
+  const yearNum = parseInt(year);
+  if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+    logError('Year validation failed', new Error('Invalid year parameter'), { year });
+    return res.status(400).json({ error: 'Invalid year', details: 'Year must be between 1900 and 2100' });
+  }
+
+  if (await writeData(yearNum, data)) {
+    broadcastUpdate(yearNum, data);
+    res.status(200).json({ success: true, message: 'Data saved successfully.' });
   } else {
-    res.status(500).send('Error saving data to file.');
+    logError('Data write failed', new Error('Failed to write data file'), { year: yearNum });
+    res.status(500).json({ error: 'Failed to save data', details: 'Internal server error' });
   }
 });
 
@@ -257,9 +267,30 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
+// --- Error handling helper ---
+const logError = (context, error, additionalData = {}) => {
+  console.error(`[ERROR] ${context}:`, {
+    message: error.message,
+    stack: error.stack,
+    ...additionalData,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// --- Global error handlers ---
+process.on('uncaughtException', (error) => {
+  logError('Uncaught Exception', error);
+  // Don't exit immediately, let the server try to continue
+  console.error('Uncaught Exception occurred, but continuing...');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logError('Unhandled Rejection', new Error('Unhandled Promise Rejection'), { reason });
+});
+
 // --- Start Server ---
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Serving static files from: ${CLIENT_BUILD_PATH}`);
-  console.log('WebSocket server is running.');
+  console.info(`Server is running on port ${PORT}`);
+  console.info(`Serving static files from: ${CLIENT_BUILD_PATH}`);
+  console.info('WebSocket server is running.');
 });
