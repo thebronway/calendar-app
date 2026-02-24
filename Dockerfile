@@ -1,6 +1,6 @@
 # --- Stage 1: The Build Environment ---
 # Use a Node.js image to build the React app.
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN npm run build
 
 # --- Stage 2: The Production Environment ---
 # Use a lighter Node.js image for the final, small container
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -45,6 +45,10 @@ ENV PORT=80
 
 # Expose the new default port
 EXPOSE 80
+
+# Health check: verify HTTP server responds
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:${PORT}/ || exit 1
 
 # The command to run the application
 CMD ["node", "server.js"]

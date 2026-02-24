@@ -8,7 +8,7 @@ const crypto = require('crypto');
 // --- Configuration ---
 const PORT = process.env.PORT || 80;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
@@ -22,6 +22,9 @@ const DEFAULT_CONFIG = {
 
 // In-memory store for valid admin tokens
 const validAdmins = new Set();
+
+// File write locks per year to prevent concurrent writes
+const writeLocks = new Map();
 
 // --- Server Setup ---
 const app = express();
@@ -145,14 +148,28 @@ const readData = (year) => {
     return null; 
 };
 
-const writeData = (year, data) => {
+const writeData = async (year, data) => {
     const filePath = getDataFilePath(year);
+    // Acquire lock for this year
+    let release;
+    const waitForLock = writeLocks.get(year);
+    if (waitForLock) {
+        await waitForLock;
+    }
+    const lockPromise = new Promise(resolve => {
+        release = resolve;
+    });
+    writeLocks.set(year, lockPromise);
+    
     try {
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
         return true;
     } catch (e) {
         console.error(`Error writing data file for year ${year}:`, e);
         return false;
+    } finally {
+        writeLocks.delete(year);
+        release();
     }
 };
 
@@ -203,7 +220,8 @@ app.post('/api/auth/login', (req, res) => {
     if (password === ADMIN_PASSWORD) {
         const token = crypto.randomBytes(32).toString('hex');
         validAdmins.add(token);
-        setTimeout(() => validAdmins.delete(token), 1000 * 60 * 60 * 8); 
+        // Token expires after 24 hours (86,400,000 ms)
+        setTimeout(() => validAdmins.delete(token), 1000 * 60 * 60 * 24); 
         res.json({ role: 'admin', token: token });
     } else {
         res.status(401).json({ role: 'view', token: null });
@@ -218,7 +236,7 @@ app.get('/api/data/:year', (req, res) => {
 });
 
 // 5. Save Data (Protected)
-app.post('/api/data/:year', verifyAdminToken, (req, res) => {
+app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
     const { year } = req.params;
     const data = req.body;
 
@@ -226,7 +244,7 @@ app.post('/api/data/:year', verifyAdminToken, (req, res) => {
         return res.status(400).send('Invalid data structure.');
     }
 
-    if (writeData(year, data)) {
+    if (await writeData(year, data)) {
         broadcastUpdate(parseInt(year), data);
         res.status(200).send('Data saved successfully.');
     } else {
