@@ -8,7 +8,7 @@ const crypto = require('crypto');
 // --- Configuration ---
 const PORT = process.env.PORT || 80;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
