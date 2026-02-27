@@ -1,141 +1,73 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-02-24*
-*Version: v0.7.3*
+*Last updated: 2026-02-27*  
+*Current Version: v0.7.3*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app. It serves as a living guide for development priorities.
 
-## Current Status
-- **Latest version**: v0.7.3
-- **Stability**: Production-ready with basic features
-- **Code health**: Monolithic App.jsx (needs splitting)
-- **Security**: Basic admin password, needs hardening
+## Release Roadmap
 
-## Priority Order
+### Release v0.7.5: Core User Features (Feature Release)
+**Focus:** High-impact usability features and data peace-of-mind.
 
-### 1. Component Splitting ⭐
-**Status**: Partial (Footer, ToggleSwitch, IconEditor extracted)
-**Goal**: Extract App.jsx into logical, reusable components
-**Benefits**: 
-- Maintainability (smaller files, isolated changes)
-- Testability (components in isolation)
-- Reusability (consistent UI patterns)
-- Performance (optimized re-renders, code splitting)
-**Scope**: CalendarGrid, DayCell, Header, modals, shared utilities
+* **Bulk Editing**
+  * **Goal:** Allow users to select a date range or multiple days to apply categories/activities all at once.
+  * **Value:** Massively reduces the friction of logging long vacations or repeating work trips.
+* **Backup/Export Feature**
+  * **Goal:** Add a simple "Download Data" button to the Settings modal.
+  * **Value:** Instant user peace-of-mind. Since data is just JSON, exporting it to the user's local machine is low-effort to build but highly valued by self-hosters.
 
-### 2. Test Suite (Jest + React Testing Library)
-**Status**: Not started
-**Goal**: Add comprehensive test coverage
-**Benefits**:
-- Catch regressions before production
-- Enable safe refactoring
-- Document expected behavior
-- Required for production apps
-**Scope**: Unit tests (utilities), component tests, integration tests
+### Release v0.7.6: Monolith Breakup (Backend/Tech-Debt Release)
+**Focus:** Paying off UI technical debt before the codebase becomes unmanageable.
 
-### 3. Security Hardening & Pen Testing
-**Status**: Basic admin password only
-**Goal**: Production-ready security
-**Benefits**:
-- Protect against common attacks
-- Compliance with security best practices
-- User data protection
-**Scope**:
-- Rate-limiting (API endpoints)
-- Input validation/sanitization
-- CSRF protection
-- Security audit/penetration testing
-- Environment variable best practices
+* **Component Splitting**
+  * **Goal:** Extract the massive 1,100+ line `App.jsx` into logical, reusable components (`SettingsModal`, `CellEditor`, `CalendarGrid`, `MonthView`).
+  * **Value:** Makes the codebase significantly easier to navigate, debug, and safely expand without breaking unrelated features.
+* **Code & Comment Cleanup**
+  * **Goal:** Standardize comments, remove dead code, and clean up inline styles while splitting components.
+  * **Value:** Easier onboarding and reduced maintenance burden.
+* **Add AI usage declration**
 
-### 4. Enhanced Authentication
-**Status**: Single admin password
-**Goal**: Flexible authentication system
-**Benefits**:
-- Granular access control
-- Integration with existing auth systems
-- Better user experience
-**Scope**:
-- View-only password (read-only access)
-- OAuth integration (Google/GitHub/etc.)
-- Role-based permissions (view vs admin)
-- Session management
+### Release v0.8.0: Access & Identity (Feature Release)
+**Focus:** Expanding who can see the calendar and how they access it.
 
-### 5. TypeScript Migration
-**Status**: JavaScript only
-**Goal**: Gradual conversion to TypeScript
-**Benefits**:
-- Type safety at compile time
-- Better IDE support (autocomplete, refactoring)
-- Self-documenting code
-- Essential for growing codebase
-**Approach**: Start with tsconfig.json, convert one file at a time
+* **Enhanced Authentication (View-Only & SSO)**
+  * **Goal:** Implement a dual-tier system. Add a standard "View-only" password so owners can share their calendar privately, and integrate OAuth (e.g., Google/GitHub/Authentik) for the Admin login. 
+  * **Value:** Fulfills SSO learning goals while making the app easily shareable with friends/family without exposing write access.
+* **Role-Based Permissions**
+  * **Goal:** Standardize the UI state so `admin` sees edit buttons and `view` only sees the read-only dashboard.
+  * **Value:** Clean separation of concerns for the frontend UI.
 
-### 6. SQLite Database
-**Status**: JSON file storage
-**Goal**: Replace JSON with SQLite
-**Benefits**:
-- Performance (faster queries, indexing)
-- Reliability (ACID transactions)
-- Backup (built-in .dump)
-- Scalability (handle larger datasets)
-**Implementation**: Keep JSON import/export for migration
+### Release v0.8.1: Hardening & Speed (Backend/Tech-Debt Release)
+**Focus:** Securing the application against public internet threats and optimizing load times.
 
-### 7. Backup/Export Feature
-**Status**: Manual file copying only
-**Goal**: Built-in data safety features
-**Benefits**:
-- User data protection
-- Easy migration between instances
-- Disaster recovery
-**Features**: Export all data as ZIP, import from backup, scheduled auto-backups
+* **Security Hardening**
+  * **Goal:** Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
+  * **Value:** Critical for any self-hosted app exposed to the open web to prevent brute-force password attacks.
+* **Bundle Optimization**
+  * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
+  * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### 8. Code/Comment Cleanup
-**Status**: Some dead code, inconsistent comments
-**Goal**: Clean, well-documented codebase
-**Benefits**:
-- Easier onboarding for new developers
-- Reduced maintenance burden
-- Professional code quality
-**Scope**: Remove dead code, standardize comments, improve organization
+### Release v0.8.5: Polish & Go-Anywhere (Feature Release)
+**Focus:** Making the app accessible to everyone and usable in any condition.
 
-### 9. Accessibility Improvements
-**Status**: Basic HTML, needs work
-**Goal**: WCAG 2.1 AA compliance
-**Benefits**:
-- Legal compliance
-- Better UX for all users
-- Inclusive design
-**Fixes**: ARIA labels, keyboard navigation, color contrast, focus management
+* **Offline Support (PWA)**
+  * **Goal:** Use service workers and Vite's PWA plugin to cache the frontend and allow read/write buffering via `localStorage` when offline.
+  * **Value:** Perfect for a travel app—users can view their itinerary or log a flight while in airplane mode or deep in the mountains.
+* **Accessibility Improvements**
+  * **Goal:** Add ARIA labels to icon-only buttons, trap focus inside modals, and ensure full keyboard navigation.
+  * **Value:** Better UX for screen readers and power-users who prefer keyboard shortcuts.
 
-### 10. Bundle Optimization
-**Status**: Single bundle, all icons included
-**Goal**: Faster load times
-**Benefits**:
-- Better user experience (especially mobile)
-- Improved SEO (page speed)
-- Reduced bandwidth
-**Optimizations**: Code splitting, lazy loading, tree-shaking, asset compression
+### Release v0.8.6: Enterprise Readiness (Backend/Tech-Debt Release)
+**Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
-### 11. Offline Support (PWA)
-**Status**: Online-only
-**Goal**: Progressive Web App capabilities
-**Benefits**:
-- Works without internet
-- Mobile app-like experience
-- Background sync
-**Features**: Service worker caching, install prompt, IndexedDB for offline data
-
-### 12. Calendar Views (Month/Week/List)
-**Status**: Month grid only
-**Goal**: Multiple view options
-**Benefits**:
-- Flexibility for different use cases
-- Better overview and planning
-- Enhanced usability
-**Views**: Keep month grid, add week view (7-day), add list view (chronological)
-
-### 13. Bulk Editor
+* **TypeScript Migration**
+  * **Goal:** Gradual conversion of `.jsx` and `.js` files to `.tsx` and `.ts`.
+  * **Value:** Eliminates runtime type errors and vastly improves IDE autocomplete.
+* **Test Suite**
+  * **Goal:** Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering.
+  * **Value:** Prevents regressions during major refactors.
 
 ## Completed Items
 
