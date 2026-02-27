@@ -135,6 +135,8 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Enhanced usability
 **Views**: Keep month grid, add week view (7-day), add list view (chronological)
 
+### 13. Bulk Editor
+
 ## Completed Items
 
 ### v0.7.1: Security and Stability Fixes
