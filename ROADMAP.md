@@ -8,7 +8,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v0.7.5: Core User Features (Feature Release)
+### Release v0.8.0: Core User Features (Feature Release)
 **Focus:** High-impact usability features and data peace-of-mind.
 
 * **Bulk Editing**
@@ -18,7 +18,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Add a simple "Download Data" button to the Settings modal.
   * **Value:** Instant user peace-of-mind. Since data is just JSON, exporting it to the user's local machine is low-effort to build but highly valued by self-hosters.
 
-### Release v0.7.6: Monolith Breakup (Backend/Tech-Debt Release)
+### Release v0.8.5: Monolith Breakup (Backend/Tech-Debt Release)
 **Focus:** Paying off UI technical debt before the codebase becomes unmanageable.
 
 * **Component Splitting**
@@ -29,7 +29,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 
-### Release v0.8.0: Access & Identity (Feature Release)
+### Release v0.9.0: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
 
 * **Enhanced Authentication (View-Only & SSO)**
@@ -39,7 +39,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Standardize the UI state so `admin` sees edit buttons and `view` only sees the read-only dashboard.
   * **Value:** Clean separation of concerns for the frontend UI.
 
-### Release v0.8.1: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.9.5: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**
@@ -49,7 +49,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
   * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v0.8.5: Polish & Go-Anywhere (Feature Release)
+### Release v1.0.0: Polish & Go-Anywhere (Feature Release)
 **Focus:** Making the app accessible to everyone and usable in any condition.
 
 * **Offline Support (PWA)**
@@ -59,7 +59,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Add ARIA labels to icon-only buttons, trap focus inside modals, and ensure full keyboard navigation.
   * **Value:** Better UX for screen readers and power-users who prefer keyboard shortcuts.
 
-### Release v0.8.6: Enterprise Readiness (Backend/Tech-Debt Release)
+### Release v1.0.5: Enterprise Readiness (Backend/Tech-Debt Release)
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
 * **TypeScript Migration**
