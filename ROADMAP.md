@@ -1,19 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-02-27*  
-*Current Version: v0.7.3*
+*Last updated: 2026-04-09* 
+*Current Version: v0.8.0*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app. It serves as a living guide for development priorities.
 
 ## Release Roadmap
-
-### Release v0.8.0: Core User Features (Feature Release)
-**Focus:** High-impact usability features and data peace-of-mind.
-
-* **Bulk Editing**
-  * **Goal:** Allow users to select a date range or multiple days to apply categories/activities all at once.
-  * **Value:** Massively reduces the friction of logging long vacations or repeating work trips.
 
 ### Release v0.8.2: Monolith Breakup (Backend/Tech-Debt Release)
 **Focus:** Paying off UI technical debt before the codebase becomes unmanageable.
@@ -22,15 +15,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Extract the massive 1,100+ line `App.jsx` into logical, reusable components (`SettingsModal`, `CellEditor`, `CalendarGrid`, `MonthView`).
   * **Value:** Makes the codebase significantly easier to navigate, debug, and safely expand without breaking unrelated features.
 
-### Release v0.8.4: Export/Import Data (Feature Release)
-* **Backup/Export Feature (And Import Feature)**
-  * **Goal:** Add a simple "Download Data" and "Upload Backup" buttons to the Settings modal (only one year at a time).
-  * **Value:** Instant user peace-of-mind. Since data is just JSON, exporting it to the user's local machine is low-effort to build but highly valued by self-hosters.
-
-### Release v0.8.6: iCal Export (Feature Release)
+### Release v0.8.4: iCal Export (Feature Release)
 **Focus:** Create optional iCal Service.
 
-### Release v0.8.8: Access & Identity (Feature Release)
+### Release v0.8.6: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
 
 * **Enhanced Authentication (View-Only & SSO)**
@@ -44,7 +32,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
     * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password.
     * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the password, it should give the corresponding buttons for authentication. 
 
-### Release v0.9.0: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.8.8: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**
@@ -54,7 +42,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
   * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v0.9.2: Polish & Go-Anywhere (Feature Release)
+### Release v0.9.0: Polish & Go-Anywhere (Feature Release)
 **Focus:** Making the app accessible to everyone and usable in any condition.
 
 * **Offline Support (PWA)**
@@ -64,13 +52,13 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Add ARIA labels to icon-only buttons, trap focus inside modals, and ensure full keyboard navigation.
   * **Value:** Better UX for screen readers and power-users who prefer keyboard shortcuts.
 
-### Release v0.9.4:  Comment Clean-up (Backend/Tech-Debt Release)
+### Release v0.9.2:  Comment Clean-up (Backend/Tech-Debt Release)
 * **Code & Comment Cleanup**
   * **Goal:** Standardize comments, remove dead code, and clean up inline styles while splitting components.
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 
-### Release v0.9.6: Enterprise Readiness (Backend/Tech-Debt Release)
+### Release v0.9.4: Enterprise Readiness (Backend/Tech-Debt Release)
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
 * **TypeScript Migration**
@@ -80,11 +68,17 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering.
   * **Value:** Prevents regressions during major refactors.
 
+### Release v0.9.6: 
+
 ### Release v0.9.8: 
 
 ### Release v1.0.0: Production Release (Feature Release)
 
 ## Completed Items
+
+### v0.8.0: Core User Features
+- Bulk editing for date ranges and multiple days
+- UI Polish: Updated "Time Traveling" stat card to purple
 
 ### v0.7.1: Security and Stability Fixes
 - Dependency separation

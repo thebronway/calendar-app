@@ -1082,7 +1082,7 @@ const KeyConfigModal = ({ isOpen, onClose, keyItems, onKeyItemsSave, year, onYea
   );
 };
 
-const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyItems }) => {
+const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyItems, isBulkEdit, bulkCount }) => {
   // Categories List for Selection
   const categories = useMemo(() => keyItems.filter((k) => k.isColorKey), [keyItems]);
   // Activities List for "Add Activity" - Filter out empty/invalid ones
@@ -1207,7 +1207,7 @@ const CellEditor = React.memo(({ isOpen, onClose, dayData, onSave, isAdmin, keyI
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg">
         <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-            {isAdmin ? 'Edit Day' : 'View Day'} - {dayData.month} {dayData.day}, {dayData.year}
+            {isBulkEdit ? `Bulk Edit (${bulkCount} Days)` : `${isAdmin ? 'Edit Day' : 'View Day'} - ${dayData.month} ${dayData.day}, ${dayData.year}`}
           </h3>
           <button
             onClick={onClose}
@@ -1611,6 +1611,8 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [activeCell, setActiveCell] = useState(null);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [selectedCells, setSelectedCells] = useState([]);
 
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
@@ -1830,12 +1832,32 @@ export default function App() {
 
   // Handlers
   const handleDayUpdate = (updatedDayData) => {
-    const dayKey = activeCell; // Use captured activeCell
-    if (!dayKey) return;
-    updatedDayData.year = parseInt(dayKey.split('-')[0], 10);
-    const newDayData = { ...calendarData, [dayKey]: updatedDayData };
-    setCalendarData(newDayData);
     const ts = new Date().toLocaleDateString();
+    let newDayData = { ...calendarData };
+
+    if (activeCell === 'bulk') {
+      selectedCells.forEach(dayKey => {
+        const [y, m, d] = dayKey.split('-');
+        newDayData[dayKey] = {
+          day: parseInt(d, 10),
+          month: MONTHS[parseInt(m, 10) - 1],
+          year: parseInt(y, 10),
+          colorId: updatedDayData.colorId,
+          icons: updatedDayData.icons,
+          locations: updatedDayData.locations,
+          details: updatedDayData.details,
+        };
+      });
+      setIsBulkEditMode(false);
+      setSelectedCells([]);
+    } else {
+      const dayKey = activeCell;
+      if (!dayKey) return;
+      updatedDayData.year = parseInt(dayKey.split('-')[0], 10);
+      newDayData[dayKey] = updatedDayData;
+    }
+
+    setCalendarData(newDayData);
     setLastUpdatedText(ts);
     saveData({ dayData: newDayData, keyItems, lastUpdatedText: ts });
   };
@@ -1974,14 +1996,21 @@ export default function App() {
       const isHigh = shouldHighlightCell(day);
       const icons = (day.icons || []).filter((i) => i.value !== 'None');
 
+      const isSelected = selectedCells.includes(key);
       cells.push(
         <td
           key={key}
-          onClick={() => setActiveCell(key)}
+          onClick={() => {
+            if (isBulkEditMode) {
+              setSelectedCells(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+            } else {
+              setActiveCell(key);
+            }
+          }}
           className={`w-1/7 cursor-pointer align-top ${colorClass}`}
         >
           <div
-            className={`${contentClass} ${isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}
+            className={`${contentClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}
           >
             <div className="flex flex-col items-center">
               <span
@@ -2151,6 +2180,17 @@ export default function App() {
               </button>
               {role === 'admin' ? (
                 <>
+                  <button
+                    onClick={() => {
+                      setIsBulkEditMode(!isBulkEditMode);
+                      setSelectedCells([]);
+                    }}
+                    className={`h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center text-white rounded-lg transition-colors ${isBulkEditMode ? 'bg-indigo-700' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                    title="Bulk Edit"
+                  >
+                    <CalendarRange size={20} className="sm:mr-2" />
+                    <span className="hidden sm:inline">{isBulkEditMode ? 'Cancel Bulk' : 'Bulk Edit'}</span>
+                  </button>
                   <button
                     onClick={() => setShowKeyModal(true)}
                     className="h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -2323,11 +2363,11 @@ export default function App() {
                   {stats.totalHighlighted} days
                 </p>
               </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">
+              <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <p className="text-sm text-purple-600 dark:text-purple-300 font-semibold">
                   Time Traveling
                 </p>
-                <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">
+                <p className="text-3xl font-extrabold text-purple-900 dark:text-purple-100 mt-1">
                   {Math.round((stats.totalHighlighted / stats.totalDays) * 100)}%
                 </p>
               </div>
@@ -2354,6 +2394,24 @@ export default function App() {
           </div>
         </section>
 
+        {isBulkEditMode && selectedCells.length > 0 && (
+          <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-2xl border dark:border-gray-700 z-40 flex items-center gap-4">
+            <span className="font-bold text-gray-800 dark:text-gray-100">{selectedCells.length} days selected</span>
+            <button
+              onClick={() => setActiveCell('bulk')}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700"
+            >
+              Edit Selected
+            </button>
+            <button
+              onClick={() => setSelectedCells([])}
+              className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg font-bold"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-wrap -m-2 relative z-0">
           {MONTHS.map((_, i) => renderMonth(i))}
         </div>
@@ -2362,10 +2420,12 @@ export default function App() {
       <CellEditor
         isOpen={!!activeCell}
         onClose={() => setActiveCell(null)}
-        dayData={activeCell ? calendarData[activeCell] : null}
+        dayData={activeCell === 'bulk' ? { month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } : (activeCell ? calendarData[activeCell] : null)}
         onSave={handleDayUpdate}
         isAdmin={role === 'admin'}
         keyItems={keyItems}
+        isBulkEdit={activeCell === 'bulk'}
+        bulkCount={selectedCells.length}
       />
       <SettingsModal
         isOpen={showSettingsModal}
