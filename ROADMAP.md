@@ -76,6 +76,11 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Completed Items
 
+### v0.8.2: Monolith Breakup (Backend/Tech-Debt Release)
+- Component Splitting: Extracted `SettingsModal`, `CellEditor`, `KeyConfigModal`, `AuthModal`, and `IconEditor` into dedicated component files.
+- UI Abstraction: Extracted the core calendar grid and rendering logic into a new `MonthView` component.
+- Utility Extraction: Relocated heavy static data (icons, categories) and helper functions into a dedicated `utils/` directory.
+
 ### v0.8.0: Core User Features
 - Bulk editing for date ranges and multiple days
 - UI Polish: Updated "Time Traveling" stat card to purple
