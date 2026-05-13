@@ -1,6 +1,12 @@
-// ToggleSwitch.jsx - Reusable toggle switch component
+import React from 'react';
 
-const ToggleSwitch = ({ checked, onChange, disabled }) => {
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}
+
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, disabled }) => {
   return (
     <button
       type="button"

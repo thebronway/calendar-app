@@ -4,6 +4,7 @@ const { WebSocketServer } = require('ws');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { rateLimit } = require('express-rate-limit');
 
 // --- Configuration ---
 const PORT = process.env.PORT || 80;
@@ -214,8 +215,18 @@ app.post('/api/config', verifyAdminToken, (req, res) => {
   }
 });
 
+// Rate limiter: max 5 attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
+  skipSuccessfulRequests: true,
+});
+
 // 3. Authentication
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', authLimiter, (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
     const token = crypto.randomBytes(32).toString('hex');
@@ -228,10 +239,19 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
+// Year validation helper
+const validateYear = (year) => {
+  if (!/^\d{4}$/.test(year)) return null;
+  const n = parseInt(year, 10);
+  return n >= 1900 && n <= 2100 ? n : null;
+};
+
 // 4. Get Data
 app.get('/api/data/:year', (req, res) => {
   const { year } = req.params;
-  const data = readData(year);
+  const yearNum = validateYear(year);
+  if (!yearNum) return res.status(400).json({ error: 'Invalid year' });
+  const data = readData(yearNum);
   res.json(data || {});
 });
 
@@ -246,11 +266,11 @@ app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
     return res.status(400).json({ error: 'Invalid data structure', details: 'Missing required fields: dayData, keyItems, or lastUpdatedText' });
   }
 
-  // Validate year parameter
-  const yearNum = parseInt(year);
-  if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+  // Validate year parameter (strict: 4 digits, 1900-2100)
+  const yearNum = validateYear(year);
+  if (!yearNum) {
     logError('Year validation failed', new Error('Invalid year parameter'), { year });
-    return res.status(400).json({ error: 'Invalid year', details: 'Year must be between 1900 and 2100' });
+    return res.status(400).json({ error: 'Invalid year', details: 'Year must be a 4-digit number between 1900 and 2100' });
   }
 
   if (await writeData(yearNum, data)) {
@@ -263,7 +283,9 @@ app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
 });
 
 // --- Serve React App ---
-app.get('*', (req, res) => {
+// Note: Express 5 requires named wildcard params. '/{*splat}' is compatible
+// with both Express 4 (via the @4 pin) and Express 5.
+app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 

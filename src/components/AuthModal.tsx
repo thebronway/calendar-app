@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { X, Lock, Loader, LogIn } from 'lucide-react';
+import type { Role } from '../types';
 
-const AuthModal = ({ isOpen, onClose, onAuthenticate }) => {
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAuthenticate: (role: Role, token: string) => void;
+}
+
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [localError, setLocalError] = useState(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -14,28 +21,40 @@ const AuthModal = ({ isOpen, onClose, onAuthenticate }) => {
     }
   }, [isOpen]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setLocalError(null);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (response.ok) {
         const { role, token } = await response.json();
         onAuthenticate(role, token);
         onClose();
+      } else if (response.status === 401) {
+        setLocalError('Incorrect password.');
       } else {
-        setLocalError('Incorrect admin password.');
+        setLocalError(`Server error (${response.status}). Please try again.`);
       }
-    } catch (e) {
-      console.error('Auth error:', e);
-      setLocalError('Connection error.');
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err instanceof Error && err.name === 'AbortError') {
+        setLocalError('Request timed out. Is the server running?');
+      } else {
+        console.error('Auth error:', err);
+        setLocalError('Connection error. Could not reach the server.');
+      }
     } finally {
       setIsLoading(false);
     }

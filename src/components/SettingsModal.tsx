@@ -1,18 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Layout, Globe, Save } from 'lucide-react';
+import { Settings, X, Layout, Globe, Save, AlertCircle } from 'lucide-react';
 import { ICON_KEYS, ICON_MAP } from '../utils/constants';
+import { isValidTimezone } from '../utils/helpers';
+import { useCloseGuard } from '../hooks/useUnsavedChanges';
+import type { AppConfig } from '../types';
 
-const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
-  const [localConfig, setLocalConfig] = useState(config);
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  config: AppConfig;
+  onConfigSave: (config: AppConfig) => void;
+}
+
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigSave }) => {
+  const [localConfig, setLocalConfig] = useState<AppConfig>(config);
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [timezoneError, setTimezoneError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLocalConfig(config);
-  }, [config]);
+    if (isOpen) {
+      setLocalConfig(config);
+      setTimezoneError(null);
+      setShowIconPicker(false);
+    }
+  }, [isOpen, config]);
 
-  const handleConfigChange = (field, value) =>
+  const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
+  const guardedClose = useCloseGuard(isDirty, onClose);
+
+  const handleConfigChange = <K extends keyof AppConfig>(field: K, value: AppConfig[K]) => {
     setLocalConfig((prev) => ({ ...prev, [field]: value }));
+    if (field === 'timezone') setTimezoneError(null);
+  };
+
   const handleSave = () => {
+    if (!isValidTimezone(localConfig.timezone)) {
+      setTimezoneError(`"${localConfig.timezone}" is not a valid timezone.`);
+      return;
+    }
     onConfigSave(localConfig);
     onClose();
   };
@@ -24,17 +49,12 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
       localConfig.headerIcon === k
   );
 
-  const generateText = (style) => {
+  const generateText = (style: string) => {
     const y = new Date().getFullYear();
     const n = localConfig.ownerName || 'Name';
-    switch (style) {
-      case 'possessive':
-        return `${n}'s Calendar`;
-      case 'question':
-        return `Where is ${n} in ${y}?`;
-      default:
-        return `${y} Calendar`;
-    }
+    if (style === 'possessive') return `${n}'s Calendar`;
+    if (style === 'question') return `Where is ${n} in ${y}?`;
+    return `${y} Calendar`;
   };
 
   const activeHeaderStyle = localConfig.headerStyle || 'simple';
@@ -50,7 +70,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             <Settings size={24} className="mr-3 text-blue-500" /> Settings
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+          <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={24} />
           </button>
         </div>
@@ -65,7 +85,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Page Icon</label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 flex items-center justify-center bg-blue-50 dark:bg-gray-700 rounded-xl border-2 border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400">
-                  {React.createElement(HeaderIcon, { size: 32 })}
+                  {HeaderIcon && <HeaderIcon size={32} />}
                 </div>
                 <button
                   onClick={() => setShowIconPicker(!showIconPicker)}
@@ -78,6 +98,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                 <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border dark:border-gray-700 grid grid-cols-6 sm:grid-cols-8 gap-2 max-h-40 overflow-y-auto">
                   {headerIcons.map((key) => {
                     const Icon = ICON_MAP[key];
+                    if (!Icon) return null;
                     return (
                       <button
                         key={key}
@@ -105,7 +126,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                 ].map((opt) => (
                   <button
                     key={opt.id}
-                    onClick={() => handleConfigChange('headerStyle', opt.id)}
+                    onClick={() => handleConfigChange('headerStyle', opt.id as AppConfig['headerStyle'])}
                     className={`p-3 text-left rounded-lg border text-sm font-medium transition-all ${activeHeaderStyle === opt.id ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200' : 'border-gray-300 dark:border-gray-600'}`}
                   >
                     {opt.label}
@@ -115,7 +136,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
               <div className="p-4 bg-gray-100 dark:bg-gray-900 border dark:border-gray-700 rounded-lg flex flex-col items-center justify-center text-center">
                 <span className="text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider">Live Preview</span>
                 <h1 className="text-2xl font-extrabold flex items-center text-gray-900 dark:text-white">
-                  {React.createElement(HeaderIcon, { size: 28, className: 'mr-3 text-blue-600' })}
+                  {HeaderIcon && <HeaderIcon size={28} className="mr-3 text-blue-600" />}
                   <span>{generateText(activeHeaderStyle)}</span>
                 </h1>
               </div>
@@ -131,7 +152,7 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                 ].map((opt) => (
                   <button
                     key={opt.id}
-                    onClick={() => handleConfigChange('browserTitleStyle', opt.id)}
+                    onClick={() => handleConfigChange('browserTitleStyle', opt.id as AppConfig['browserTitleStyle'])}
                     className={`p-3 text-left rounded-lg border text-sm font-medium transition-all ${activeBrowserStyle === opt.id ? 'bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' : 'border-gray-300 dark:border-gray-600'}`}
                   >
                     {opt.label}
@@ -178,21 +199,27 @@ const SettingsModal = ({ isOpen, onClose, config, onConfigSave }) => {
                 type="text"
                 value={localConfig.timezone}
                 onChange={(e) => handleConfigChange('timezone', e.target.value)}
-                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className={`w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors ${timezoneError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'}`}
                 placeholder="e.g. UTC, America/New_York"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Must be a valid timezone.{' '}
-                <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                  See List
-                </a>
-              </p>
+              {timezoneError ? (
+                <p className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs mt-1.5 font-semibold">
+                  <AlertCircle size={13} /> {timezoneError}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">
+                  Must be a valid timezone.{' '}
+                  <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    See List
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </div>
 
         <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3 rounded-b-xl">
-          <button onClick={onClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+          <button onClick={guardedClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
             Cancel
           </button>
           <button onClick={handleSave} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center">

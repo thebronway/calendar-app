@@ -22,9 +22,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy the package.json and install ONLY production dependencies
-COPY package.json .
-RUN npm install --omit=dev
+# Install only the packages server.js needs at runtime.
+# express = HTTP server/routing, ws = WebSocket support,
+# express-rate-limit = brute-force protection on the auth endpoint.
+# All frontend code (react, vite, etc.) is already compiled into the static
+# build and does not need to be present in the production image.
+RUN npm install express@4 ws express-rate-limit
 
 # Copy the backend server
 COPY server.js .

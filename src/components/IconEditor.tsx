@@ -2,46 +2,56 @@ import React, { useState, useMemo } from 'react';
 import { Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { ICON_KEYS, ICON_COLOR_OPTIONS, ICON_MAP } from '../utils/constants';
 
-const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
-  const [iconType, setIconType] = useState(initialIconData?.value || initialIconData?.icon || ICON_KEYS[0]);
-  const [iconColor, setIconColor] = useState(initialIconData?.color || initialIconData?.iconColor || ICON_COLOR_OPTIONS[0].class);
+type SortOrder = 'key' | 'a-z' | 'z-a';
+
+interface IconData {
+  value?: string;
+  icon?: string;
+  color?: string;
+  iconColor?: string;
+}
+
+interface IconEditorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: { type: 'icon'; value: string; color: string }) => void;
+  initialIconData: IconData | null;
+}
+
+const IconEditor: React.FC<IconEditorProps> = ({ isOpen, onClose, onSave, initialIconData }) => {
+  const [iconType, setIconType] = useState(
+    initialIconData?.value || initialIconData?.icon || ICON_KEYS[0]
+  );
+  const [iconColor, setIconColor] = useState(
+    initialIconData?.color || initialIconData?.iconColor || ICON_COLOR_OPTIONS[0].class
+  );
   const [iconSearch, setIconSearch] = useState('');
-  const [iconSort, setIconSort] = useState('key');
+  const [iconSort, setIconSort] = useState<SortOrder>('key');
 
   const filteredIcons = useMemo(() => {
     let filtered = ICON_KEYS;
-    
     if (iconSearch.trim()) {
       const query = iconSearch.toLowerCase();
-      filtered = filtered.filter(key => 
-        key.toLowerCase().includes(query)
-      );
+      filtered = filtered.filter((key) => key.toLowerCase().includes(query));
     }
-    
     return [...filtered].sort((a, b) => {
-      switch (iconSort) {
-        case 'a-z':
-          return a.localeCompare(b);
-        case 'z-a':
-          return b.localeCompare(a);
-        case 'key':
-        default:
-          return 0;
-      }
+      if (iconSort === 'a-z') return a.localeCompare(b);
+      if (iconSort === 'z-a') return b.localeCompare(a);
+      return 0;
     });
   }, [iconSearch, iconSort]);
 
   const handleSortChange = () => {
-    const orders = ['key', 'a-z', 'z-a'];
-    const currentIndex = orders.indexOf(iconSort);
-    const nextIndex = (currentIndex + 1) % orders.length;
-    setIconSort(orders[nextIndex]);
+    const orders: SortOrder[] = ['key', 'a-z', 'z-a'];
+    const next = orders[(orders.indexOf(iconSort) + 1) % orders.length];
+    setIconSort(next);
   };
 
   const handleSave = () => {
     onSave({ type: 'icon', value: iconType, color: iconColor });
     onClose();
   };
+
   const IconComponent = ICON_MAP[iconType];
 
   if (!isOpen) return null;
@@ -62,7 +72,7 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
             Selected: {iconType}
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -87,7 +97,7 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
             </span>
           </button>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900">
           {filteredIcons.length > 0 ? (
             filteredIcons.map((key) => {
@@ -100,26 +110,24 @@ const IconEditor = ({ isOpen, onClose, onSave, initialIconData }) => {
                 >
                   {key === 'None' ? (
                     <span className="text-xs">None</span>
-                  ) : (
+                  ) : Icon ? (
                     <Icon size={20} className={iconColor} />
-                  )}
+                  ) : null}
                 </button>
               );
             })
           ) : (
             <div className="w-full text-center py-4 text-gray-500 dark:text-gray-400">
-              {iconSearch.trim() 
-                ? `No icons match "${iconSearch}"`
-                : 'No icons available'}
+              {iconSearch.trim() ? `No icons match "${iconSearch}"` : 'No icons available'}
             </div>
           )}
         </div>
-        
+
         <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
           {filteredIcons.length} of {ICON_KEYS.length} icons
           {iconSearch.trim() && ` match "${iconSearch}"`}
         </div>
-        
+
         <div className="flex flex-wrap gap-2">
           {ICON_COLOR_OPTIONS.map((color) => (
             <button
