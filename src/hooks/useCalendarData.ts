@@ -77,7 +77,7 @@ export function useCalendarData({
       if (role !== 'admin' || !adminToken) return;
       setIsSaving(true);
       try {
-        await fetch(`/api/data/${year}`, {
+        const res = await fetch(`/api/data/${year}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -85,7 +85,20 @@ export function useCalendarData({
           },
           body: JSON.stringify(dataToSave),
         });
-      } catch {
+        
+        if (res.status === 401 || res.status === 403) {
+          alert("Session expired. Please log out and log back in.");
+          window.location.reload();
+          return;
+        }
+        
+        if (!res.ok) {
+          alert(`Save failed! Server returned ${res.status}. Your changes were NOT saved.`);
+          window.location.reload();
+          return;
+        }
+      } catch (err) {
+        alert("Network error. Save failed.");
         setApiError('Save failed');
       } finally {
         setTimeout(() => setIsSaving(false), 500);

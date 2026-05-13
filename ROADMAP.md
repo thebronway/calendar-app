@@ -1,22 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-04-09* 
-*Current Version: v0.8.0*
+*Last updated: 2026-05-12* 
+*Current Version: v0.8.5*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app. It serves as a living guide for development priorities.
 
 ## Release Roadmap
-
-### Release v0.8.2: Monolith Breakup (Backend/Tech-Debt Release)
-**Focus:** Paying off UI technical debt before the codebase becomes unmanageable.
-
-* **Component Splitting**
-  * **Goal:** Extract the massive 1,100+ line `App.jsx` into logical, reusable components (`SettingsModal`, `CellEditor`, `CalendarGrid`, `MonthView`).
-  * **Value:** Makes the codebase significantly easier to navigate, debug, and safely expand without breaking unrelated features.
-
-### Release v0.8.4: iCal Export (Feature Release)
-**Focus:** Create optional iCal Service.
 
 ### Release v0.8.6: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
@@ -32,7 +22,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
     * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password.
     * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the password, it should give the corresponding buttons for authentication. 
 
-### Release v0.8.8: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.8.8: iCal Export (Feature Release)
+**Focus:** Create optional iCal Service.
+
+### Release v0.8.9: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**

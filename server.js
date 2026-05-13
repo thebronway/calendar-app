@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const { rateLimit } = require('express-rate-limit');
 
 // --- Configuration ---
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
@@ -29,6 +29,9 @@ const writeLocks = new Map();
 
 // --- Server Setup ---
 const app = express();
+
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 
 // Initialize WebSocketServer explicitly
@@ -76,7 +79,7 @@ wss.on('close', function close() {
 });
 
 // --- Middleware ---
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static(CLIENT_BUILD_PATH));
 
 // Token Verification Middleware
@@ -198,6 +201,7 @@ const broadcastConfigUpdate = (config) => {
 
 // 1. Get App Configuration
 app.get('/api/config', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   res.json(readConfig());
 });
 
@@ -248,6 +252,7 @@ const validateYear = (year) => {
 
 // 4. Get Data
 app.get('/api/data/:year', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
   const { year } = req.params;
   const yearNum = validateYear(year);
   if (!yearNum) return res.status(400).json({ error: 'Invalid year' });
@@ -283,9 +288,8 @@ app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
 });
 
 // --- Serve React App ---
-// Note: Express 5 requires named wildcard params. '/{*splat}' is compatible
-// with both Express 4 (via the @4 pin) and Express 5.
-app.get('/{*splat}', (req, res) => {
+// Catch-all route to serve the React app for client-side routing
+app.get('/*', (req, res) => {
   res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 
