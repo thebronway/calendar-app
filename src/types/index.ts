@@ -20,6 +20,7 @@ export interface IconEntry {
   value?: string;
   icon?: string;
   color: string;
+  displayName?: string;
 }
 
 export interface DayData {

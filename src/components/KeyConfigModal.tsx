@@ -141,26 +141,28 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative">
         <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-4">
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             <Key size={24} className="mr-3 text-blue-500" /> Key Configuration
           </h3>
-          <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm">
-            <button onClick={() => onYearChange(year - 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300">
-              <ChevronLeft size={20} />
-            </button>
-            <span className="px-4 font-bold text-lg text-gray-800 dark:text-gray-100">{year}</span>
-            <button onClick={() => onYearChange(year + 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg border-l dark:border-gray-600 text-gray-600 dark:text-gray-300">
-              <ChevronRight size={20} />
+          <div className="flex items-center gap-6">
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm">
+              <button onClick={() => onYearChange(year - 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg border-r dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                <ChevronLeft size={20} />
+              </button>
+              <span className="px-4 font-bold text-lg text-gray-800 dark:text-gray-100">{year}</span>
+              <button onClick={() => onYearChange(year + 1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg border-l dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                <ChevronRight size={20} />
+              </button>
+            </div>
+            <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <X size={24} />
             </button>
           </div>
-          <button onClick={guardedClose} className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-            <X size={24} />
-          </button>
         </div>
 
-        <div className="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
+        <div className="flex md:hidden border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
           {([{ id: 'categories', label: 'Categories', Icon: Palette, count: categories.length, max: 5 }, { id: 'activities', label: 'Activities', Icon: List, count: icons.length, max: null }] as const).map(({ id, label, Icon, count, max }) => (
             <button
               key={id}
@@ -211,19 +213,21 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
             </div>
           )}
 
-          {activeTab === 'categories' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <div className="flex justify-between items-center">
+          <div className={`${activeTab === 'categories' ? 'block' : 'hidden'} md:block max-w-4xl mx-auto space-y-6`}>
+            <div className="flex justify-between items-center">
+              <div>
+                <h4 className="hidden md:block text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">Categories</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Categories color the background of the day cell.{' '}
                   <span className={`font-bold ${categories.length >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500'}`}>
                     ({categories.length}/5 used)
                   </span>
                 </p>
-                <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
-                  <Plus size={16} className="mr-2" /> Add
-                </button>
               </div>
+              <button onClick={handleAddCategory} disabled={categories.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <Plus size={16} className="mr-2" /> Add
+              </button>
+            </div>
               <div className="grid gap-4">
                 {categories.map((cat, index) => (
                   <div key={cat.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4">
@@ -273,16 +277,17 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
-          {activeTab === 'activities' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <div className="flex justify-between items-center">
+          <div className={`${activeTab === 'activities' ? 'block' : 'hidden'} md:block max-w-4xl mx-auto space-y-6 mt-8 md:mt-12`}>
+            <div className="flex justify-between items-center">
+              <div>
+                <h4 className="hidden md:block text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">Activities</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">Activities appear as small symbols on the day cell.</p>
-                <button onClick={handleAddIconItem} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center">
-                  <Plus size={16} className="mr-2" /> Add
-                </button>
               </div>
+              <button onClick={handleAddIconItem} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center">
+                <Plus size={16} className="mr-2" /> Add
+              </button>
+            </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <input
@@ -348,7 +353,6 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                 </div>
               </div>
             </div>
-          )}
         </div>
 
         <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center">

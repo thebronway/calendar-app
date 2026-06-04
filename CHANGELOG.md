@@ -8,6 +8,13 @@ This document tracks past changes starting with v0.7.1.
 
 ## Changelog
 
+### Release v0.8.6
+- Custom Activities: Added the ability to edit an activity's display name for a specific day (does not affect global filters or counts).
+- Desktop UI: Combined the 'Category' and 'Activities' tabs into a single view in the editor.
+- Bugfix: Fixed the mobile header layout so the year picker and action icons properly wrap to the next line.
+- Bugfix: Improved the visual indicators for when Bulk Edit mode is active on mobile.
+- Bugfix: Ensured Bulk Edit mode and active selections are properly cleared when a user logs out.
+
 ### Release v0.8.5
 - Minor bugfixes
 

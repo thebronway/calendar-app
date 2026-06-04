@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import ReactQuill from 'react-quill';
-import { X, Tag, Activity, MapPin, Check, ArrowUp, ArrowDown, Search, Save } from 'lucide-react';
+import { X, Tag, Activity, MapPin, Check, ArrowUp, ArrowDown, Search, Save, Pencil } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP, QUILL_MODULES } from '../utils/constants';
 import { sanitizeHtml } from '../utils/helpers';
 import { useCloseGuard } from '../hooks/useUnsavedChanges';
@@ -57,10 +57,11 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     const [localDetails, setLocalDetails] = useState('');
     const [localColorId, setLocalColorId] = useState('none');
     const [localIcons, setLocalIcons] = useState<IconEntry[]>([]);
-    // Always default to category tab when modal opens
     const [activeTab, setActiveTab] = useState<TabId>('category');
     const [activitySearch, setActivitySearch] = useState('');
     const [activitySort, setActivitySort] = useState<SortOrder>('key');
+    const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
+    const [editingIconName, setEditingIconName] = useState<string>('');
 
     useEffect(() => {
       if (isOpen && dayData) {
@@ -68,9 +69,10 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         setLocalDetails(dayData.details || '');
         setLocalColorId(dayData.colorId || 'none');
         setLocalIcons((dayData.icons as IconEntry[]) || []);
-        // Reset to category tab every time the modal opens
         setActiveTab('category');
         setActivitySearch('');
+        setEditingIconIndex(null);
+        setEditingIconName('');
       }
     }, [isOpen, dayData]);
 
@@ -131,9 +133,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     if (!isOpen || !dayData) return null;
 
-    const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
-      { id: 'category', label: 'Category', icon: Tag },
-      { id: 'activities', label: 'Activities', icon: Activity },
+    const tabs: { id: TabId; label: string; desktopLabel?: string; hiddenMd?: boolean; icon: React.ElementType }[] = [
+      { id: 'category', label: 'Category', desktopLabel: 'Category & Activities', icon: Tag },
+      { id: 'activities', label: 'Activities', hiddenMd: true, icon: Activity },
       { id: 'location', label: 'Location & Notes', icon: MapPin },
     ];
 
@@ -153,15 +155,32 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
           {isAdmin && (
             <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'}`}
-                >
-                  <tab.icon size={16} className="mr-1.5" /> {tab.label}
-                </button>
-              ))}
+              {tabs.map((tab) => {
+                let activeClass = '';
+                if (tab.id === 'category') {
+                  activeClass = activeTab === 'category' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
+                    : activeTab === 'activities'
+                      ? 'md:bg-white md:dark:bg-gray-700 md:text-blue-600 md:dark:text-blue-400 md:shadow text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
+                } else {
+                  activeClass = activeTab === tab.id 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
+                }
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${tab.hiddenMd ? 'md:hidden' : ''} ${activeClass}`}
+                  >
+                    <tab.icon size={16} className="mr-1.5" />
+                    <span className="md:hidden">{tab.label}</span>
+                    <span className="hidden md:inline">{tab.desktopLabel || tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
@@ -197,7 +216,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                           <div key={index} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
                             <IconComponent size={20} className={item.color} />
                             <span className="font-medium text-gray-800 dark:text-gray-200">
-                              {keyItem ? keyItem.label : iconValue}
+                              {item.displayName || (keyItem ? keyItem.label : iconValue)}
                             </span>
                           </div>
                         );
@@ -216,26 +235,25 @@ const CellEditor: React.FC<CellEditorProps> = memo(
               </div>
             ) : (
               <>
-                {activeTab === 'category' && (
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Select a category for this day:</p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {categoryOptions.map((color) => (
-                        <button
-                          key={color.id}
-                          onClick={() => setLocalColorId(color.id)}
-                          className={`flex items-center p-3 rounded-lg border transition-all ${color.class} ${localColorId === color.id ? 'ring-4 ring-blue-500 ring-offset-2' : 'border-transparent'}`}
-                        >
-                          <div className="flex-1 text-left font-bold">{color.label}</div>
-                          {localColorId === color.id && <Check size={20} />}
-                        </button>
-                      ))}
-                    </div>
+                <div className={`${activeTab === 'category' ? 'block' : 'hidden'} ${(activeTab === 'category' || activeTab === 'activities') ? 'md:block' : 'md:hidden'} space-y-4`}>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 md:hidden">Select a category for this day:</p>
+                  <h4 className="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-2">Category</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {categoryOptions.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => setLocalColorId(color.id)}
+                        className={`flex items-center p-3 rounded-lg border transition-all ${color.class} ${localColorId === color.id ? 'ring-4 ring-blue-500 ring-offset-2' : 'border-transparent'}`}
+                      >
+                        <div className="flex-1 text-left font-bold">{color.label}</div>
+                        {localColorId === color.id && <Check size={20} />}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
 
-                {activeTab === 'activities' && (
-                  <div className="space-y-6">
+                <div className={`${activeTab === 'activities' ? 'block' : 'hidden'} ${(activeTab === 'category' || activeTab === 'activities') ? 'md:block' : 'md:hidden'} space-y-6 md:pt-6 md:border-t md:dark:border-gray-700`}>
+                  <h4 className="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-2">Activities</h4>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Selected</h4>
@@ -251,15 +269,63 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                         const IconComponent = iconValue ? ICON_MAP[iconValue] : null;
                         if (!IconComponent) return null;
                         const keyDef = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
+                        const defaultLabel = keyDef ? keyDef.label : iconValue;
+                        const displayLabel = item.displayName || defaultLabel;
+
                         return (
                           <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                            <div className="flex items-center space-x-2">
-                              <IconComponent size={20} className={item.color} />
-                              <span className="text-sm font-medium dark:text-gray-200">
-                                {keyDef ? keyDef.label : iconValue}
-                              </span>
+                            <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
+                              <IconComponent size={20} className={item.color + ' shrink-0'} />
+                              {editingIconIndex === index ? (
+                                <div className="flex items-center space-x-2 flex-1">
+                                  <input
+                                    type="text"
+                                    value={editingIconName}
+                                    onChange={(e) => setEditingIconName(e.target.value)}
+                                    placeholder={defaultLabel}
+                                    className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        const newIcons = [...localIcons];
+                                        newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
+                                        setLocalIcons(newIcons);
+                                        setEditingIconIndex(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingIconIndex(null);
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const newIcons = [...localIcons];
+                                      newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
+                                      setLocalIcons(newIcons);
+                                      setEditingIconIndex(null);
+                                    }}
+                                    className="text-green-500 hover:bg-green-50 p-1 rounded shrink-0"
+                                  >
+                                    <Check size={16} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-medium dark:text-gray-200 truncate" title={displayLabel}>
+                                    {displayLabel}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      setEditingIconIndex(index);
+                                      setEditingIconName(item.displayName || '');
+                                    }}
+                                    className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                </>
+                              )}
                             </div>
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center space-x-1 shrink-0">
                               <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                                 <ArrowUp size={16} />
                               </button>
@@ -343,7 +409,6 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                       </p>
                     )}
                   </div>
-                )}
 
                 {activeTab === 'location' && (
                   <div className="space-y-4">

@@ -74,14 +74,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   return (
     <header className="mb-8 border-b dark:border-gray-700 pb-4">
       <div className="flex flex-col sm:flex-row justify-between items-center">
-        <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center">
+        <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center text-center sm:text-left">
           {HeaderIcon && (
             <HeaderIcon size={36} className="mr-3 text-blue-600 hidden sm:block" />
           )}
           <span>{renderTitle()}</span>
         </h1>
 
-        <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+        <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3 sm:gap-4 mt-4 sm:mt-0">
           <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
             <button onClick={onYearPrev} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
               <ChevronLeft size={20} />
@@ -111,8 +111,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             <>
               <button
                 onClick={onToggleBulkEdit}
-                className={`h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center text-white rounded-lg transition-colors ${
-                  isBulkEditMode ? 'bg-indigo-700' : 'bg-indigo-500 hover:bg-indigo-600'
+                className={`h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center text-white rounded-lg transition-all ${
+                  isBulkEditMode ? 'bg-indigo-700 ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-gray-900' : 'bg-indigo-500 hover:bg-indigo-600'
                 }`}
                 title="Bulk Edit"
               >

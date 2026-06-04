@@ -1,27 +1,36 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-06-04* 
-*Current Version: v0.8.5*
+*Current Version: v0.8.6*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app. It serves as a living guide for development priorities.
 
 ## Release Roadmap
 
-### Release v0.8.6
-- Custom Activties
-  - once an activity is added to a date, that activity display name can be edited. But it's still uses the same filter and count from the main key, it's just a different display name.
-
 ### Release v0.8.7
+ next is a big change so no code yet we're just going to discuss it. I want your opinion and if you think it would be feasible, what is the plan. No code yet.
 - Custom Views
-  - Add dynamic urls like /<year>/list/<activity1> and /<year>/year/<activity1>&<activity2> and /<year>/<month>/<activity1>&<activity2>&<activity3>
+  - Add dynamic urls like /<year>/list/<activity1>&<category1> and /<year>/year/<activity1>&<activity2> and /<year>/<month>/<activity1>&<activity2>&<activity3> (or similar format)
   - Be able to dynamically list unlimited activities
+  - If no activty is listed, show all activies
+  - If no category is listed, show all categories
+  - On key configuration page, show the url name under the text box (need to normaize spaces and slashes)
     - For list view:
       - Ex. I want to send this URL to people so they can see all of the types of races. I'm running so that's activity 1 and activity 2. And I want to be like a list.  So it should show the Date, Activity Icon, Activity Name (Display Name if used), and then group by month
-    - For calendar view:
-      - Show the just the events that are in the filter
+    - For year view:
+      - Show the entire calendar
+      - Show the just the events that are in the filter (dont show other activies not in url in the key)
+    - For year view:
+      - Show just that month
+      - Show the just the events that are in the filter (dont show other activies not in url in the key)
 
-### Release v0.8.8: Access & Identity (Feature Release)
+### Release v0.8.8
+- Freeze header on desktop, everything above line break
+- Add the ability to hide the key on desktop (deafult is showing the key) (leave mobile alone)
+- On mobile, when logged in and icons flow to the second row, if only 1 icon is on the second row it looks werid. can we make the rows have an even number of icons IF mobile and IF flows onto second row.
+
+### Release v0.8.9: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
 
 * **Enhanced Authentication (View-Only & SSO)**
@@ -35,10 +44,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
     * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password. But they can log in with the admin password from the main login
     * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the calendar, it should give the corresponding buttons for authentication. The user must still set "view_password" and "admin_password", as the login page will have the password field & the sso button.  the user must also set a view group and an admin group. 
 
-### Release v0.8.9: iCal Export (Feature Release)
+### Release v0.9.0: iCal Export (Feature Release)
 **Focus:** Create optional iCal Service.
 
-### Release v0.9.0: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.9.1: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**
@@ -48,7 +57,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
   * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v0.9.1: Polish & Go-Anywhere (Feature Release)
+### Release v0.9.2: Polish & Go-Anywhere (Feature Release)
 **Focus:** Making the app accessible to everyone and usable in any condition.
 
 * **Offline Support (PWA)**
@@ -58,13 +67,13 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Add ARIA labels to icon-only buttons, trap focus inside modals, and ensure full keyboard navigation.
   * **Value:** Better UX for screen readers and power-users who prefer keyboard shortcuts.
 
-### Release v0.9.2:  Comment Clean-up (Backend/Tech-Debt Release)
+### Release v0.9.3:  Comment Clean-up (Backend/Tech-Debt Release)
 * **Code & Comment Cleanup**
   * **Goal:** Standardize comments, remove dead code, and clean up inline styles while splitting components.
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 
-### Release v0.9.3: Enterprise Readiness (Backend/Tech-Debt Release)
+### Release v0.9.4: Enterprise Readiness (Backend/Tech-Debt Release)
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
 * **TypeScript Migration**
@@ -73,8 +82,6 @@ This document tracks planned improvements, enhancements, and technical debt for 
 * **Test Suite**
   * **Goal:** Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering.
   * **Value:** Prevents regressions during major refactors.
-
-### Release v0.9.4: 
 
 ### Release v0.9.5: 
 

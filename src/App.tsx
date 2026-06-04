@@ -162,6 +162,8 @@ export default function App() {
     setRole('view');
     setAdminToken(null);
     sessionStorage.removeItem(SESSION_TOKEN_KEY);
+    setIsBulkEditMode(false);
+    setSelectedCells([]);
   };
 
   const handleCellClick = (key: string) => {
