@@ -1,6 +1,6 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-05-12* 
+*Last updated: 2026-06-04* 
 *Current Version: v0.8.5*
 
 ## Overview
@@ -8,7 +8,20 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v0.8.6: Access & Identity (Feature Release)
+### Release v0.8.6
+- Custom Activties
+  - once an activity is added to a date, that activity display name can be edited. But it's still uses the same filter and count from the main key, it's just a different display name.
+
+### Release v0.8.7
+- Custom Views
+  - Add dynamic urls like /<year>/list/<activity1> and /<year>/year/<activity1>&<activity2> and /<year>/<month>/<activity1>&<activity2>&<activity3>
+  - Be able to dynamically list unlimited activities
+    - For list view:
+      - Ex. I want to send this URL to people so they can see all of the types of races. I'm running so that's activity 1 and activity 2. And I want to be like a list.  So it should show the Date, Activity Icon, Activity Name (Display Name if used), and then group by month
+    - For calendar view:
+      - Show the just the events that are in the filter
+
+### Release v0.8.8: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
 
 * **Enhanced Authentication (View-Only & SSO)**
@@ -17,15 +30,15 @@ This document tracks planned improvements, enhancements, and technical debt for 
 * **Role-Based Permissions**
   * **Goal:** Standardize the UI state so `admin` sees edit buttons and `view` only sees the read-only dashboard.
   * **Value:** Clean separation of concerns for the frontend UI.
-  * **Flow:** Uset will set a docker variable "view" to set the flow of the app:
+  * **Flow:** User will set a docker variable "view" to set the flow of the app:
     * **"none"** (default): anyone can view, admin must login with the lock on the top bar, user must set "admin_password".
-    * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password.
-    * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the password, it should give the corresponding buttons for authentication. 
+    * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password. But they can log in with the admin password from the main login
+    * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the calendar, it should give the corresponding buttons for authentication. The user must still set "view_password" and "admin_password", as the login page will have the password field & the sso button.  the user must also set a view group and an admin group. 
 
-### Release v0.8.8: iCal Export (Feature Release)
+### Release v0.8.9: iCal Export (Feature Release)
 **Focus:** Create optional iCal Service.
 
-### Release v0.8.9: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.9.0: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**
@@ -35,7 +48,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
   * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v0.9.0: Polish & Go-Anywhere (Feature Release)
+### Release v0.9.1: Polish & Go-Anywhere (Feature Release)
 **Focus:** Making the app accessible to everyone and usable in any condition.
 
 * **Offline Support (PWA)**
@@ -51,7 +64,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 
-### Release v0.9.4: Enterprise Readiness (Backend/Tech-Debt Release)
+### Release v0.9.3: Enterprise Readiness (Backend/Tech-Debt Release)
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
 * **TypeScript Migration**
@@ -61,44 +74,20 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering.
   * **Value:** Prevents regressions during major refactors.
 
+### Release v0.9.4: 
+
+### Release v0.9.5: 
+
 ### Release v0.9.6: 
+
+### Release v0.9.7: 
 
 ### Release v0.9.8: 
 
-### Release v1.0.0: Production Release (Feature Release)
+### Release v0.9.9: 
 
-## Completed Items
+### Release v1.0.0:
 
-### v0.8.2: Monolith Breakup (Backend/Tech-Debt Release)
-- Component Splitting: Extracted `SettingsModal`, `CellEditor`, `KeyConfigModal`, `AuthModal`, and `IconEditor` into dedicated component files.
-- UI Abstraction: Extracted the core calendar grid and rendering logic into a new `MonthView` component.
-- Utility Extraction: Relocated heavy static data (icons, categories) and helper functions into a dedicated `utils/` directory.
-
-### v0.8.0: Core User Features
-- Bulk editing for date ranges and multiple days
-- UI Polish: Updated "Time Traveling" stat card to purple
-
-### v0.7.1: Security and Stability Fixes
-- Dependency separation
-- .dockerignore improvements
-- File locking
-- DATA_DIR fix
-- Node 20 upgrade
-- Version standardization
-
-### v0.7.2: Medium Priority Improvements
-- ESLint + Prettier setup
-- Component extraction (Footer, ToggleSwitch)
-- Improved error handling
-- Structured logging
-- JSON response standardization
-
-### v0.7.3: UX Improvements
-- Activities search/sort in day editor
-- IconEditor search/sort
-- Bottom "Add" buttons for categories/activities
-- Key page activities search
-- Bug fixes (password input, white screens)
 
 ## Development Principles
 
