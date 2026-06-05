@@ -18,7 +18,7 @@ import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
 import KeyConfigModal from './components/KeyConfigModal';
-import HelpModal from './components/HelpModal';
+import UserGuide from './components/UserGuide';
 
 // Hooks
 import { useCalendarData } from './hooks/useCalendarData';
@@ -53,7 +53,6 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
-  const [showHelpModal, setShowHelpModal] = useState(false);
 
   const [activeCell, setActiveCell] = useState<string | null>(null);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
@@ -319,29 +318,28 @@ export default function App() {
   }, [year, config, hasActiveFilters, route.activityFilters, route.categoryFilters, keyItems]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+          const target = e.target as HTMLElement;
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
-      // ESC closes any open modal
-      if (e.key === 'Escape') {
-        if (activeCell) { setActiveCell(null); return; }
-        if (showSettingsModal) { setShowSettingsModal(false); return; }
-        if (showKeyModal) { setShowKeyModal(false); return; }
-        if (showAuthModal) { setShowAuthModal(false); return; }
-        if (showHelpModal) { setShowHelpModal(false); return; }
-      }
+          // ESC closes any open modal
+          if (e.key === 'Escape') {
+            if (activeCell) { setActiveCell(null); return; }
+            if (showSettingsModal) { setShowSettingsModal(false); return; }
+            if (showKeyModal) { setShowKeyModal(false); return; }
+            if (showAuthModal) { setShowAuthModal(false); return; }
+          }
 
-      // Arrow keys handle navigation only when no modal is open
-      const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal || showHelpModal;
-      if (!anyModalOpen) {
-        if (e.key === 'ArrowLeft') handlePrevNav();
-        if (e.key === 'ArrowRight') handleNextNav();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeCell, showSettingsModal, showKeyModal, showAuthModal, showHelpModal, handlePrevNav, handleNextNav]);
+          // Arrow keys handle navigation only when no modal is open
+          const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal;
+          if (!anyModalOpen) {
+            if (e.key === 'ArrowLeft') handlePrevNav();
+            if (e.key === 'ArrowRight') handleNextNav();
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [activeCell, showSettingsModal, showKeyModal, showAuthModal, handlePrevNav, handleNextNav]);
 
   // --- Handlers ---
   const handleAuthenticate = (r: Role, t: string) => {
@@ -443,7 +441,7 @@ export default function App() {
           onOpenSettings={() => setShowSettingsModal(true)}
           onLogout={handleLogout}
           onOpenAuth={() => setShowAuthModal(true)}
-          onOpenHelp={() => setShowHelpModal(true)}
+          onGoToGuide={() => navigate('/guide')}
         />
 
         {route.view === 'year' && (
@@ -478,7 +476,9 @@ export default function App() {
           />
         )}
 
-        {route.view === 'list' ? (
+        {route.view === 'guide' ? (
+          <UserGuide />
+        ) : route.view === 'list' ? (
           <ListView 
             calendarData={filteredCalendarData} 
             keyItems={filteredKeyItems} 
@@ -674,10 +674,6 @@ export default function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onAuthenticate={handleAuthenticate}
-      />
-      <HelpModal
-        isOpen={showHelpModal}
-        onClose={() => setShowHelpModal(false)}
       />
 
       <Footer />

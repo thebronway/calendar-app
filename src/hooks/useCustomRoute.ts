@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { slugify } from '../utils/helpers';
 
-export type ViewType = 'year' | 'list' | string; // string allows for specific month names like 'january'
+export type ViewType = 'year' | 'list' | 'guide' | string; // string allows for specific month names like 'january'
 
 export interface RouteState {
   year: number;
@@ -23,6 +23,9 @@ export function useCustomRoute() {
       const parsedYear = parseInt(pathParts[0], 10);
       if (!isNaN(parsedYear) && parsedYear >= 1900 && parsedYear <= 2100) {
         year = parsedYear;
+      } else if (isNaN(parsedYear)) {
+        // Handle routes without a year (e.g., /guide)
+        view = pathParts[0].toLowerCase();
       }
     }
 

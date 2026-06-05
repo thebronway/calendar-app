@@ -1,12 +1,19 @@
 # LogbookWrapped Changelog
 
 *Last updated: 2026-06-05* 
-*Current Version: v0.8.8*
+*Current Version: v0.8.9*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.8.9
+- Added user guide in code and in app
+- Header UI cleanup
+- Footer UI cleanup
+- Desktop Year View cleanup
+- Minor bug fixes
 
 ### Release v0.8.8
 - Planner View: Added a new 3-column dashboard (/planner) combining a calendar grid with a flowing chronological list of events.

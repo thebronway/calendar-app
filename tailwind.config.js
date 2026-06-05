@@ -10,5 +10,6 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/line-clamp'), // Add line-clamp plugin
+    require('@tailwindcss/typography'), // Add typography for markdown
   ],
 };

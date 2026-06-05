@@ -1,6 +1,6 @@
 {
   "name": "calendar-server",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "A self-hosted calendar app with a React frontend and Node.js backend.",
   "main": "server.js",
   "type": "commonjs",
@@ -20,11 +20,14 @@
     "lucide-react": "^0.395.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
     "react-quill": "^2.0.0",
+    "remark-gfm": "^4.0.0",
     "ws": "^8.17.0"
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
+    "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^20.11.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

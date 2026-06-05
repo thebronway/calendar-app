@@ -26,43 +26,48 @@ const KeySection: React.FC<KeySectionProps> = ({
   onViewAsList,
   onViewAsPlanner,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
 
   const keyCategories = keyItems.filter((k) => k.isColorKey);
   const keyActivities = keyItems.filter((k) => !k.isColorKey);
+  const hasKeyFilters = highlightFilters.icons.length > 0 || (highlightFilters.categories && highlightFilters.categories.length > 0);
   const hasActiveFilters =
-    highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0 || highlightFilters.categories?.length > 0;
+    highlightFilters.locations.length > 0 || hasKeyFilters;
 
   return (
     <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
       <div
-        className="flex justify-between items-center mb-4 cursor-pointer md:cursor-default"
+        className="flex justify-between items-center mb-4 cursor-pointer select-none"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
         <div className="flex items-center gap-3">
           {hasActiveFilters && (
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewAsList();
-                }}
-                className="text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
-              >
-                <List size={16} className="mr-1.5 hidden sm:block" />
-                View as List
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewAsPlanner();
-                }}
-                className="text-xs sm:text-sm bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:hover:bg-indigo-900/60 dark:text-indigo-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
-              >
-                <Layout size={16} className="mr-1.5 hidden sm:block" />
-                View as Planner
-              </button>
+              {hasKeyFilters && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewAsList();
+                    }}
+                    className="text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
+                  >
+                    <List size={16} className="mr-1.5 hidden sm:block" />
+                    View as List
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewAsPlanner();
+                    }}
+                    className="text-xs sm:text-sm bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:hover:bg-indigo-900/60 dark:text-indigo-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
+                  >
+                    <Layout size={16} className="mr-1.5 hidden sm:block" />
+                    View as Planner
+                  </button>
+                </>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -75,13 +80,13 @@ const KeySection: React.FC<KeySectionProps> = ({
               </button>
             </div>
           )}
-          <span className="md:hidden text-gray-800 dark:text-gray-100">
+          <span className="text-gray-800 dark:text-gray-100">
             {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
           </span>
         </div>
       </div>
 
-      <div className={`${isExpanded ? 'block' : 'hidden'} md:block space-y-6`}>
+      <div className={`${isExpanded ? 'block' : 'hidden'} space-y-6`}>
         {/* Categories */}
         <div>
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">

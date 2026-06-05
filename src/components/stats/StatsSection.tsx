@@ -17,19 +17,19 @@ const StatsSection: React.FC<StatsSectionProps> = ({
   highlightFilters,
   onLocationFilterToggle,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
 
   return (
     <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
       <h2
-        className="text-2xl font-bold mb-4 cursor-pointer flex justify-between"
+        className="text-2xl font-bold mb-4 cursor-pointer flex justify-between select-none"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {year} Stats{' '}
-        <span className="md:hidden">{isExpanded ? <ChevronUp /> : <ChevronDown />}</span>
+        <span>{isExpanded ? <ChevronUp /> : <ChevronDown />}</span>
       </h2>
 
-      <div className={`${isExpanded ? 'block' : 'hidden'} md:block`}>
+      <div className={`${isExpanded ? 'block' : 'hidden'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Traveling</p>
