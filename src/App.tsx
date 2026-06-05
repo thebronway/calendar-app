@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Loader } from 'lucide-react';
 
 // Layout
@@ -12,6 +12,8 @@ import BulkEditBar from './components/calendar/BulkEditBar';
 
 // Modals & Components
 import MonthView from './components/MonthView';
+import ListView from './components/ListView';
+import MonthLegend from './components/MonthLegend';
 import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
@@ -24,15 +26,25 @@ import { useCalendarStats } from './hooks/useCalendarStats';
 import { useConfig } from './hooks/useConfig';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useHighlightFilters } from './hooks/useHighlightFilters';
+import { useCustomRoute } from './hooks/useCustomRoute';
 
-import { sanitizeHtml } from './utils/helpers';
-import { MONTHS } from './utils/constants';
+import { sanitizeHtml, slugify } from './utils/helpers';
+import { MONTHS, ICON_MAP } from './utils/constants';
 import type { Role, CalendarDataset, KeyItem } from './types';
 
 const SESSION_TOKEN_KEY = 'calendar_admin_token';
 
 export default function App() {
-  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const { route, navigate } = useCustomRoute();
+  const year = route.year;
+
+  const handleYearChange = useCallback((newYear: number) => {
+    const currentSearch = window.location.search;
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const currentView = pathParts.length > 1 ? pathParts[1] : '';
+    navigate(`/${newYear}/${currentView}${currentSearch}`);
+  }, [navigate]);
+
   const [role, setRole] = useState<Role>('view');
   const [adminToken, setAdminToken] = useState<string | null>(() =>
     sessionStorage.getItem(SESSION_TOKEN_KEY)
@@ -54,7 +66,6 @@ export default function App() {
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
     adminToken,
     role,
-    onYearChange: setYear,
   });
 
   const {
@@ -72,8 +83,72 @@ export default function App() {
     disconnectWebSocket,
   } = useCalendarData({ year, role, adminToken, onConfigUpdate: setConfig });
 
-  const { stats, iconCounts, locationCounts } = useCalendarStats({ calendarData, year, keyItems });
+  const filteredKeyItems = useMemo(() => {
+    return keyItems.filter((item) => {
+      const slug = slugify(item.label);
+      if (item.isColorKey) {
+        return route.categoryFilters.length === 0 || route.categoryFilters.includes(slug);
+      } else {
+        return route.activityFilters.length === 0 || route.activityFilters.includes(slug);
+      }
+    });
+  }, [keyItems, route.categoryFilters, route.activityFilters]);
 
+  const filteredCalendarData = useMemo(() => {
+    if (!calendarData) return null;
+    // If no filters active, return original data
+    if (route.activityFilters.length === 0 && route.categoryFilters.length === 0) return calendarData;
+
+    const filtered: CalendarDataset = {};
+    Object.entries(calendarData).forEach(([key, day]) => {
+      const newDay = { ...day, icons: [...(day.icons || [])] };
+      let keepDay = true;
+
+      // Check category match
+      if (route.categoryFilters.length > 0) {
+        const cat = keyItems.find((k) => k.id === newDay.colorId);
+        if (!cat || !route.categoryFilters.includes(slugify(cat.label))) {
+          keepDay = false;
+        }
+      }
+
+      // Check activity match
+      if (route.activityFilters.length > 0) {
+        const matchingIcons = newDay.icons.filter((iconEntry) => {
+          const iconValue = iconEntry.value || iconEntry.icon;
+          const iconDef = keyItems.find(
+            (k) => k.icon === iconValue && k.iconColor === iconEntry.color && !k.isColorKey
+          );
+          return iconDef && route.activityFilters.includes(slugify(iconDef.label));
+        });
+
+        if (matchingIcons.length === 0) {
+          keepDay = false; // Day doesn't have the requested activity
+        } else {
+          newDay.icons = matchingIcons; // Strip other non-matching icons from the cell
+        }
+      }
+
+      // If the day doesn't match the hard filters, clear its visual data
+      if (!keepDay) {
+        newDay.colorId = 'none';
+        newDay.icons = [];
+        newDay.locations = '';
+        newDay.details = '';
+      }
+
+      filtered[key] = newDay;
+    });
+    return filtered;
+  }, [calendarData, keyItems, route.activityFilters, route.categoryFilters]);
+
+  const { stats, iconCounts, locationCounts } = useCalendarStats({ 
+    calendarData: filteredCalendarData, 
+    year, 
+    keyItems: filteredKeyItems 
+  });
+
+  // Declare highlightFilters before using them in the callbacks
   const {
     highlightFilters,
     handleLocationFilterToggle,
@@ -81,6 +156,67 @@ export default function App() {
     clearFilters,
     shouldHighlightCell,
   } = useHighlightFilters();
+
+  const hasActiveFilters = route.activityFilters.length > 0 || route.categoryFilters.length > 0;
+  const isCustomView = route.view !== 'year' || hasActiveFilters;
+
+  const handleClearFilters = useCallback(() => {
+    navigate(`/${year}/year`);
+  }, [navigate, year]);
+
+  const handlePrevNav = useCallback(() => {
+    if (route.view === 'year' || route.view === 'list') {
+      handleYearChange(year - 1);
+    } else {
+      const monthIdx = MONTHS.findIndex((m) => slugify(m) === route.view);
+      if (monthIdx !== -1) {
+        if (monthIdx === 0) {
+          navigate(`/${year - 1}/december${window.location.search}`);
+        } else {
+          navigate(`/${year}/${slugify(MONTHS[monthIdx - 1])}${window.location.search}`);
+        }
+      } else {
+        handleYearChange(year - 1);
+      }
+    }
+  }, [route.view, year, handleYearChange, navigate]);
+
+  const handleNextNav = useCallback(() => {
+    if (route.view === 'year' || route.view === 'list') {
+      handleYearChange(year + 1);
+    } else {
+      const monthIdx = MONTHS.findIndex((m) => slugify(m) === route.view);
+      if (monthIdx !== -1) {
+        if (monthIdx === 11) {
+          navigate(`/${year + 1}/january${window.location.search}`);
+        } else {
+          navigate(`/${year}/${slugify(MONTHS[monthIdx + 1])}${window.location.search}`);
+        }
+      } else {
+        handleYearChange(year + 1);
+      }
+    }
+  }, [route.view, year, handleYearChange, navigate]);
+
+  const handleViewAsList = useCallback(() => {
+    const slugs = highlightFilters.icons.map(f => {
+      const k = keyItems.find(item => item.icon === f.icon && item.iconColor === f.iconColor);
+      return k ? slugify(k.label) : null;
+    }).filter(Boolean);
+    
+    clearFilters(); // Clear the soft highlight filters
+    
+    if (slugs.length > 0) {
+      navigate(`/${year}/list?a=${slugs.join(',')}`);
+    } else {
+      navigate(`/${year}/list`);
+    }
+  }, [highlightFilters.icons, keyItems, navigate, year, clearFilters]);
+
+  const handleMonthNavigate = useCallback((month: string) => {
+    const currentSearch = window.location.search;
+    navigate(`/${year}/${slugify(month)}${currentSearch}`);
+  }, [navigate, year]);
 
   // --- Restore admin session on mount ---
   useEffect(() => {
@@ -123,8 +259,19 @@ export default function App() {
     let title = `${year} Calendar`;
     if (style === 'possessive') title = `${n}'s Calendar`;
     if (style === 'question') title = `Where is ${n} in ${year}?`;
+
+    if (hasActiveFilters) {
+      const activeNames = keyItems
+        .filter((k) => route.activityFilters.includes(slugify(k.label)) || route.categoryFilters.includes(slugify(k.label)))
+        .map((k) => k.label)
+        .join(', ');
+      if (activeNames) {
+        title = `${title} - ${activeNames}`;
+      }
+    }
+
     document.title = title;
-  }, [year, config]);
+  }, [year, config, hasActiveFilters, route.activityFilters, route.categoryFilters, keyItems]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -143,13 +290,13 @@ export default function App() {
       // Arrow keys change year only when no modal is open
       const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal || showHelpModal;
       if (!anyModalOpen) {
-        if (e.key === 'ArrowLeft') setYear((y) => y - 1);
-        if (e.key === 'ArrowRight') setYear((y) => y + 1);
+        if (e.key === 'ArrowLeft') handleYearChange(year - 1);
+        if (e.key === 'ArrowRight') handleYearChange(year + 1);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeCell, showSettingsModal, showKeyModal, showAuthModal, showHelpModal]);
+  }, [year, activeCell, showSettingsModal, showKeyModal, showAuthModal, showHelpModal, handleYearChange]);
 
   // --- Handlers ---
   const handleAuthenticate = (r: Role, t: string) => {
@@ -239,8 +386,11 @@ export default function App() {
           isSaving={isSaving}
           isBulkEditMode={isBulkEditMode}
           lastUpdatedText={lastUpdatedText}
-          onYearPrev={() => setYear((y) => y - 1)}
-          onYearNext={() => setYear((y) => y + 1)}
+          hasFilters={isCustomView}
+          routeView={route.view}
+          onClearFilters={handleClearFilters}
+          onYearPrev={handlePrevNav}
+          onYearNext={handleNextNav}
           onToggleDarkMode={toggleDarkMode}
           onToggleBulkEdit={() => { setIsBulkEditMode((b) => !b); setSelectedCells([]); }}
           onOpenKeyModal={() => setShowKeyModal(true)}
@@ -250,22 +400,27 @@ export default function App() {
           onOpenHelp={() => setShowHelpModal(true)}
         />
 
-        <KeySection
-          keyItems={keyItems}
-          stats={stats}
-          iconCounts={iconCounts}
-          highlightFilters={highlightFilters}
-          onIconFilterToggle={handleIconFilterToggle}
-          onClearFilters={clearFilters}
-        />
+        {route.view === 'year' && (
+          <KeySection
+            keyItems={filteredKeyItems}
+            stats={stats}
+            iconCounts={iconCounts}
+            highlightFilters={highlightFilters}
+            onIconFilterToggle={handleIconFilterToggle}
+            onClearFilters={clearFilters}
+            onViewAsList={handleViewAsList}
+          />
+        )}
 
-        <StatsSection
-          year={year}
-          stats={stats}
-          locationCounts={locationCounts}
-          highlightFilters={highlightFilters}
-          onLocationFilterToggle={handleLocationFilterToggle}
-        />
+        {route.view === 'year' && !hasActiveFilters && (
+          <StatsSection
+            year={year}
+            stats={stats}
+            locationCounts={locationCounts}
+            highlightFilters={highlightFilters}
+            onLocationFilterToggle={handleLocationFilterToggle}
+          />
+        )}
 
         {isBulkEditMode && (
           <BulkEditBar
@@ -275,25 +430,77 @@ export default function App() {
           />
         )}
 
-        <div className="flex flex-wrap -m-2 relative z-0">
-          {MONTHS.map((_, i) => (
-            <MonthView
-              key={i}
-              monthIndex={i}
-              year={year}
-              calendarData={calendarData}
-              keyItems={keyItems}
-              isExpanded={expandedMonths[i]}
-              onToggleMonth={(idx: number) =>
-                setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
+        {route.view === 'list' ? (
+          <ListView 
+            calendarData={filteredCalendarData} 
+            keyItems={filteredKeyItems} 
+            onCellClick={handleCellClick}
+          />
+        ) : route.view === 'year' ? (
+          <div className="flex flex-wrap -m-2 relative z-0">
+            {MONTHS.map((_, i) => {
+              if (hasActiveFilters) {
+                const hasEventsInMonth = filteredCalendarData && Object.values(filteredCalendarData).some(
+                  (day) => day.month === MONTHS[i] && (day.colorId !== 'none' || (day.icons && day.icons.length > 0))
+                );
+                if (!hasEventsInMonth) return null;
               }
-              shouldHighlightCell={shouldHighlightCell}
-              isBulkEditMode={isBulkEditMode}
-              selectedCells={selectedCells}
-              onCellClick={handleCellClick}
-            />
-          ))}
-        </div>
+
+              return (
+                <MonthView
+                  key={i}
+                  monthIndex={i}
+                  year={year}
+                  calendarData={filteredCalendarData}
+                  keyItems={filteredKeyItems}
+                  isExpanded={expandedMonths[i]}
+                  onToggleMonth={(idx: number) =>
+                    setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                  }
+                  shouldHighlightCell={shouldHighlightCell}
+                  isBulkEditMode={isBulkEditMode}
+                  selectedCells={selectedCells}
+                  onCellClick={handleCellClick}
+                  onMonthClick={() => handleMonthNavigate(MONTHS[i])}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex flex-col-reverse md:flex-row justify-center items-start gap-6 md:gap-10 w-full max-w-6xl mx-auto mt-4 px-2">
+            {(() => {
+              const mIndex = MONTHS.findIndex((m) => slugify(m) === route.view);
+              if (mIndex === -1) return null;
+              
+              return (
+                <>
+                  <MonthLegend 
+                    month={MONTHS[mIndex]} 
+                    calendarData={filteredCalendarData} 
+                    keyItems={keyItems} 
+                  />
+                  <div className="flex-1 w-full max-w-3xl relative z-0 [&>*]:!w-full [&>*]:!max-w-none [&>*]:!p-0">
+                    <MonthView
+                      monthIndex={mIndex}
+                      year={year}
+                      calendarData={filteredCalendarData}
+                      keyItems={filteredKeyItems}
+                      isExpanded={expandedMonths[mIndex] ?? true}
+                      onToggleMonth={(idx: number) =>
+                        setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                      }
+                      shouldHighlightCell={shouldHighlightCell}
+                      isBulkEditMode={isBulkEditMode}
+                      selectedCells={selectedCells}
+                      onCellClick={handleCellClick}
+                      onMonthClick={() => handleMonthNavigate(MONTHS[mIndex])}
+                    />
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       <CellEditor
@@ -309,6 +516,7 @@ export default function App() {
         keyItems={keyItems}
         isBulkEdit={activeCell === 'bulk'}
         bulkCount={selectedCells.length}
+        hasFilters={hasActiveFilters}
       />
       <SettingsModal
         isOpen={showSettingsModal}
@@ -322,7 +530,7 @@ export default function App() {
         keyItems={keyItems}
         onKeyItemsSave={handleKeyUpdate}
         year={year}
-        onYearChange={setYear}
+        onYearChange={handleYearChange}
       />
       <AuthModal
         isOpen={showAuthModal}

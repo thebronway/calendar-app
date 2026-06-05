@@ -1,0 +1,95 @@
+import React, { useMemo } from 'react';
+import { ICON_MAP, CATEGORY_COLORS } from '../utils/constants';
+import type { CalendarDataset, KeyItem } from '../types';
+
+interface ListViewProps {
+  calendarData: CalendarDataset | null;
+  keyItems: KeyItem[];
+  onCellClick: (key: string) => void;
+}
+
+const ListView: React.FC<ListViewProps> = ({ calendarData, keyItems, onCellClick }) => {
+  const activeDays = useMemo(() => {
+    if (!calendarData) return [];
+    return Object.entries(calendarData)
+      // Only show days that have a category or at least one icon
+      .filter(([_, day]) => day.colorId !== 'none' || (day.icons && day.icons.length > 0))
+      .map(([key, day]) => ({ key, ...day }))
+      // Sort chronologically (YYYY-MM-DD)
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [calendarData]);
+
+  if (activeDays.length === 0) {
+    return (
+      <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm mt-4">
+        <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">No events found for the selected filters.</p>
+      </div>
+    );
+  }
+
+  let currentMonth = '';
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden mt-4">
+      {activeDays.map((day) => {
+        const showMonthHeader = day.month !== currentMonth;
+        if (showMonthHeader) currentMonth = day.month;
+
+        const category = keyItems.find((k) => k.id === day.colorId);
+        const colorDef = category ? CATEGORY_COLORS.find((c) => c.id === category.colorCode) : null;
+        const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900` : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+
+        return (
+          <React.Fragment key={day.key}>
+            {showMonthHeader && (
+              <div className="bg-gray-100 dark:bg-gray-900 px-6 py-3 border-b border-t first:border-t-0 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{day.month} {day.year}</h3>
+              </div>
+            )}
+            <div 
+              onClick={() => onCellClick(day.key)}
+              className="flex flex-col sm:flex-row sm:items-center px-6 py-4 border-b last:border-b-0 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors gap-4"
+            >
+              <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-900 border dark:border-gray-700">
+                <span className="text-xs font-bold text-gray-500 uppercase">{day.month.slice(0,3)}</span>
+                <span className="text-xl font-extrabold text-gray-900 dark:text-gray-100">{day.day}</span>
+              </div>
+              
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {category && (
+                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}>
+                      {category.label}
+                    </span>
+                  )}
+                  {day.locations && (
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                      📍 {day.locations}
+                    </span>
+                  )}
+                </div>
+                {day.icons && day.icons.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {day.icons.map((icon, idx) => {
+                      const IC = ICON_MAP[icon.value || icon.icon || ''];
+                      const keyDef = keyItems.find(k => k.icon === (icon.value || icon.icon) && k.iconColor === icon.color);
+                      const label = icon.displayName || (keyDef ? keyDef.label : (icon.value || icon.icon));
+                      return IC ? (
+                        <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-gray-800 border dark:border-gray-600 px-2 py-1 rounded-md shadow-sm">
+                          <IC size={16} className={icon.color} />
+                          <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{label}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
+export default ListView;

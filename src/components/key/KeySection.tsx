@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, List } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP } from '../../utils/constants';
 import type { CalendarStats, HighlightFilters, KeyItem } from '../../types';
 
@@ -10,6 +10,7 @@ interface KeySectionProps {
   highlightFilters: HighlightFilters;
   onIconFilterToggle: (item: Pick<KeyItem, 'icon' | 'iconColor'>) => void;
   onClearFilters: () => void;
+  onViewAsList: () => void;
 }
 
 const KeySection: React.FC<KeySectionProps> = ({
@@ -19,6 +20,7 @@ const KeySection: React.FC<KeySectionProps> = ({
   highlightFilters,
   onIconFilterToggle,
   onClearFilters,
+  onViewAsList,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -36,16 +38,28 @@ const KeySection: React.FC<KeySectionProps> = ({
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
         <div className="flex items-center gap-3">
           {hasActiveFilters && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClearFilters();
-              }}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
-            >
-              <X size={16} className="mr-1" />
-              Clear Filters
-            </button>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewAsList();
+                }}
+                className="text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 dark:text-blue-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
+              >
+                <List size={16} className="mr-1.5 hidden sm:block" />
+                View as List
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClearFilters();
+                }}
+                className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-medium flex items-center transition-colors bg-gray-100 dark:bg-gray-700 px-2 sm:px-3 py-1.5 rounded-lg"
+              >
+                <X size={16} className="sm:mr-1" />
+                <span className="hidden sm:inline">Clear</span>
+              </button>
+            </div>
           )}
           <span className="md:hidden text-gray-800 dark:text-gray-100">
             {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}

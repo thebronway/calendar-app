@@ -15,6 +15,7 @@ interface MonthViewProps {
   isBulkEditMode: boolean;
   selectedCells: string[];
   onCellClick: (key: string) => void;
+  onMonthClick: () => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -28,6 +29,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   isBulkEditMode,
   selectedCells,
   onCellClick,
+  onMonthClick,
 }) => {
   const mName = MONTHS[monthIndex];
   const isTodayYear = new Date().getFullYear() === year;
@@ -144,13 +146,19 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   return (
     <div id={`month-${monthIndex}`} className="w-full md:w-1/2 2xl:w-1/3 p-2">
-      <div
-        className="flex justify-between items-center mb-2 mt-4 cursor-pointer md:cursor-default select-none"
-        onClick={() => onToggleMonth(monthIndex)}
-      >
+      <div className="flex justify-between items-center mb-2 mt-4 select-none">
         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-          {mName}
-          <span className="md:hidden ml-2 text-gray-500 transition-transform duration-200">
+          <button 
+            onClick={onMonthClick} 
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+            title={`View only ${mName}`}
+          >
+            {mName}
+          </button>
+          <span 
+            className="md:hidden ml-2 text-gray-500 transition-transform duration-200 cursor-pointer p-1" 
+            onClick={() => onToggleMonth(monthIndex)}
+          >
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </span>
         </h2>

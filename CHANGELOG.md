@@ -1,12 +1,18 @@
 # LogbookWrapped Changelog
 
 *Last updated: 2026-06-04* 
-*Current Version: v0.8.5*
+*Current Version: v0.8.6*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.8.7
+- Dynamic URL Filtering: Filter and share specific views instantly using paths and query parameters (e.g., ?a=slug).
+- List View: Added a continuous timeline layout (/list) aggregating filtered events chronologically by month.
+- Month View: View a single month alongside a dynamic side-legend showing only the active keys for that month.
+- Inline Editor Auto-Save: Custom display names now auto-save on blur, removing the redundant green checkmark.
 
 ### Release v0.8.6
 - Custom Activities: Added the ability to edit an activity's display name for a specific day (does not affect global filters or counts).

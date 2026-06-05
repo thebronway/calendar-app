@@ -24,10 +24,11 @@ interface CellEditorProps {
   keyItems: KeyItem[];
   isBulkEdit: boolean;
   bulkCount: number;
+  hasFilters?: boolean;
 }
 
 const CellEditor: React.FC<CellEditorProps> = memo(
-  ({ isOpen, onClose, dayData, onSave, isAdmin, keyItems, isBulkEdit, bulkCount }) => {
+  ({ isOpen, onClose, dayData, onSave, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters }) => {
     const categories = useMemo(() => keyItems.filter((k) => k.isColorKey), [keyItems]);
     const availableActivities = useMemo(
       () => keyItems.filter((k) => !k.isColorKey && k.icon !== 'None'),
@@ -185,6 +186,13 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           )}
 
           <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+            {hasFilters && isAdmin && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-2">
+                <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">
+                  You are currently editing a filtered view. Icons that do not match the active URL filters will be hidden visually upon save.
+                </p>
+              </div>
+            )}
             {!isAdmin ? (
               <div className="space-y-4">
                 <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
@@ -285,28 +293,20 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                                     placeholder={defaultLabel}
                                     className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                                     autoFocus
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        const newIcons = [...localIcons];
-                                        newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                                        setLocalIcons(newIcons);
-                                        setEditingIconIndex(null);
-                                      } else if (e.key === 'Escape') {
-                                        setEditingIconIndex(null);
-                                      }
-                                    }}
-                                  />
-                                  <button
-                                    onClick={() => {
+                                    onBlur={() => {
                                       const newIcons = [...localIcons];
                                       newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
                                       setLocalIcons(newIcons);
                                       setEditingIconIndex(null);
                                     }}
-                                    className="text-green-500 hover:bg-green-50 p-1 rounded shrink-0"
-                                  >
-                                    <Check size={16} />
-                                  </button>
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.currentTarget.blur();
+                                      } else if (e.key === 'Escape') {
+                                        setEditingIconIndex(null);
+                                      }
+                                    }}
+                                  />
                                 </div>
                               ) : (
                                 <>

@@ -12,7 +12,8 @@ import {
   Settings,
   Sun,
 } from 'lucide-react';
-import { ICON_MAP } from '../../utils/constants';
+import { ICON_MAP, MONTHS } from '../../utils/constants';
+import { slugify } from '../../utils/helpers';
 import type { AppConfig, Role } from '../../types';
 
 interface AppHeaderProps {
@@ -23,6 +24,9 @@ interface AppHeaderProps {
   isSaving: boolean;
   isBulkEditMode: boolean;
   lastUpdatedText: string;
+  hasFilters: boolean;
+  routeView?: string;
+  onClearFilters: () => void;
   onYearPrev: () => void;
   onYearNext: () => void;
   onToggleDarkMode: () => void;
@@ -42,6 +46,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   isSaving,
   isBulkEditMode,
   lastUpdatedText,
+  hasFilters,
+  routeView,
+  onClearFilters,
   onYearPrev,
   onYearNext,
   onToggleDarkMode,
@@ -86,11 +93,26 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             <button onClick={onYearPrev} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
               <ChevronLeft size={20} />
             </button>
-            <span className="font-semibold">{year}</span>
+            <span className="font-semibold whitespace-nowrap">
+              {(() => {
+                if (!routeView || routeView === 'year' || routeView === 'list') return year;
+                const monthName = MONTHS.find(m => slugify(m) === routeView);
+                return monthName ? `${monthName} ${year}` : year;
+              })()}
+            </span>
             <button onClick={onYearNext} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
               <ChevronRight size={20} />
             </button>
           </div>
+
+          {hasFilters && (
+            <button 
+              onClick={onClearFilters} 
+              className="px-3 h-10 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-lg text-sm font-bold hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
+            >
+              View Full Calendar
+            </button>
+          )}
 
           <button
             onClick={onOpenHelp}

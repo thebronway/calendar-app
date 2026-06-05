@@ -7,6 +7,7 @@ import ToggleSwitch from './ToggleSwitch';
 import IconEditor from './IconEditor';
 import { CATEGORY_COLORS, ICON_COLOR_OPTIONS, ICON_MAP } from '../utils/constants';
 import { useCloseGuard } from '../hooks/useUnsavedChanges';
+import { slugify } from '../utils/helpers';
 import type { KeyItem } from '../types';
 
 interface KeyConfigModalProps {
@@ -240,13 +241,19 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                         />
                       ))}
                     </div>
-                    <div className="flex-1 w-full">
+                    <div className="flex-1 w-full min-w-0">
                       <input
                         type="text"
                         value={cat.label}
                         onChange={(e) => handleUpdateItem(cat.id, 'label', e.target.value)}
                         className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                        placeholder="Category Name"
                       />
+                      {cat.label && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1 truncate" title={slugify(cat.label)}>
+                          URL ID: <span className="font-mono">{slugify(cat.label)}</span>
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-gray-500 uppercase">Count</span>
@@ -309,13 +316,19 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                         <button onClick={() => handleIconEditClick(item.id)} className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border dark:border-gray-600 hover:bg-gray-200">
                           {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs">None</span>}
                         </button>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <input
                             type="text"
                             value={item.label}
                             onChange={(e) => handleUpdateItem(item.id, 'label', e.target.value)}
                             className="w-full p-2 border rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                            placeholder="Activity Name"
                           />
+                          {item.label && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1 truncate" title={slugify(item.label)}>
+                              URL ID: <span className="font-mono">{slugify(item.label)}</span>
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 border-l pl-4 dark:border-gray-700">
                           <span className="text-xs font-bold text-gray-500 uppercase">Count</span>
