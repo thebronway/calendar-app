@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v0.8.7-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.8.8-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 ### A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
@@ -17,9 +17,10 @@ This self-hosted calendar provides a simple web dashboard to share your schedule
 * **Year-at-a-Glance:** Visual dashboard for the entire year.
 * **Deep Customization:** Define color-coded categories and custom activity icons.
 * **Activity Display Names:** Define custom display names for activities on individual days.
-- **Dynamic URLs:** Filter and share specific views instantly using query parameters (e.g., `?a=slug`).
-- **List View:** A clean, continuous timeline layout (`/list`) that compiles your filtered events chronologically by month.
-- **Isolated Month View:** View a single month alongside a dynamic side-legend showing only the active keys for that month.
+* **Dynamic URLs:** Filter and share specific views instantly using query parameters (e.g., `?a=slug`).
+* **List View:** A clean, continuous timeline layout (`/list`) that compiles your filtered events chronologically by month.
+* **Month View:** View a single month alongside a dynamic side-legend showing only the active keys for that month.
+* **Planner View:** A unified dashboard (`/planner`) combining a monthly calendar grid alongside a continuous timeline of events for that month.
 * **Bulk Editing:** Bulk editing for date ranges and multiple days.
 * **Smart Tracking:** Log locations, rich text notes, and visualize travel stats.
 * **Interactive Filters:** Click stats or key items to highlight specific days instantly.

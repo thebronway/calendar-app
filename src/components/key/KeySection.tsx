@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, X, List } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, List, Layout } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP } from '../../utils/constants';
 import type { CalendarStats, HighlightFilters, KeyItem } from '../../types';
 
@@ -9,8 +9,10 @@ interface KeySectionProps {
   iconCounts: Record<string, number>;
   highlightFilters: HighlightFilters;
   onIconFilterToggle: (item: Pick<KeyItem, 'icon' | 'iconColor'>) => void;
+  onCategoryFilterToggle: (categoryId: string) => void;
   onClearFilters: () => void;
   onViewAsList: () => void;
+  onViewAsPlanner: () => void;
 }
 
 const KeySection: React.FC<KeySectionProps> = ({
@@ -19,15 +21,17 @@ const KeySection: React.FC<KeySectionProps> = ({
   iconCounts,
   highlightFilters,
   onIconFilterToggle,
+  onCategoryFilterToggle,
   onClearFilters,
   onViewAsList,
+  onViewAsPlanner,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const keyCategories = keyItems.filter((k) => k.isColorKey);
   const keyActivities = keyItems.filter((k) => !k.isColorKey);
   const hasActiveFilters =
-    highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0;
+    highlightFilters.locations.length > 0 || highlightFilters.icons.length > 0 || highlightFilters.categories?.length > 0;
 
   return (
     <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
@@ -48,6 +52,16 @@ const KeySection: React.FC<KeySectionProps> = ({
               >
                 <List size={16} className="mr-1.5 hidden sm:block" />
                 View as List
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewAsPlanner();
+                }}
+                className="text-xs sm:text-sm bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:hover:bg-indigo-900/60 dark:text-indigo-300 px-2 sm:px-3 py-1.5 rounded-lg font-bold flex items-center transition-colors"
+              >
+                <Layout size={16} className="mr-1.5 hidden sm:block" />
+                View as Planner
               </button>
               <button
                 onClick={(e) => {
@@ -79,10 +93,14 @@ const KeySection: React.FC<KeySectionProps> = ({
               const boxClass = cDef
                 ? `${cDef.bg} text-white dark:text-gray-100`
                 : 'bg-gray-100';
+              const isSelected = highlightFilters.categories?.includes(item.id);
               return (
                 <div
                   key={item.id}
-                  className="flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-default"
+                  onClick={() => onCategoryFilterToggle(item.id)}
+                  className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    isSelected ? 'ring-2 ring-blue-500' : ''
+                  }`}
                 >
                   <div
                     className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}

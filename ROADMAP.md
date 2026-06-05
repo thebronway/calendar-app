@@ -1,30 +1,28 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-06-04* 
-*Current Version: v0.8.7*
+*Last updated: 2026-06-05* 
+*Current Version: v0.8.8*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app. It serves as a living guide for development priorities.
 
 ## Release Roadmap
 
-### Release v0.8.8
-- URL filtering
-  - Month view /month
-    - The month is too wide, it should be the size of the month when viewing the full year
-    - Replace key with something that looks like /list view, and list should be to the right of the month
-    - Arrow keys should go through months, not years
-  - Year mode /year
-    - When filtering, year mode should show all months, even if month does not have activty or category
-  - Have Full Calendar view floating on the bottom like bulk edit, but if also bulk editing, display it next to floating bulk edit on desktop and above floating bulk edit on mobile
-
 ### Release v0.8.9
-- Freeze header on desktop, everything above line break
-- Add the ability to hide the key on desktop (deafult is showing the key) (leave mobile alone)
-- On mobile, when logged in and icons flow to the second row, if only 1 icon is on the second row it looks werid. can we make the rows have an even number of icons IF mobile and IF flows onto second row.
-- Footer on mobile looks weird
+- Header is getting crowded. 
+  - desktop when logged in: put bluk edit, key and settings on line 2
+  - desktop when logged out: keep as is
+  - mobile when logged in: year (shorten 2026 to 26), year/planner (needs to be added, shotren to 'Yr/Plan'), and view full calendar (shorten to 'Full Cal') line 1. and all the other icons on line 2
+  - mobile when logged out: line 1 is same as when logged in. put help, dark/lihgt, log in on line 2
+- Add the ability to hide the key and stats on desktop (deafult is showing) (leave mobile alone)
+- Footer on mobile is stacked vertically. keep |, put version and website on line 1 and git/docker on line 2
 
-### Release v0.9.0: Access & Identity (Feature Release)
+### Release v0.9.0
+- Create a Markdown user guide
+- Create a user guide
+  - Show up frist time
+
+### Release v0.9.1: Access & Identity (Feature Release)
 **Focus:** Expanding who can see the calendar and how they access it.
 
 * **Enhanced Authentication (View-Only & SSO)**
@@ -38,10 +36,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
     * **"simple"**: When going to the site, there will be just a password field, the user must then set "view_password" and "admin_password".  The admin can still use the lock at the top the access the admin page if they used the view password. But they can log in with the admin password from the main login
     * **"sso:**: User must input details for oauth/authentik in variables and set view and admin groups, when a user tries to view the calendar, it should give the corresponding buttons for authentication. The user must still set "view_password" and "admin_password", as the login page will have the password field & the sso button.  the user must also set a view group and an admin group. 
 
-### Release v0.9.1: iCal Export (Feature Release)
+### Release v0.9.2: iCal Export (Feature Release)
 **Focus:** Create optional iCal Service.
 
-### Release v0.9.2: Hardening & Speed (Backend/Tech-Debt Release)
+### Release v0.9.3: Hardening & Speed (Backend/Tech-Debt Release)
 **Focus:** Securing the application against public internet threats and optimizing load times.
 
 * **Security Hardening**
@@ -51,7 +49,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals.
   * **Value:** Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v0.9.3: Polish & Go-Anywhere (Feature Release)
+### Release v0.9.4: Polish & Go-Anywhere (Feature Release)
 **Focus:** Making the app accessible to everyone and usable in any condition.
 
 * **Offline Support (PWA)**
@@ -61,13 +59,13 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Add ARIA labels to icon-only buttons, trap focus inside modals, and ensure full keyboard navigation.
   * **Value:** Better UX for screen readers and power-users who prefer keyboard shortcuts.
 
-### Release v0.9.4:  Comment Clean-up (Backend/Tech-Debt Release)
+### Release v0.9.5:  Comment Clean-up (Backend/Tech-Debt Release)
 * **Code & Comment Cleanup**
   * **Goal:** Standardize comments, remove dead code, and clean up inline styles while splitting components.
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 
-### Release v0.9.5: Enterprise Readiness (Backend/Tech-Debt Release)
+### Release v0.9.6: Enterprise Readiness (Backend/Tech-Debt Release)
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.
 
 * **TypeScript Migration**
@@ -77,9 +75,8 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Goal:** Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering.
   * **Value:** Prevents regressions during major refactors.
 
-### Release v0.9.6: 
-
 ### Release v0.9.7: 
+- App breakup?
 
 ### Release v0.9.8: 
 

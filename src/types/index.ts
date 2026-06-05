@@ -79,6 +79,7 @@ export interface IconFilter {
 export interface HighlightFilters {
   locations: string[];
   icons: IconFilter[];
+  categories: string[];
 }
 
 // --- Stats ---

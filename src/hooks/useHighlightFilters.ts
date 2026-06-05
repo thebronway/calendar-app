@@ -5,17 +5,19 @@ interface UseHighlightFiltersReturn {
   highlightFilters: HighlightFilters;
   handleLocationFilterToggle: (loc: string) => void;
   handleIconFilterToggle: (item: Pick<KeyItem, 'icon' | 'iconColor'>) => void;
+  handleCategoryFilterToggle: (categoryId: string) => void;
   clearFilters: () => void;
   shouldHighlightCell: (dayInfo: DayData) => boolean;
 }
 
 /**
- * Manages highlight filter state (locations + icons) and the cell highlight check.
+ * Manages highlight filter state (locations + icons + categories) and the cell highlight check.
  */
 export function useHighlightFilters(): UseHighlightFiltersReturn {
   const [highlightFilters, setHighlightFilters] = useState<HighlightFilters>({
     locations: [],
     icons: [],
+    categories: [],
   });
 
   const handleLocationFilterToggle = (loc: string) => {
@@ -39,30 +41,42 @@ export function useHighlightFilters(): UseHighlightFiltersReturn {
     }));
   };
 
-  const clearFilters = () => setHighlightFilters({ locations: [], icons: [] });
+  const handleCategoryFilterToggle = (categoryId: string) => {
+    setHighlightFilters((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter((id) => id !== categoryId)
+        : [...prev.categories, categoryId],
+    }));
+  };
+
+  const clearFilters = () => setHighlightFilters({ locations: [], icons: [], categories: [] });
 
   const shouldHighlightCell = useCallback(
     (dayInfo: DayData): boolean => {
-      if (!highlightFilters.locations.length && !highlightFilters.icons.length) return false;
+      const hasLocFilters = highlightFilters.locations.length > 0;
+      const hasIconFilters = highlightFilters.icons.length > 0;
+      const hasCatFilters = highlightFilters.categories?.length > 0;
 
-      const dayLocs = (dayInfo.locations || '')
-        .split(',')
-        .map((l) => l.trim())
-        .filter(Boolean);
-      const locMatch =
-        !highlightFilters.locations.length ||
-        highlightFilters.locations.every((f) => dayLocs.includes(f));
+      if (!hasLocFilters && !hasIconFilters && !hasCatFilters) return false;
 
-      const dayIcons = dayInfo.icons || [];
-      const iconMatch =
-        !highlightFilters.icons.length ||
-        highlightFilters.icons.every((f: IconFilter) =>
-          dayIcons.some(
-            (d) => (d.value || d.icon) === f.icon && d.color === f.iconColor
-          )
-        );
+      if (hasLocFilters) {
+        const dayLocs = (dayInfo.locations || '').split(',').map((l) => l.trim()).filter(Boolean);
+        if (highlightFilters.locations.some(f => dayLocs.includes(f))) return true;
+      }
 
-      return locMatch && iconMatch;
+      if (hasIconFilters) {
+        const dayIcons = dayInfo.icons || [];
+        if (highlightFilters.icons.some(f => 
+          dayIcons.some(d => (d.value || d.icon) === f.icon && d.color === f.iconColor)
+        )) return true;
+      }
+
+      if (hasCatFilters) {
+        if (highlightFilters.categories.includes(dayInfo.colorId)) return true;
+      }
+
+      return false; // If there were active filters but none matched
     },
     [highlightFilters]
   );
@@ -71,6 +85,7 @@ export function useHighlightFilters(): UseHighlightFiltersReturn {
     highlightFilters,
     handleLocationFilterToggle,
     handleIconFilterToggle,
+    handleCategoryFilterToggle,
     clearFilters,
     shouldHighlightCell,
   };

@@ -1,12 +1,20 @@
 # LogbookWrapped Changelog
 
-*Last updated: 2026-06-04* 
-*Current Version: v0.8.6*
+*Last updated: 2026-06-05* 
+*Current Version: v0.8.8*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.8.8
+- Planner View: Added a new 3-column dashboard (/planner) combining a calendar grid with a flowing chronological list of events.
+- Month View: Redesigned the single-month layout to match the Planner View, dropping the side legend in favor of a unified full-width card.
+- List View: Updated the date boxes to display the short day of the week (e.g., 'Mon') instead of redundant month abbreviations.
+- Key Filters: Updated selection logic to use 'OR' instead of 'AND' when combining multiple activities/categories, and made categories clickable in the Key.
+- Keyboard Navigation: Arrow keys now correctly traverse across year boundaries (e.g., navigating from Dec 2026 to Jan 2027).
+- Bugfix: Corrected the active-cell highlight ring getting cut off on expanding rows within the calendar grid.
 
 ### Release v0.8.7
 - Dynamic URL Filtering: Filter and share specific views instantly using paths and query parameters (e.g., ?a=slug).

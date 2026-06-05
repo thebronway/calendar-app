@@ -15,7 +15,9 @@ interface MonthViewProps {
   isBulkEditMode: boolean;
   selectedCells: string[];
   onCellClick: (key: string) => void;
-  onMonthClick: () => void;
+  onMonthClick?: () => void;
+  className?: string;
+  isPlanner?: boolean;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -30,6 +32,8 @@ const MonthView: React.FC<MonthViewProps> = ({
   selectedCells,
   onCellClick,
   onMonthClick,
+  className,
+  isPlanner,
 }) => {
   const mName = MONTHS[monthIndex];
   const isTodayYear = new Date().getFullYear() === year;
@@ -80,11 +84,9 @@ const MonthView: React.FC<MonthViewProps> = ({
       <td
         key={key}
         onClick={() => onCellClick(key)}
-        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass}`}
+        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}
       >
-        <div
-          className={`${contentClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}
-        >
+        <div className={contentClass}>
           <div className="flex flex-col items-center">
             <span
               className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}
@@ -145,27 +147,33 @@ const MonthView: React.FC<MonthViewProps> = ({
   }
 
   return (
-    <div id={`month-${monthIndex}`} className="w-full md:w-1/2 2xl:w-1/3 p-2">
-      <div className="flex justify-between items-center mb-2 mt-4 select-none">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-          <button 
-            onClick={onMonthClick} 
-            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-            title={`View only ${mName}`}
-          >
-            {mName}
-          </button>
-          <span 
-            className="md:hidden ml-2 text-gray-500 transition-transform duration-200 cursor-pointer p-1" 
-            onClick={() => onToggleMonth(monthIndex)}
-          >
-            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+    <div id={`month-${monthIndex}`} className={className || "w-full md:w-1/2 2xl:w-1/3 p-2"}>
+      {!isPlanner && (
+        <div className="flex justify-between items-center mb-2 mt-4 select-none">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+            {onMonthClick ? (
+              <button 
+                onClick={onMonthClick} 
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                title={`View only ${mName}`}
+              >
+                {mName}
+              </button>
+            ) : (
+              <span>{mName}</span>
+            )}
+            <span 
+              className="md:hidden ml-2 text-gray-500 transition-transform duration-200 cursor-pointer p-1" 
+              onClick={() => onToggleMonth(monthIndex)}
+            >
+              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </span>
+          </h2>
+          <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+            {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
           </span>
-        </h2>
-        <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
-          {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
-        </span>
-      </div>
+        </div>
+      )}
 
       {/* Smooth mobile accordion transition */}
       <div

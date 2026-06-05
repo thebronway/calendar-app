@@ -1,6 +1,6 @@
 {
   "name": "calendar-server",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "A self-hosted calendar app with a React frontend and Node.js backend.",
   "main": "server.js",
   "type": "commonjs",

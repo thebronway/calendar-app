@@ -27,6 +27,7 @@ interface AppHeaderProps {
   hasFilters: boolean;
   routeView?: string;
   onClearFilters: () => void;
+  onViewToggle: (view: 'year' | 'planner') => void;
   onYearPrev: () => void;
   onYearNext: () => void;
   onToggleDarkMode: () => void;
@@ -49,6 +50,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   hasFilters,
   routeView,
   onClearFilters,
+  onViewToggle,
   onYearPrev,
   onYearNext,
   onToggleDarkMode,
@@ -95,7 +97,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             </button>
             <span className="font-semibold whitespace-nowrap">
               {(() => {
-                if (!routeView || routeView === 'year' || routeView === 'list') return year;
+                if (!routeView || routeView === 'year' || routeView === 'list' || routeView === 'planner') return year;
                 const monthName = MONTHS.find(m => slugify(m) === routeView);
                 return monthName ? `${monthName} ${year}` : year;
               })()}
@@ -105,8 +107,25 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             </button>
           </div>
 
+          {(!routeView || routeView === 'year' || routeView === 'planner') && (
+            <div className="hidden sm:flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg items-center shadow-inner">
+              <button
+                onClick={() => onViewToggle('year')}
+                className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+              >
+                Year
+              </button>
+              <button
+                onClick={() => onViewToggle('planner')}
+                className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+              >
+                Planner
+              </button>
+            </div>
+          )}
+
           {hasFilters && (
-            <button 
+            <button
               onClick={onClearFilters} 
               className="px-3 h-10 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-lg text-sm font-bold hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
             >

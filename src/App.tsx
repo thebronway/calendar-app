@@ -9,10 +9,10 @@ import Footer from './components/Footer';
 import KeySection from './components/key/KeySection';
 import StatsSection from './components/stats/StatsSection';
 import BulkEditBar from './components/calendar/BulkEditBar';
-
 // Modals & Components
 import MonthView from './components/MonthView';
 import ListView from './components/ListView';
+import PlannerView from './components/PlannerView';
 import MonthLegend from './components/MonthLegend';
 import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
@@ -29,7 +29,7 @@ import { useHighlightFilters } from './hooks/useHighlightFilters';
 import { useCustomRoute } from './hooks/useCustomRoute';
 
 import { sanitizeHtml, slugify } from './utils/helpers';
-import { MONTHS, ICON_MAP } from './utils/constants';
+import { MONTHS, ICON_MAP, CATEGORY_COLORS } from './utils/constants';
 import type { Role, CalendarDataset, KeyItem } from './types';
 
 const SESSION_TOKEN_KEY = 'calendar_admin_token';
@@ -102,35 +102,52 @@ export default function App() {
     const filtered: CalendarDataset = {};
     Object.entries(calendarData).forEach(([key, day]) => {
       const newDay = { ...day, icons: [...(day.icons || [])] };
-      let keepDay = true;
+      
+      let hasCatMatch = false;
+      let hasActMatch = false;
+      let keepDay = false;
 
       // Check category match
       if (route.categoryFilters.length > 0) {
         const cat = keyItems.find((k) => k.id === newDay.colorId);
-        if (!cat || !route.categoryFilters.includes(slugify(cat.label))) {
-          keepDay = false;
+        if (cat && route.categoryFilters.includes(slugify(cat.label))) {
+          hasCatMatch = true;
         }
       }
 
       // Check activity match
-      if (route.activityFilters.length > 0) {
-        const matchingIcons = newDay.icons.filter((iconEntry) => {
-          const iconValue = iconEntry.value || iconEntry.icon;
-          const iconDef = keyItems.find(
-            (k) => k.icon === iconValue && k.iconColor === iconEntry.color && !k.isColorKey
-          );
-          return iconDef && route.activityFilters.includes(slugify(iconDef.label));
-        });
+      const matchingIcons = newDay.icons.filter((iconEntry) => {
+        const iconValue = iconEntry.value || iconEntry.icon;
+        const iconDef = keyItems.find(
+          (k) => k.icon === iconValue && k.iconColor === iconEntry.color && !k.isColorKey
+        );
+        return iconDef && route.activityFilters.includes(slugify(iconDef.label));
+      });
 
-        if (matchingIcons.length === 0) {
-          keepDay = false; // Day doesn't have the requested activity
-        } else {
-          newDay.icons = matchingIcons; // Strip other non-matching icons from the cell
-        }
+      if (route.activityFilters.length > 0 && matchingIcons.length > 0) {
+        hasActMatch = true;
       }
 
-      // If the day doesn't match the hard filters, clear its visual data
-      if (!keepDay) {
+      // Determine if we keep the day based on an OR logic
+      if (route.categoryFilters.length > 0 && route.activityFilters.length > 0) {
+        keepDay = hasCatMatch || hasActMatch;
+      } else if (route.categoryFilters.length > 0) {
+        keepDay = hasCatMatch;
+      } else if (route.activityFilters.length > 0) {
+        keepDay = hasActMatch;
+      }
+
+      if (keepDay) {
+        // If it didn't match the category filter, strip the color so it doesn't look like a match
+        if (route.categoryFilters.length > 0 && !hasCatMatch) {
+          newDay.colorId = 'none';
+        }
+        // If it didn't match the category filter, strip non-matching activities
+        if (route.activityFilters.length > 0 && !hasCatMatch) {
+          newDay.icons = matchingIcons;
+        }
+      } else {
+        // If the day doesn't match any of the hard filters, clear its visual data
         newDay.colorId = 'none';
         newDay.icons = [];
         newDay.locations = '';
@@ -153,6 +170,7 @@ export default function App() {
     highlightFilters,
     handleLocationFilterToggle,
     handleIconFilterToggle,
+    handleCategoryFilterToggle,
     clearFilters,
     shouldHighlightCell,
   } = useHighlightFilters();
@@ -165,7 +183,7 @@ export default function App() {
   }, [navigate, year]);
 
   const handlePrevNav = useCallback(() => {
-    if (route.view === 'year' || route.view === 'list') {
+    if (route.view === 'year' || route.view === 'list' || route.view === 'planner') {
       handleYearChange(year - 1);
     } else {
       const monthIdx = MONTHS.findIndex((m) => slugify(m) === route.view);
@@ -182,7 +200,7 @@ export default function App() {
   }, [route.view, year, handleYearChange, navigate]);
 
   const handleNextNav = useCallback(() => {
-    if (route.view === 'year' || route.view === 'list') {
+    if (route.view === 'year' || route.view === 'list' || route.view === 'planner') {
       handleYearChange(year + 1);
     } else {
       const monthIdx = MONTHS.findIndex((m) => slugify(m) === route.view);
@@ -199,19 +217,46 @@ export default function App() {
   }, [route.view, year, handleYearChange, navigate]);
 
   const handleViewAsList = useCallback(() => {
-    const slugs = highlightFilters.icons.map(f => {
+    const activitySlugs = highlightFilters.icons.map(f => {
       const k = keyItems.find(item => item.icon === f.icon && item.iconColor === f.iconColor);
       return k ? slugify(k.label) : null;
     }).filter(Boolean);
+
+    const categorySlugs = highlightFilters.categories?.map(id => {
+      const k = keyItems.find(item => item.id === id);
+      return k ? slugify(k.label) : null;
+    }).filter(Boolean) || [];
     
     clearFilters(); // Clear the soft highlight filters
     
-    if (slugs.length > 0) {
-      navigate(`/${year}/list?a=${slugs.join(',')}`);
-    } else {
-      navigate(`/${year}/list`);
-    }
-  }, [highlightFilters.icons, keyItems, navigate, year, clearFilters]);
+    const params = new URLSearchParams();
+    if (activitySlugs.length > 0) params.set('a', activitySlugs.join(','));
+    if (categorySlugs.length > 0) params.set('c', categorySlugs.join(','));
+    const qs = params.toString();
+    
+    navigate(`/${year}/list${qs ? `?${qs}` : ''}`);
+  }, [highlightFilters, keyItems, navigate, year, clearFilters]);
+
+  const handleViewAsPlanner = useCallback(() => {
+    const activitySlugs = highlightFilters.icons.map(f => {
+      const k = keyItems.find(item => item.icon === f.icon && item.iconColor === f.iconColor);
+      return k ? slugify(k.label) : null;
+    }).filter(Boolean);
+
+    const categorySlugs = highlightFilters.categories?.map(id => {
+      const k = keyItems.find(item => item.id === id);
+      return k ? slugify(k.label) : null;
+    }).filter(Boolean) || [];
+    
+    clearFilters(); // Clear the soft highlight filters
+    
+    const params = new URLSearchParams();
+    if (activitySlugs.length > 0) params.set('a', activitySlugs.join(','));
+    if (categorySlugs.length > 0) params.set('c', categorySlugs.join(','));
+    const qs = params.toString();
+    
+    navigate(`/${year}/planner${qs ? `?${qs}` : ''}`);
+  }, [highlightFilters, keyItems, navigate, year, clearFilters]);
 
   const handleMonthNavigate = useCallback((month: string) => {
     const currentSearch = window.location.search;
@@ -287,16 +332,16 @@ export default function App() {
         if (showHelpModal) { setShowHelpModal(false); return; }
       }
 
-      // Arrow keys change year only when no modal is open
+      // Arrow keys handle navigation only when no modal is open
       const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal || showHelpModal;
       if (!anyModalOpen) {
-        if (e.key === 'ArrowLeft') handleYearChange(year - 1);
-        if (e.key === 'ArrowRight') handleYearChange(year + 1);
+        if (e.key === 'ArrowLeft') handlePrevNav();
+        if (e.key === 'ArrowRight') handleNextNav();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [year, activeCell, showSettingsModal, showKeyModal, showAuthModal, showHelpModal, handleYearChange]);
+  }, [activeCell, showSettingsModal, showKeyModal, showAuthModal, showHelpModal, handlePrevNav, handleNextNav]);
 
   // --- Handlers ---
   const handleAuthenticate = (r: Role, t: string) => {
@@ -389,6 +434,7 @@ export default function App() {
           hasFilters={isCustomView}
           routeView={route.view}
           onClearFilters={handleClearFilters}
+          onViewToggle={(view) => navigate(`/${year}/${view}${window.location.search}`)}
           onYearPrev={handlePrevNav}
           onYearNext={handleNextNav}
           onToggleDarkMode={toggleDarkMode}
@@ -407,8 +453,10 @@ export default function App() {
             iconCounts={iconCounts}
             highlightFilters={highlightFilters}
             onIconFilterToggle={handleIconFilterToggle}
+            onCategoryFilterToggle={handleCategoryFilterToggle}
             onClearFilters={clearFilters}
             onViewAsList={handleViewAsList}
+            onViewAsPlanner={handleViewAsPlanner}
           />
         )}
 
@@ -434,6 +482,16 @@ export default function App() {
           <ListView 
             calendarData={filteredCalendarData} 
             keyItems={filteredKeyItems} 
+            onCellClick={handleCellClick}
+          />
+        ) : route.view === 'planner' ? (
+          <PlannerView
+            year={year}
+            calendarData={filteredCalendarData}
+            keyItems={filteredKeyItems}
+            shouldHighlightCell={shouldHighlightCell}
+            isBulkEditMode={isBulkEditMode}
+            selectedCells={selectedCells}
             onCellClick={handleCellClick}
           />
         ) : route.view === 'year' ? (
@@ -467,36 +525,116 @@ export default function App() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col-reverse md:flex-row justify-center items-start gap-6 md:gap-10 w-full max-w-6xl mx-auto mt-4 px-2">
+          <div className="mt-4">
             {(() => {
               const mIndex = MONTHS.findIndex((m) => slugify(m) === route.view);
               if (mIndex === -1) return null;
               
+              const monthName = MONTHS[mIndex];
+              const activeDays = filteredCalendarData 
+                ? Object.entries(filteredCalendarData)
+                    .filter(([_, day]) => day.month === monthName && (day.colorId !== 'none' || (day.icons && day.icons.length > 0)))
+                    .map(([key, day]) => ({ key, ...day }))
+                    .sort((a, b) => a.key.localeCompare(b.key))
+                : [];
+
+              const daysInMonth = new Date(Date.UTC(year, mIndex + 1, 0)).getUTCDate();
+
               return (
-                <>
-                  <MonthLegend 
-                    month={MONTHS[mIndex]} 
-                    calendarData={filteredCalendarData} 
-                    keyItems={keyItems} 
-                  />
-                  <div className="flex-1 w-full max-w-3xl relative z-0 [&>*]:!w-full [&>*]:!max-w-none [&>*]:!p-0">
-                    <MonthView
-                      monthIndex={mIndex}
-                      year={year}
-                      calendarData={filteredCalendarData}
-                      keyItems={filteredKeyItems}
-                      isExpanded={expandedMonths[mIndex] ?? true}
-                      onToggleMonth={(idx: number) =>
-                        setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
-                      }
-                      shouldHighlightCell={shouldHighlightCell}
-                      isBulkEditMode={isBulkEditMode}
-                      selectedCells={selectedCells}
-                      onCellClick={handleCellClick}
-                      onMonthClick={() => handleMonthNavigate(MONTHS[mIndex])}
-                    />
+                <div className="rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden mb-8">
+                  
+                  {/* FULL WIDTH HEADER */}
+                  <div className="bg-gray-100 dark:bg-gray-900 px-6 py-3 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{monthName} {year}</h3>
+                    <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
+                      {activeDays.length} / {daysInMonth} days
+                    </span>
                   </div>
-                </>
+
+                  {/* 3-COLUMN CONTENT */}
+                  <div className="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+                    <div className="lg:col-span-1">
+                      <MonthView
+                        monthIndex={mIndex}
+                        year={year}
+                        calendarData={filteredCalendarData}
+                        keyItems={filteredKeyItems}
+                        isExpanded={expandedMonths[mIndex] ?? true}
+                        onToggleMonth={(idx: number) =>
+                          setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
+                        }
+                        shouldHighlightCell={shouldHighlightCell}
+                        isBulkEditMode={isBulkEditMode}
+                        selectedCells={selectedCells}
+                        onCellClick={handleCellClick}
+                        className="w-full"
+                        isPlanner={true}
+                      />
+                    </div>
+                    <div className="lg:col-span-2 columns-1 md:columns-2 gap-6">
+                      {activeDays.length > 0 ? (
+                        activeDays.map((day) => {
+                          const category = keyItems.find((k) => k.id === day.colorId);
+                          const colorDef = category ? CATEGORY_COLORS.find((c) => c.id === category.colorCode) : null;
+                          const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900` : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+
+                          const [y, m, d] = day.key.split('-');
+                          const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+                          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+
+                          return (
+                            <div 
+                              key={day.key}
+                              onClick={() => handleCellClick(day.key)}
+                              className="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden mb-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                            >
+                              <div className="flex px-4 py-3 gap-4">
+                                <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900 border dark:border-gray-700 h-fit">
+                                  <span className="text-[10px] font-bold text-gray-500 uppercase">{dayOfWeek}</span>
+                                  <span className="text-lg font-extrabold text-gray-900 dark:text-gray-100 leading-none mt-0.5">{day.day}</span>
+                                </div>
+                                
+                                <div className="flex-1 min-w-0 space-y-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {category && (
+                                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}>
+                                        {category.label}
+                                      </span>
+                                    )}
+                                    {day.locations && (
+                                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                                        📍 {day.locations}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {day.icons && day.icons.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-1.5">
+                                      {day.icons.map((icon, i) => {
+                                        const IC = ICON_MAP[icon.value || icon.icon || ''];
+                                        const keyDef = keyItems.find(k => k.icon === (icon.value || icon.icon) && k.iconColor === icon.color);
+                                        const label = icon.displayName || (keyDef ? keyDef.label : (icon.value || icon.icon));
+                                        return IC ? (
+                                          <div key={i} className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border dark:border-gray-600 px-2 py-1 rounded-md shadow-sm">
+                                            <IC size={14} className={icon.color} />
+                                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{label}</span>
+                                          </div>
+                                        ) : null;
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-gray-500 dark:text-gray-400 italic bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 text-center break-inside-avoid">
+                          No events this month.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })()}
           </div>

@@ -39,6 +39,10 @@ const ListView: React.FC<ListViewProps> = ({ calendarData, keyItems, onCellClick
         const colorDef = category ? CATEGORY_COLORS.find((c) => c.id === category.colorCode) : null;
         const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900` : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
 
+        const [y, m, d] = day.key.split('-');
+        const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+        const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+
         return (
           <React.Fragment key={day.key}>
             {showMonthHeader && (
@@ -51,7 +55,7 @@ const ListView: React.FC<ListViewProps> = ({ calendarData, keyItems, onCellClick
               className="flex flex-col sm:flex-row sm:items-center px-6 py-4 border-b last:border-b-0 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors gap-4"
             >
               <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-900 border dark:border-gray-700">
-                <span className="text-xs font-bold text-gray-500 uppercase">{day.month.slice(0,3)}</span>
+                <span className="text-xs font-bold text-gray-500 uppercase">{dayOfWeek}</span>
                 <span className="text-xl font-extrabold text-gray-900 dark:text-gray-100">{day.day}</span>
               </div>
               
