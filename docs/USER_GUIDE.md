@@ -18,6 +18,7 @@ This guide covers everything you need to know to deploy, configure, and use your
 7. [Navigating the Calendar Views](#7-navigating-the-calendar-views)
 8. [Stats, Filters, and Sharing](#8-stats-filters-and-sharing)
 9. [Keyboard Shortcuts & Tips](#9-keyboard-shortcuts--tips)
+10. [iCal Subscriptions (Syncing)](#10-ical-subscriptions-syncing)
 
 ---
 
@@ -78,6 +79,10 @@ The calendar operates on a dual-tier access system:
 * **Admin Mode:** Clicking the **Lock icon** in the header allows you to enter your `ADMIN_PASSWORD`. Once authenticated, you will see new buttons for Bulk Edit, Key configuration, and Settings, and you can edit individual days.
 
 *Note: Your session will automatically expire after 24 hours, or you can click the Logout button to end it immediately.*
+
+### Reverse Proxy Routing
+If running the application behind an authentication proxy (such as Authentik), ensure your server configuration route matches the standard login endpoint under this section:
+`location = /api/auth/login`
 
 ---
 
@@ -173,3 +178,35 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 * **Arrow Keys (`←` / `→`):** Instantly navigate to the previous or next year (if no modals are open).
 * **`Esc` Key:** Close any open modal or cancel out of the day editor without saving.
 * **Saving:** If you edit a day and attempt to close the window without saving, the app will warn you to prevent data loss.
+
+---
+
+## 10. iCal Subscriptions (Syncing)
+
+You can sync your travel and activities directly to your personal calendar (Apple Calendar, Google Calendar, Outlook) using custom continuous iCal feeds. 
+
+### Creating a Feed (Admin Only)
+1. Click the **Feeds (RSS) icon** in the header to open the Feed Manager.
+2. Click **New Feed** and provide a descriptive name.
+3. **Step 1: The Event Trigger (What creates the block?):**
+    * Choose between **Categories / Activities** or **Geographic Locations** to dictate what scans your calendar database.
+    * *Categories / Activities Mode:* Select what data elements to look for. If combining both, you can apply strict conditional logic rules (OR means any matching item creates an event; AND requires both to exist on the same day).
+    * *Geographic Locations Mode:* Set the feed to match any day containing location entries, or target explicit matching cities/regions.
+    * *Grouping Strategy:* Select **Separate Events** to split items out into independent overlapping calendar entries, or **All-in-One Event** to combine multiple elements into a single combined calendar block.
+4. **Step 2: The Event Payload (Sub-categories & Details):**
+    * Toggle **Map data to Location field** to pass the day's structural geographic data straight into your external calendar's native location text property.
+    * Check which supplementary contextual layers to append into the event notes box (Rich-Text Notes, List of Activities, Category Display Name, or Location List).
+5. Click **Save Profile Rules**.
+
+*Note on Filters:* The checklist filter items visible inside the builder form are dynamically populated based on active data configurations parsed from the specific calendar Year you are currently viewing.
+
+### Subscribing to a Feed
+Once a feed is created, click **Copy URL**. 
+* **Apple Calendar:** Go to `File > New Calendar Subscription...` and paste the URL.
+* **Google Calendar:** Go to `Settings > Add calendar > From URL` and paste the URL.
+
+*Note: Feeds are continuous and will automatically stitch together data from the previous, current, and next year so your calendar stays perfectly up to date.*
+
+### Reverse Proxy Bypass
+If running the application behind an authentication proxy (such as Authentik), you must add an unauthenticated bypass line for the feed extraction route explicitly above your catch-all route:
+`location /api/feed/`

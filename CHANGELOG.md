@@ -1,12 +1,19 @@
 # LogbookWrapped Changelog
 
 *Last updated: 2026-06-07* 
-*Current Version: v0.9.0*
+*Current Version: v0.9.1*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.1
+- Added iCal calendar subscription system
+    - Implemented 2-step trigger and payload query builder
+    - Added AND/OR filter logic rules
+    - Integrated icons into the feed manager UI
+    - Updated User_guide
 
 ### Release v0.9.0
 - App.tsx monolithic breakup

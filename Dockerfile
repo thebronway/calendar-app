@@ -29,8 +29,9 @@ WORKDIR /app
 # build and does not need to be present in the production image.
 RUN npm install express@4 ws express-rate-limit
 
-# Copy the backend server
+# Copy the backend server and services
 COPY server.js .
+COPY services/ ./services/
 
 # Create the directory for the client files (as expected by server.js)
 RUN mkdir -p /app/client/build

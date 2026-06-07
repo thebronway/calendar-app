@@ -1,0 +1,95 @@
+import { useState, useCallback } from 'react';
+
+export interface FeedProfile {
+  id?: string;
+  token?: string;
+  name: string;
+  // Step 1: The Trigger & Title Configuration
+  triggerType: 'data' | 'location';
+  dataTriggerMode?: 'categories' | 'activities' | 'both';
+  dataLogicalOperator?: 'AND' | 'OR';
+  selectedCategories?: string[];
+  selectedActivities?: string[];
+  locationMode?: 'any' | 'specific';
+  selectedLocations?: string[]; // stored as string array if specific
+  groupingMode: 'separate' | 'combined';
+
+  // Step 2: The Payload (Sub-categories / Metadata)
+  includeLocationField: boolean;
+  descriptionPayload: {
+    activities: boolean;
+    categories: boolean;
+    notes: boolean;
+    locations: boolean;
+  };
+}
+
+interface UseFeedsParams {
+  adminToken: string | null;
+  role: string;
+}
+
+export function useFeeds({ adminToken, role }: UseFeedsParams) {
+  const [feeds, setFeeds] = useState<FeedProfile[]>([]);
+  const [isFeedsLoading, setIsFeedsLoading] = useState(false);
+
+  const fetchFeeds = useCallback(async () => {
+    if (role !== 'admin' || !adminToken) return;
+    setIsFeedsLoading(true);
+    try {
+      const response = await fetch('/api/feeds', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFeeds(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch feeds', e);
+    } finally {
+      setIsFeedsLoading(false);
+    }
+  }, [adminToken, role]);
+
+  const saveFeed = useCallback(async (feed: FeedProfile) => {
+    if (role !== 'admin' || !adminToken) return false;
+    try {
+      const response = await fetch('/api/feeds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify(feed),
+      });
+      if (response.ok) {
+        await fetchFeeds();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Failed to save feed', e);
+      return false;
+    }
+  }, [adminToken, role, fetchFeeds]);
+
+  const deleteFeed = useCallback(async (id: string) => {
+    if (role !== 'admin' || !adminToken) return false;
+    try {
+      const response = await fetch(`/api/feeds/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (response.ok) {
+        setFeeds((prev) => prev.filter((f) => f.id !== id));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Failed to delete feed', e);
+      return false;
+    }
+  }, [adminToken, role]);
+
+  return { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed };
+}

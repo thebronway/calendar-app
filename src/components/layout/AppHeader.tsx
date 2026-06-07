@@ -9,6 +9,7 @@ import {
   Lock,
   LogOut,
   Moon,
+  Rss,
   Settings,
   Sun,
 } from 'lucide-react';
@@ -33,6 +34,7 @@ interface AppHeaderProps {
   onToggleDarkMode: () => void;
   onToggleBulkEdit: () => void;
   onOpenKeyModal: () => void;
+  onOpenFeeds: () => void;
   onOpenSettings: () => void;
   onLogout: () => void;
   onOpenAuth: () => void;
@@ -56,6 +58,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onToggleDarkMode,
   onToggleBulkEdit,
   onOpenKeyModal,
+  onOpenFeeds,
   onOpenSettings,
   onLogout,
   onOpenAuth,
@@ -292,6 +295,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       <Key size={20} className="sm:mr-2" />
                       <span className="sm:inline hidden">Key</span>
                       <span className="sm:hidden ml-1">Key</span>
+                    </button>
+                    <button
+                      onClick={onOpenFeeds}
+                      className="h-10 px-4 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-bold text-sm"
+                      title="Manage Feeds"
+                    >
+                      <Rss size={20} className="sm:mr-2" />
+                      <span className="sm:inline hidden">Feeds</span>
+                      <span className="sm:hidden ml-1">Feeds</span>
                     </button>
                     <button
                       onClick={onOpenSettings}

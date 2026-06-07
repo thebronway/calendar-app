@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { rateLimit } = require('express-rate-limit');
+const { generateICalFeed } = require('./services/iCalGenerator');
 
 // --- Configuration ---
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
+const FEEDS_FILE = path.join(DATA_DIR, 'feeds.json');
 
 // Environment variable defaults (used only if config.json doesn't exist)
 const DEFAULT_CONFIG = {
@@ -135,6 +137,31 @@ const writeConfig = (newConfig) => {
     return true;
   } catch (e) {
     logError('Config write', e);
+    return false;
+  }
+};
+
+// Feeds Reader
+const readFeeds = () => {
+  ensureDataDir();
+  if (fs.existsSync(FEEDS_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(FEEDS_FILE, 'utf8'));
+    } catch (e) {
+      logError('Feeds read', e);
+    }
+  }
+  return [];
+};
+
+// Feeds Writer
+const writeFeeds = (feeds) => {
+  ensureDataDir();
+  try {
+    fs.writeFileSync(FEEDS_FILE, JSON.stringify(feeds, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    logError('Feeds write', e);
     return false;
   }
 };
@@ -284,6 +311,77 @@ app.post('/api/data/:year', verifyAdminToken, async (req, res) => {
   } else {
     logError('Data write failed', new Error('Failed to write data file'), { year: yearNum });
     res.status(500).json({ error: 'Failed to save data', details: 'Internal server error' });
+  }
+});
+
+// 6. iCal Feeds Management (Protected)
+app.get('/api/feeds', verifyAdminToken, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(readFeeds());
+});
+
+app.post('/api/feeds', verifyAdminToken, (req, res) => {
+  const feeds = readFeeds();
+  const newFeed = req.body;
+
+  if (!newFeed.id) {
+    // Create new feed
+    newFeed.id = crypto.randomUUID();
+    newFeed.token = crypto.randomBytes(16).toString('hex');
+    feeds.push(newFeed);
+  } else {
+    // Update existing feed
+    const index = feeds.findIndex(f => f.id === newFeed.id);
+    if (index !== -1) {
+      // Preserve the token (or generate a new one if somehow missing)
+      newFeed.token = feeds[index].token || crypto.randomBytes(16).toString('hex');
+      feeds[index] = newFeed;
+    } else {
+      return res.status(404).send('Feed not found');
+    }
+  }
+
+  if (writeFeeds(feeds)) {
+    res.json(newFeed);
+  } else {
+    res.status(500).send('Failed to save feeds');
+  }
+});
+
+app.delete('/api/feeds/:id', verifyAdminToken, (req, res) => {
+  let feeds = readFeeds();
+  const initialLength = feeds.length;
+  feeds = feeds.filter(f => f.id !== req.params.id);
+  
+  if (feeds.length === initialLength) {
+    return res.status(404).send('Feed not found');
+  }
+
+  if (writeFeeds(feeds)) {
+    res.status(200).send('Feed deleted');
+  } else {
+    res.status(500).send('Failed to delete feed');
+  }
+});
+
+// 7. Public iCal Feed Route
+app.get('/api/feed/:token', async (req, res) => {
+  const feeds = readFeeds();
+  const profile = feeds.find(f => f.token === req.params.token);
+
+  if (!profile) {
+    return res.status(404).send('Invalid feed token');
+  }
+
+  try {
+    const icalString = await generateICalFeed(profile, DATA_DIR);
+    
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="calendar-${profile.id}.ics"`);
+    res.send(icalString);
+  } catch (error) {
+    logError(`Feed generation failed for token ${req.params.token}`, error);
+    res.status(500).send('Failed to generate calendar feed');
   }
 });
 

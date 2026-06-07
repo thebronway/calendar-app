@@ -18,6 +18,7 @@ import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
 import KeyConfigModal from './components/KeyConfigModal';
+import FeedManagerModal from './components/FeedManagerModal';
 import UserGuide from './components/UserGuide';
 
 // Hooks
@@ -31,6 +32,7 @@ import { useFilteredData } from './hooks/useFilteredData';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useModals } from './hooks/useModals';
 import { useBulkEdit } from './hooks/useBulkEdit';
+import { useFeeds } from './hooks/useFeeds';
 
 import { slugify } from './utils/helpers';
 import { MONTHS } from './utils/constants';
@@ -54,8 +56,9 @@ export default function App() {
     sessionStorage.getItem(SESSION_TOKEN_KEY)
   );
 
-  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, activeCell, setActiveCell } = useModals();
+  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
+  const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ adminToken, role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
 
   // --- Hooks ---
@@ -203,6 +206,7 @@ export default function App() {
 
   // --- Effects ---
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
+  useEffect(() => { fetchFeeds(); }, [fetchFeeds]);
 
   useEffect(() => {
     connectWebSocket();
@@ -347,6 +351,7 @@ export default function App() {
           onToggleDarkMode={toggleDarkMode}
           onToggleBulkEdit={toggleBulkEdit}
           onOpenKeyModal={() => setShowKeyModal(true)}
+          onOpenFeeds={() => setShowFeedsModal(true)}
           onOpenSettings={() => setShowSettingsModal(true)}
           onLogout={handleLogout}
           onOpenAuth={() => setShowAuthModal(true)}
@@ -383,6 +388,17 @@ export default function App() {
             onKeyItemsSave={handleKeyUpdate}
             year={year}
             onYearChange={handleYearChange}
+          />
+          <FeedManagerModal
+            isOpen={showFeedsModal}
+            onClose={() => setShowFeedsModal(false)}
+            feeds={feeds}
+            isFeedsLoading={isFeedsLoading}
+            keyItems={keyItems}
+            calendarData={calendarData}
+            year={year}
+            onSaveFeed={saveFeed}
+            onDeleteFeed={deleteFeed}
           />
           <AuthModal
             isOpen={showAuthModal}
