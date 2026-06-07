@@ -137,27 +137,38 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
                               Mode: {feed.dataTriggerMode}
                             </span>
                           )}
-                          <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md capitalize">
-                            Grouping: {feed.groupingMode}
+                          <span className={`px-2 py-1 rounded-md capitalize ${feed.isPublic ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'}`}>
+                            {feed.isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 dark:border-gray-700">
-                        <button
-                          onClick={() => handleCopyUrl(feed.token, feed.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
-                            copiedId === feed.id
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-orange-50 text-orange-700 hover:bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/40 border border-orange-200 dark:border-orange-800'
-                          }`}
-                        >
-                          {copiedId === feed.id ? (
-                            <><CheckCircle2 size={16} /> Copied</>
-                          ) : (
-                            <><LinkIcon size={16} /> Copy URL</>
+                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 dark:border-gray-700 flex-wrap">
+                        <div className="flex flex-col gap-1.5">
+                          <button
+                            onClick={() => handleCopyUrl(feed.token, `${feed.id}-private`)}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                              copiedId === `${feed.id}-private`
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            {copiedId === `${feed.id}-private` ? <><CheckCircle2 size={14} /> Copied</> : <><LinkIcon size={14} /> Private URL</>}
+                          </button>
+                          
+                          {feed.isPublic && feed.publicToken && (
+                            <button
+                              onClick={() => handleCopyUrl(feed.publicToken, `${feed.id}-public`)}
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                                copiedId === `${feed.id}-public`
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/40 border border-orange-200 dark:border-orange-800'
+                              }`}
+                            >
+                              {copiedId === `${feed.id}-public` ? <><CheckCircle2 size={14} /> Copied</> : <><LinkIcon size={14} /> Public URL</>}
+                            </button>
                           )}
-                        </button>
+                        </div>
 
                         <button
                           onClick={() => handleEdit(feed)}

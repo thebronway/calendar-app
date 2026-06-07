@@ -115,12 +115,12 @@ async function generateICalFeed(profile, dataDir) {
         // Find intersection
         const matches = dayLocsArray.filter(l => targetLocs.includes(l));
         if (matches.length > 0) {
-          matchedTitles = profile.groupingMode === 'separate' ? matches : [matches.join(', ')];
+          matchedTitles = [matches.join(', ')];
         }
       } else {
         // Any Location
         if (dayLocsArray.length > 0) {
-          matchedTitles = profile.groupingMode === 'separate' ? dayLocsArray : [dayLocationStr];
+          matchedTitles = [dayLocationStr];
         }
       }
     } else {
@@ -163,11 +163,7 @@ async function generateICalFeed(profile, dataDir) {
 
         if (potentialTitles.length === 0) potentialTitles.push(dayCategory || 'Calendar Event');
 
-        if (profile.groupingMode === 'separate') {
-          matchedTitles = potentialTitles;
-        } else {
-          matchedTitles = [potentialTitles.join(' & ')];
-        }
+        matchedTitles = [potentialTitles.join(' & ')];
       }
     }
 
@@ -179,12 +175,12 @@ async function generateICalFeed(profile, dataDir) {
 
     // Description Block Builder
     const descParts = [];
-    const payload = profile.descriptionPayload || {};
+    const payload = profile.descriptionPayload || [];
     
-    if (payload.notes && dayNotes) descParts.push(dayNotes);
-    if (payload.categories && dayCategory) descParts.push(`Category: ${dayCategory}`);
-    if (payload.locations && dayLocationStr) descParts.push(`Locations: ${dayLocationStr}`);
-    if (payload.activities && dayActivitiesList) descParts.push(`Activities: ${dayActivitiesList}`);
+    if (payload.includes('notes') && dayNotes) descParts.push(dayNotes);
+    if (payload.includes('categories') && dayCategory) descParts.push(`Category: ${dayCategory}`);
+    if (payload.includes('locations') && dayLocationStr) descParts.push(`Locations: ${dayLocationStr}`);
+    if (payload.includes('activities') && dayActivitiesList) descParts.push(`Activities: ${dayActivitiesList}`);
 
     const eventDescription = descParts.join('\\n\\n');
 

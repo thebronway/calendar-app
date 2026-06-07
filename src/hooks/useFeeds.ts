@@ -3,6 +3,8 @@ import { useState, useCallback } from 'react';
 export interface FeedProfile {
   id?: string;
   token?: string;
+  publicToken?: string;
+  isPublic?: boolean;
   name: string;
   // Step 1: The Trigger & Title Configuration
   triggerType: 'data' | 'location';
@@ -12,16 +14,10 @@ export interface FeedProfile {
   selectedActivities?: string[];
   locationMode?: 'any' | 'specific';
   selectedLocations?: string[]; // stored as string array if specific
-  groupingMode: 'separate' | 'combined';
 
   // Step 2: The Payload (Sub-categories / Metadata)
   includeLocationField: boolean;
-  descriptionPayload: {
-    activities: boolean;
-    categories: boolean;
-    notes: boolean;
-    locations: boolean;
-  };
+  descriptionPayload: string[];
 }
 
 interface UseFeedsParams {

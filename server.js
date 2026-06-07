@@ -328,6 +328,9 @@ app.post('/api/feeds', verifyAdminToken, (req, res) => {
     // Create new feed
     newFeed.id = crypto.randomUUID();
     newFeed.token = crypto.randomBytes(16).toString('hex');
+    if (newFeed.isPublic) {
+      newFeed.publicToken = crypto.randomBytes(16).toString('hex');
+    }
     feeds.push(newFeed);
   } else {
     // Update existing feed
@@ -335,6 +338,14 @@ app.post('/api/feeds', verifyAdminToken, (req, res) => {
     if (index !== -1) {
       // Preserve the token (or generate a new one if somehow missing)
       newFeed.token = feeds[index].token || crypto.randomBytes(16).toString('hex');
+      
+      // Handle public token generation
+      if (newFeed.isPublic) {
+        newFeed.publicToken = feeds[index].publicToken || crypto.randomBytes(16).toString('hex');
+      } else {
+        newFeed.publicToken = undefined;
+      }
+      
       feeds[index] = newFeed;
     } else {
       return res.status(404).send('Feed not found');
@@ -367,7 +378,7 @@ app.delete('/api/feeds/:id', verifyAdminToken, (req, res) => {
 // 7. Public iCal Feed Route
 app.get('/api/feed/:token', async (req, res) => {
   const feeds = readFeeds();
-  const profile = feeds.find(f => f.token === req.params.token);
+  const profile = feeds.find(f => f.token === req.params.token || (f.isPublic && f.publicToken === req.params.token));
 
   if (!profile) {
     return res.status(404).send('Invalid feed token');

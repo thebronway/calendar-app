@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FeedProfile } from '../hooks/useFeeds';
-import { Settings, MapPin, Layers, Info, CheckSquare, Square } from 'lucide-react';
+import { MapPin, Info, AlignLeft, List as ListIcon, Tag } from 'lucide-react';
 import { ICON_MAP } from '../utils/constants';
 
 interface FeedBuilderFormProps {
@@ -24,6 +24,7 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
   availableLocations,
 }) => {
   const [name, setName] = useState(initialData?.name || '');
+  const [isPublic, setIsPublic] = useState<boolean>(initialData?.isPublic || false);
   
   // Step 1 State
   const [triggerType, setTriggerType] = useState<FeedProfile['triggerType']>(initialData?.triggerType || 'data');
@@ -33,14 +34,12 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
   const [selectedActivities, setSelectedActivities] = useState<string[]>(initialData?.selectedActivities || []);
   const [locationMode, setLocationMode] = useState<FeedProfile['locationMode']>(initialData?.locationMode || 'any');
   const [selectedLocations, setSelectedLocations] = useState<string[]>(initialData?.selectedLocations || []);
-  const [groupingMode, setGroupingMode] = useState<FeedProfile['groupingMode']>(initialData?.groupingMode || 'separate');
 
   // Step 2 State
   const [includeLocationField, setIncludeLocationField] = useState<boolean>(initialData?.includeLocationField ?? true);
-  const [payloadActivities, setPayloadActivities] = useState<boolean>(initialData?.descriptionPayload?.activities ?? true);
-  const [payloadCategories, setPayloadCategories] = useState<boolean>(initialData?.descriptionPayload?.categories ?? false);
-  const [payloadNotes, setPayloadNotes] = useState<boolean>(initialData?.descriptionPayload?.notes ?? true);
-  const [payloadLocations, setPayloadLocations] = useState<boolean>(initialData?.descriptionPayload?.locations ?? false);
+  const [selectedPayload, setSelectedPayload] = useState<string[]>(
+    Array.isArray(initialData?.descriptionPayload) ? initialData.descriptionPayload : []
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +48,8 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
     onSave({
       id: initialData?.id,
       token: initialData?.token,
+      publicToken: initialData?.publicToken,
+      isPublic,
       name: name.trim(),
       triggerType,
       dataTriggerMode,
@@ -57,14 +58,8 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
       selectedActivities,
       locationMode,
       selectedLocations,
-      groupingMode,
       includeLocationField,
-      descriptionPayload: {
-        activities: payloadActivities,
-        categories: payloadCategories,
-        notes: payloadNotes,
-        locations: payloadLocations,
-      },
+      descriptionPayload: selectedPayload,
     });
   };
 
@@ -78,17 +73,34 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto pr-2">
-      {/* Feed Name */}
-      <div>
-        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Feed Name</label>
-        <input
-          type="text"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., My Flights Feed, Commute Overview"
-          className="w-full p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
-        />
+      {/* Feed Name & Visibility */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Feed Name</label>
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., My Flights Feed, Commute Overview"
+            className="w-full p-2.5 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="sm:w-48 shrink-0">
+          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Visibility</label>
+          <button
+            type="button"
+            onClick={() => setIsPublic(!isPublic)}
+            className={`w-full p-2.5 border rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              isPublic
+                ? 'bg-green-50 border-green-500 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+            }`}
+          >
+            <div className={`w-2.5 h-2.5 rounded-full ${isPublic ? 'bg-green-500' : 'bg-gray-400'}`} />
+            {isPublic ? 'Public Feed' : 'Private Feed'}
+          </button>
+        </div>
       </div>
 
       {/* Dynamic Data Warning Context Note */}
@@ -128,7 +140,7 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
                 : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'
             }`}
           >
-            Geographic Locations
+            Locations
           </button>
         </div>
 
@@ -189,7 +201,7 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
             {(dataTriggerMode === 'activities' || dataTriggerMode === 'both') && (
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Activities</label>
-                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto border p-2 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-wrap gap-1.5 max-h-60 overflow-y-auto border p-2 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700">
                   {availableActivities.map((act) => {
                     const IconComponent = act.icon ? ICON_MAP[act.icon] : null;
                     const isSelected = selectedActivities.includes(act.value);
@@ -262,81 +274,85 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
             )}
           </div>
         )}
-
-        {/* Event Grouping/Splitting Logic */}
-        <div className="pt-3 border-t dark:border-gray-700">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grouping Strategy</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setGroupingMode('separate')}
-              className={`p-2 border rounded-lg text-xs font-bold transition-all ${
-                groupingMode === 'separate'
-                  ? 'bg-purple-50 border-purple-400 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400'
-                  : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              Separate Events (e.g. 2 acts = 2 blocks)
-            </button>
-            <button
-              type="button"
-              onClick={() => setGroupingMode('combined')}
-              className={`p-2 border rounded-lg text-xs font-bold transition-all ${
-                groupingMode === 'combined'
-                  ? 'bg-purple-50 border-purple-400 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400'
-                  : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              All-in-One Event (Combine items together)
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* --- STEP 2: THE PAYLOAD --- */}
       <div className="border dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-900/40 space-y-4">
         <div className="flex items-center space-x-2 border-b dark:border-gray-700 pb-2">
           <div className="bg-emerald-500 text-white font-black rounded-full w-5 h-5 flex items-center justify-center text-xs">2</div>
-          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">The Event Payload (Sub-categories & Details)</h4>
+          <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">Calendar Event Details (What to include)</h4>
         </div>
 
         {/* Official iCal Location Field */}
-        <label className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg cursor-pointer">
-          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center">
-            <MapPin size={14} className="mr-1.5 text-red-500" /> Map data to Location field
-          </span>
-          <input
-            type="checkbox"
-            checked={includeLocationField}
-            onChange={(e) => setIncludeLocationField(e.target.checked)}
-            className="w-4 h-4 text-emerald-600 rounded"
-          />
-        </label>
+        <button
+          type="button"
+          onClick={() => setIncludeLocationField(!includeLocationField)}
+          className={`px-3 py-2 text-xs rounded-md font-medium border transition-all flex items-center gap-1.5 w-fit ${
+            includeLocationField
+              ? 'bg-emerald-600 border-emerald-600 text-white'
+              : 'bg-white text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+          }`}
+        >
+          <MapPin size={14} className={includeLocationField ? 'text-white' : 'text-red-500'} />
+          <span>Location data in the Location field</span>
+        </button>
 
         {/* Details Field Construction checklist */}
         <div className="space-y-2">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Append to Details (Event Notes)</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Append to Details (Event Notes)</label>
           
-          <div className="grid grid-cols-2 gap-2 bg-white dark:bg-gray-800 border dark:border-gray-700 p-3 rounded-lg">
-            <label className="flex items-center space-x-2 text-xs font-medium cursor-pointer text-gray-700 dark:text-gray-300">
-              <input type="checkbox" checked={payloadNotes} onChange={(e) => setPayloadNotes(e.target.checked)} className="rounded text-emerald-600" />
-              <span>Rich-Text Notes</span>
-            </label>
+          <div className="flex flex-wrap gap-2 bg-white dark:bg-gray-800 border dark:border-gray-700 p-3 rounded-lg">
+            <button
+              type="button"
+              onClick={() => toggleSelection('notes', selectedPayload, setSelectedPayload)}
+              className={`px-3 py-1.5 text-xs rounded-md font-medium border transition-all flex items-center gap-1.5 ${
+                selectedPayload.includes('notes')
+                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              <AlignLeft size={14} />
+              <span>Notes</span>
+            </button>
 
-            <label className="flex items-center space-x-2 text-xs font-medium cursor-pointer text-gray-700 dark:text-gray-300">
-              <input type="checkbox" checked={payloadActivities} onChange={(e) => setPayloadActivities(e.target.checked)} className="rounded text-emerald-600" />
-              <span>List of Activities</span>
-            </label>
+            <button
+              type="button"
+              onClick={() => toggleSelection('activities', selectedPayload, setSelectedPayload)}
+              className={`px-3 py-1.5 text-xs rounded-md font-medium border transition-all flex items-center gap-1.5 ${
+                selectedPayload.includes('activities')
+                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              <ListIcon size={14} />
+              <span>Logged Activities</span>
+            </button>
 
-            <label className="flex items-center space-x-2 text-xs font-medium cursor-pointer text-gray-700 dark:text-gray-300">
-              <input type="checkbox" checked={payloadCategories} onChange={(e) => setPayloadCategories(e.target.checked)} className="rounded text-emerald-600" />
-              <span>Category Display Name</span>
-            </label>
+            <button
+              type="button"
+              onClick={() => toggleSelection('categories', selectedPayload, setSelectedPayload)}
+              className={`px-3 py-1.5 text-xs rounded-md font-medium border transition-all flex items-center gap-1.5 ${
+                selectedPayload.includes('categories')
+                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              <Tag size={14} />
+              <span>Category</span>
+            </button>
 
-            <label className="flex items-center space-x-2 text-xs font-medium cursor-pointer text-gray-700 dark:text-gray-300">
-              <input type="checkbox" checked={payloadLocations} onChange={(e) => setPayloadLocations(e.target.checked)} className="rounded text-emerald-600" />
-              <span>Location List</span>
-            </label>
+            <button
+              type="button"
+              onClick={() => toggleSelection('locations', selectedPayload, setSelectedPayload)}
+              className={`px-3 py-1.5 text-xs rounded-md font-medium border transition-all flex items-center gap-1.5 ${
+                selectedPayload.includes('locations')
+                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  : 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              <MapPin size={14} />
+              <span>Location Tags</span>
+            </button>
           </div>
         </div>
       </div>

@@ -1,12 +1,15 @@
-# LogbookWrapped Changelog
+# Calendar-App Changelog
 
 *Last updated: 2026-06-07* 
-*Current Version: v0.9.1*
+*Current Version: v0.9.2*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.3
+- iCal subscription system updates
 
 ### Release v0.9.1
 - Added iCal calendar subscription system
