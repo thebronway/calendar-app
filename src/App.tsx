@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Loader } from 'lucide-react';
 
 // Layout
+import MainLayout from './components/layout/MainLayout';
 import AppHeader from './components/layout/AppHeader';
-import Footer from './components/Footer';
 
 // Sections
 import KeySection from './components/key/KeySection';
@@ -11,9 +11,9 @@ import StatsSection from './components/stats/StatsSection';
 import BulkEditBar from './components/calendar/BulkEditBar';
 // Modals & Components
 import MonthView from './components/MonthView';
+import SingleMonthView from './components/SingleMonthView';
 import ListView from './components/ListView';
 import PlannerView from './components/PlannerView';
-import MonthLegend from './components/MonthLegend';
 import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
@@ -27,9 +27,13 @@ import { useConfig } from './hooks/useConfig';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useHighlightFilters } from './hooks/useHighlightFilters';
 import { useCustomRoute } from './hooks/useCustomRoute';
+import { useFilteredData } from './hooks/useFilteredData';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useModals } from './hooks/useModals';
+import { useBulkEdit } from './hooks/useBulkEdit';
 
-import { sanitizeHtml, slugify } from './utils/helpers';
-import { MONTHS, ICON_MAP, CATEGORY_COLORS } from './utils/constants';
+import { slugify } from './utils/helpers';
+import { MONTHS } from './utils/constants';
 import type { Role, CalendarDataset, KeyItem } from './types';
 
 const SESSION_TOKEN_KEY = 'calendar_admin_token';
@@ -50,13 +54,8 @@ export default function App() {
     sessionStorage.getItem(SESSION_TOKEN_KEY)
   );
 
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showKeyModal, setShowKeyModal] = useState(false);
-
-  const [activeCell, setActiveCell] = useState<string | null>(null);
-  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
-  const [selectedCells, setSelectedCells] = useState<string[]>([]);
+  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, activeCell, setActiveCell } = useModals();
+  const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
 
   // --- Hooks ---
@@ -82,81 +81,12 @@ export default function App() {
     disconnectWebSocket,
   } = useCalendarData({ year, role, adminToken, onConfigUpdate: setConfig });
 
-  const filteredKeyItems = useMemo(() => {
-    return keyItems.filter((item) => {
-      const slug = slugify(item.label);
-      if (item.isColorKey) {
-        return route.categoryFilters.length === 0 || route.categoryFilters.includes(slug);
-      } else {
-        return route.activityFilters.length === 0 || route.activityFilters.includes(slug);
-      }
-    });
-  }, [keyItems, route.categoryFilters, route.activityFilters]);
-
-  const filteredCalendarData = useMemo(() => {
-    if (!calendarData) return null;
-    // If no filters active, return original data
-    if (route.activityFilters.length === 0 && route.categoryFilters.length === 0) return calendarData;
-
-    const filtered: CalendarDataset = {};
-    Object.entries(calendarData).forEach(([key, day]) => {
-      const newDay = { ...day, icons: [...(day.icons || [])] };
-      
-      let hasCatMatch = false;
-      let hasActMatch = false;
-      let keepDay = false;
-
-      // Check category match
-      if (route.categoryFilters.length > 0) {
-        const cat = keyItems.find((k) => k.id === newDay.colorId);
-        if (cat && route.categoryFilters.includes(slugify(cat.label))) {
-          hasCatMatch = true;
-        }
-      }
-
-      // Check activity match
-      const matchingIcons = newDay.icons.filter((iconEntry) => {
-        const iconValue = iconEntry.value || iconEntry.icon;
-        const iconDef = keyItems.find(
-          (k) => k.icon === iconValue && k.iconColor === iconEntry.color && !k.isColorKey
-        );
-        return iconDef && route.activityFilters.includes(slugify(iconDef.label));
-      });
-
-      if (route.activityFilters.length > 0 && matchingIcons.length > 0) {
-        hasActMatch = true;
-      }
-
-      // Determine if we keep the day based on an OR logic
-      if (route.categoryFilters.length > 0 && route.activityFilters.length > 0) {
-        keepDay = hasCatMatch || hasActMatch;
-      } else if (route.categoryFilters.length > 0) {
-        keepDay = hasCatMatch;
-      } else if (route.activityFilters.length > 0) {
-        keepDay = hasActMatch;
-      }
-
-      if (keepDay) {
-        // If it didn't match the category filter, strip the color so it doesn't look like a match
-        if (route.categoryFilters.length > 0 && !hasCatMatch) {
-          newDay.colorId = 'none';
-        }
-        // If it didn't match the category filter, strip non-matching activities
-        if (route.activityFilters.length > 0 && !hasCatMatch) {
-          newDay.icons = matchingIcons;
-        }
-      } else {
-        // If the day doesn't match any of the hard filters, clear its visual data
-        newDay.colorId = 'none';
-        newDay.icons = [];
-        newDay.locations = '';
-        newDay.details = '';
-      }
-
-      filtered[key] = newDay;
-    });
-    return filtered;
-  }, [calendarData, keyItems, route.activityFilters, route.categoryFilters]);
+  const { filteredKeyItems, filteredCalendarData } = useFilteredData({
+    calendarData,
+    keyItems,
+    categoryFilters: route.categoryFilters,
+    activityFilters: route.activityFilters,
+  });
 
   const { stats, iconCounts, locationCounts } = useCalendarStats({ 
     calendarData: filteredCalendarData, 
@@ -317,29 +247,18 @@ export default function App() {
     document.title = title;
   }, [year, config, hasActiveFilters, route.activityFilters, route.categoryFilters, keyItems]);
 
-  useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-          const target = e.target as HTMLElement;
-          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-
-          // ESC closes any open modal
-          if (e.key === 'Escape') {
-            if (activeCell) { setActiveCell(null); return; }
-            if (showSettingsModal) { setShowSettingsModal(false); return; }
-            if (showKeyModal) { setShowKeyModal(false); return; }
-            if (showAuthModal) { setShowAuthModal(false); return; }
-          }
-
-          // Arrow keys handle navigation only when no modal is open
-          const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal;
-          if (!anyModalOpen) {
-            if (e.key === 'ArrowLeft') handlePrevNav();
-            if (e.key === 'ArrowRight') handleNextNav();
-          }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-      }, [activeCell, showSettingsModal, showKeyModal, showAuthModal, handlePrevNav, handleNextNav]);
+  useKeyboardShortcuts({
+    activeCell,
+    showSettingsModal,
+    showKeyModal,
+    showAuthModal,
+    setActiveCell,
+    setShowSettingsModal,
+    setShowKeyModal,
+    setShowAuthModal,
+    handlePrevNav,
+    handleNextNav,
+  });
 
   // --- Handlers ---
   const handleAuthenticate = (r: Role, t: string) => {
@@ -352,15 +271,12 @@ export default function App() {
     setRole('view');
     setAdminToken(null);
     sessionStorage.removeItem(SESSION_TOKEN_KEY);
-    setIsBulkEditMode(false);
-    setSelectedCells([]);
+    clearBulkEdit();
   };
 
   const handleCellClick = (key: string) => {
     if (isBulkEditMode) {
-      setSelectedCells((prev) =>
-        prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-      );
+      toggleCellSelection(key);
     } else {
       setActiveCell(key);
     }
@@ -383,8 +299,7 @@ export default function App() {
           details: updatedDayData.details,
         };
       });
-      setIsBulkEditMode(false);
-      setSelectedCells([]);
+      clearBulkEdit();
     } else {
       if (!activeCell) return;
       updatedDayData.year = parseInt(activeCell.split('-')[0], 10);
@@ -412,15 +327,9 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
-      {config.bannerHtml && (
-        <div
-          className="sticky top-0 z-[70] bg-yellow-50 border-b border-yellow-300 text-yellow-800 py-2 px-4 text-center text-sm font-medium shadow-sm"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(config.bannerHtml) }}
-        />
-      )}
-
-      <div className="max-w-screen-2xl mx-auto p-4 sm:p-6">
+    <MainLayout
+      bannerHtml={config.bannerHtml}
+      header={
         <AppHeader
           year={year}
           config={config}
@@ -436,15 +345,54 @@ export default function App() {
           onYearPrev={handlePrevNav}
           onYearNext={handleNextNav}
           onToggleDarkMode={toggleDarkMode}
-          onToggleBulkEdit={() => { setIsBulkEditMode((b) => !b); setSelectedCells([]); }}
+          onToggleBulkEdit={toggleBulkEdit}
           onOpenKeyModal={() => setShowKeyModal(true)}
           onOpenSettings={() => setShowSettingsModal(true)}
           onLogout={handleLogout}
           onOpenAuth={() => setShowAuthModal(true)}
           onGoToGuide={() => navigate('/guide')}
         />
-
-        {route.view === 'year' && (
+      }
+      modals={
+        <>
+          <CellEditor
+            isOpen={!!activeCell}
+            onClose={() => setActiveCell(null)}
+            dayData={
+              activeCell === 'bulk'
+                ? ({ month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } as any)
+                : activeCell && calendarData ? calendarData[activeCell] : null
+            }
+            onSave={handleDayUpdate}
+            isAdmin={role === 'admin'}
+            keyItems={keyItems}
+            isBulkEdit={activeCell === 'bulk'}
+            bulkCount={selectedCells.length}
+            hasFilters={hasActiveFilters}
+          />
+          <SettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            config={config}
+            onConfigSave={saveConfig}
+          />
+          <KeyConfigModal
+            isOpen={showKeyModal}
+            onClose={() => setShowKeyModal(false)}
+            keyItems={keyItems}
+            onKeyItemsSave={handleKeyUpdate}
+            year={year}
+            onYearChange={handleYearChange}
+          />
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onAuthenticate={handleAuthenticate}
+          />
+        </>
+      }
+    >
+      {route.view === 'year' && (
           <KeySection
             keyItems={filteredKeyItems}
             stats={stats}
@@ -472,7 +420,7 @@ export default function App() {
           <BulkEditBar
             selectedCells={selectedCells}
             onEditSelected={() => setActiveCell('bulk')}
-            onClear={() => setSelectedCells([])}
+            onClear={clearSelection}
           />
         )}
 
@@ -525,158 +473,19 @@ export default function App() {
             })}
           </div>
         ) : (
-          <div className="mt-4">
-            {(() => {
-              const mIndex = MONTHS.findIndex((m) => slugify(m) === route.view);
-              if (mIndex === -1) return null;
-              
-              const monthName = MONTHS[mIndex];
-              const activeDays = filteredCalendarData 
-                ? Object.entries(filteredCalendarData)
-                    .filter(([_, day]) => day.month === monthName && (day.colorId !== 'none' || (day.icons && day.icons.length > 0)))
-                    .map(([key, day]) => ({ key, ...day }))
-                    .sort((a, b) => a.key.localeCompare(b.key))
-                : [];
-
-              const daysInMonth = new Date(Date.UTC(year, mIndex + 1, 0)).getUTCDate();
-
-              return (
-                <div className="rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden mb-8">
-                  
-                  {/* FULL WIDTH HEADER */}
-                  <div className="bg-gray-100 dark:bg-gray-900 px-6 py-3 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{monthName} {year}</h3>
-                    <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
-                      {activeDays.length} / {daysInMonth} days
-                    </span>
-                  </div>
-
-                  {/* 3-COLUMN CONTENT */}
-                  <div className="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
-                    <div className="lg:col-span-1">
-                      <MonthView
-                        monthIndex={mIndex}
-                        year={year}
-                        calendarData={filteredCalendarData}
-                        keyItems={filteredKeyItems}
-                        isExpanded={expandedMonths[mIndex] ?? true}
-                        onToggleMonth={(idx: number) =>
-                          setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
-                        }
-                        shouldHighlightCell={shouldHighlightCell}
-                        isBulkEditMode={isBulkEditMode}
-                        selectedCells={selectedCells}
-                        onCellClick={handleCellClick}
-                        className="w-full"
-                        isPlanner={true}
-                      />
-                    </div>
-                    <div className="lg:col-span-2 columns-1 md:columns-2 gap-6">
-                      {activeDays.length > 0 ? (
-                        activeDays.map((day) => {
-                          const category = keyItems.find((k) => k.id === day.colorId);
-                          const colorDef = category ? CATEGORY_COLORS.find((c) => c.id === category.colorCode) : null;
-                          const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900` : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-
-                          const [y, m, d] = day.key.split('-');
-                          const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
-                          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-
-                          return (
-                            <div 
-                              key={day.key}
-                              onClick={() => handleCellClick(day.key)}
-                              className="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden mb-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                            >
-                              <div className="flex px-4 py-3 gap-4">
-                                <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900 border dark:border-gray-700 h-fit">
-                                  <span className="text-[10px] font-bold text-gray-500 uppercase">{dayOfWeek}</span>
-                                  <span className="text-lg font-extrabold text-gray-900 dark:text-gray-100 leading-none mt-0.5">{day.day}</span>
-                                </div>
-                                
-                                <div className="flex-1 min-w-0 space-y-2">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    {category && (
-                                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}>
-                                        {category.label}
-                                      </span>
-                                    )}
-                                    {day.locations && (
-                                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                                        📍 {day.locations}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {day.icons && day.icons.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mt-1.5">
-                                      {day.icons.map((icon, i) => {
-                                        const IC = ICON_MAP[icon.value || icon.icon || ''];
-                                        const keyDef = keyItems.find(k => k.icon === (icon.value || icon.icon) && k.iconColor === icon.color);
-                                        const label = icon.displayName || (keyDef ? keyDef.label : (icon.value || icon.icon));
-                                        return IC ? (
-                                          <div key={i} className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border dark:border-gray-600 px-2 py-1 rounded-md shadow-sm">
-                                            <IC size={14} className={icon.color} />
-                                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{label}</span>
-                                          </div>
-                                        ) : null;
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-gray-500 dark:text-gray-400 italic bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 text-center break-inside-avoid">
-                          No events this month.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
+          <SingleMonthView
+            year={year}
+            routeView={route.view}
+            calendarData={filteredCalendarData}
+            keyItems={filteredKeyItems}
+            expandedMonths={expandedMonths}
+            setExpandedMonths={setExpandedMonths}
+            shouldHighlightCell={shouldHighlightCell}
+            isBulkEditMode={isBulkEditMode}
+            selectedCells={selectedCells}
+            onCellClick={handleCellClick}
+          />
         )}
-      </div>
-
-      <CellEditor
-        isOpen={!!activeCell}
-        onClose={() => setActiveCell(null)}
-        dayData={
-          activeCell === 'bulk'
-            ? ({ month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } as any)
-            : activeCell && calendarData ? calendarData[activeCell] : null
-        }
-        onSave={handleDayUpdate}
-        isAdmin={role === 'admin'}
-        keyItems={keyItems}
-        isBulkEdit={activeCell === 'bulk'}
-        bulkCount={selectedCells.length}
-        hasFilters={hasActiveFilters}
-      />
-      <SettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        config={config}
-        onConfigSave={saveConfig}
-      />
-      <KeyConfigModal
-        isOpen={showKeyModal}
-        onClose={() => setShowKeyModal(false)}
-        keyItems={keyItems}
-        onKeyItemsSave={handleKeyUpdate}
-        year={year}
-        onYearChange={handleYearChange}
-      />
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthenticate={handleAuthenticate}
-      />
-
-      <Footer />
-    </div>
+    </MainLayout>
   );
 }

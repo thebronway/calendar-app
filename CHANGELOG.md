@@ -1,12 +1,15 @@
 # LogbookWrapped Changelog
 
-*Last updated: 2026-06-05* 
-*Current Version: v0.8.9*
+*Last updated: 2026-06-07* 
+*Current Version: v0.9.0*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.0
+- App.tsx monolithic breakup
 
 ### Release v0.8.9
 - Added user guide in code and in app
@@ -42,7 +45,7 @@ This document tracks past changes starting with v0.7.1.
 ### Release v0.8.4
 - Complete Backend Re-Write to Typescript
 
-### v0.8.2: Monolith Breakup (Backend/Tech-Debt Release)
+### v0.8.2: Monolith Breakup
 - Component Splitting: Extracted `SettingsModal`, `CellEditor`, `KeyConfigModal`, `AuthModal`, and `IconEditor` into dedicated component files.
 - UI Abstraction: Extracted the core calendar grid and rendering logic into a new `MonthView` component.
 - Utility Extraction: Relocated heavy static data (icons, categories) and helper functions into a dedicated `utils/` directory.
