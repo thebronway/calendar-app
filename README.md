@@ -57,6 +57,7 @@ Please refer to the [User Guide](./docs/USER_GUIDE.md#2-installation--deployment
 
 ## Author
 Check out my other projects at [brian.conway.im](https://brian.conway.im/).
+Find this or any of my other projects useful or helpful? [Support my work (Buy me a coffee)](https://buymeacoffee.com/brianconway).
 
 ## Acknowledgments
 This project was coded with AI assistance, but fully reviewed, tested, and approved by hand. See [AIACKNOWLEDGMENT.md](AIACKNOWLEDGMENT.md) for details.
