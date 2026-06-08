@@ -27,6 +27,7 @@ interface AppHeaderProps {
   lastUpdatedText: string;
   hasFilters: boolean;
   routeView?: string;
+  hasPublicFeeds: boolean;
   onClearFilters: () => void;
   onViewToggle: (view: 'year' | 'planner') => void;
   onYearPrev: () => void;
@@ -51,6 +52,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   lastUpdatedText,
   hasFilters,
   routeView,
+  hasPublicFeeds,
   onClearFilters,
   onViewToggle,
   onYearPrev,
@@ -219,13 +221,24 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       <LogOut size={20} />
                     </button>
                   ) : (
-                    <button
-                      onClick={onOpenAuth}
-                      className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      title="Log In"
-                    >
-                      <Lock size={20} />
-                    </button>
+                    <>
+                      {hasPublicFeeds && (
+                        <button
+                          onClick={onOpenFeeds}
+                          className="h-10 w-10 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                          title="Subscribe"
+                        >
+                          <Rss size={20} />
+                        </button>
+                      )}
+                      <button
+                        onClick={onOpenAuth}
+                        className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        title="Log In"
+                      >
+                        <Lock size={20} />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -259,13 +272,24 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       <LogOut size={20} />
                     </button>
                   ) : (
-                    <button
-                      onClick={onOpenAuth}
-                      className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      title="Log In"
-                    >
-                      <Lock size={20} />
-                    </button>
+                    <>
+                      {hasPublicFeeds && (
+                        <button
+                          onClick={onOpenFeeds}
+                          className="h-10 w-10 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                          title="Subscribe"
+                        >
+                          <Rss size={20} />
+                        </button>
+                      )}
+                      <button
+                        onClick={onOpenAuth}
+                        className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        title="Log In"
+                      >
+                        <Lock size={20} />
+                      </button>
+                    </>
                   )}
                 </div>
 

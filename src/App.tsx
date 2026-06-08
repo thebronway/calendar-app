@@ -344,6 +344,7 @@ export default function App() {
           lastUpdatedText={lastUpdatedText}
           hasFilters={isCustomView}
           routeView={route.view}
+          hasPublicFeeds={feeds.some(f => f.isPublic)}
           onClearFilters={handleClearFilters}
           onViewToggle={(view) => navigate(`/${year}/${view}${window.location.search}`)}
           onYearPrev={handlePrevNav}
@@ -399,6 +400,7 @@ export default function App() {
             year={year}
             onSaveFeed={saveFeed}
             onDeleteFeed={deleteFeed}
+            role={role}
           />
           <AuthModal
             isOpen={showAuthModal}

@@ -30,15 +30,22 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
   const [isFeedsLoading, setIsFeedsLoading] = useState(false);
 
   const fetchFeeds = useCallback(async () => {
-    if (role !== 'admin' || !adminToken) return;
     setIsFeedsLoading(true);
     try {
-      const response = await fetch('/api/feeds', {
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFeeds(data);
+      if (role === 'admin' && adminToken) {
+        const response = await fetch('/api/feeds', {
+          headers: { Authorization: `Bearer ${adminToken}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setFeeds(data);
+        }
+      } else {
+        const response = await fetch('/api/feeds/public');
+        if (response.ok) {
+          const data = await response.json();
+          setFeeds(data);
+        }
       }
     } catch (e) {
       console.error('Failed to fetch feeds', e);

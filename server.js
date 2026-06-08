@@ -320,6 +320,22 @@ app.get('/api/feeds', verifyAdminToken, (req, res) => {
   res.json(readFeeds());
 });
 
+app.get('/api/feeds/public', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const feeds = readFeeds();
+  const publicFeeds = feeds
+    .filter(f => f.isPublic)
+    .map(f => ({
+      id: f.id,
+      name: f.name,
+      publicToken: f.publicToken,
+      isPublic: true,
+      triggerType: f.triggerType,
+      dataTriggerMode: f.dataTriggerMode
+    }));
+  res.json(publicFeeds);
+});
+
 app.post('/api/feeds', verifyAdminToken, (req, res) => {
   const feeds = readFeeds();
   const newFeed = req.body;
