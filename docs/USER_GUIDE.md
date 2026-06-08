@@ -1,4 +1,4 @@
-# Calendar App User Guide
+# Calendar-App User Guide
 
 *Last updated: June 5, 2026*
 
