@@ -58,6 +58,11 @@ export function useConfig({ adminToken, role, onYearChange }: UseConfigParams): 
           },
           body: JSON.stringify(newConfig),
         });
+        if (res.status === 401 || res.status === 403) {
+          sessionStorage.removeItem('calendar_admin_token');
+          window.location.reload();
+          return;
+        }
         if (res.ok) setConfig(newConfig);
       } catch (e) {
         console.error('Config save error', e);

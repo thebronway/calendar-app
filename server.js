@@ -331,7 +331,12 @@ app.get('/api/feeds/public', (req, res) => {
       publicToken: f.publicToken,
       isPublic: true,
       triggerType: f.triggerType,
-      dataTriggerMode: f.dataTriggerMode
+      dataTriggerMode: f.dataTriggerMode,
+      dataLogicalOperator: f.dataLogicalOperator,
+      selectedCategories: f.selectedCategories,
+      selectedActivities: f.selectedActivities,
+      locationMode: f.locationMode,
+      selectedLocations: f.selectedLocations
     }));
   res.json(publicFeeds);
 });

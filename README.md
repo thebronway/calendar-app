@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v0.9.2-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.9.3-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 ### A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
@@ -11,7 +11,9 @@ This self-hosted calendar provides a simple web dashboard to share your schedule
 ## Try it yourself: [Live Demo](https://calendar-demo.conway.im/)  
 **GitHub:** [thebronway/calendar-app](https://github.com/thebronway/calendar-app)  
 **Docker Hub:** [thebronway/calendar-app](https://hub.docker.com/r/thebronway/calendar-app)  
-**Documentation:** Read the [User Guide](./docs/USER_GUIDE.md) for setup, configuration, and feature details.
+**Documentation:** Read the [User Guide](./docs/USER_GUIDE.md) for setup, configuration, and feature details.  
+**Roadmap:** See planned features in the [Project Roadmap](./ROADMAP.md).  
+**Changelog:** Review past releases in the [Changelog](./CHANGELOG.md).
 
 ## Features
 

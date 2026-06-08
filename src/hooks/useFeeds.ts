@@ -36,6 +36,11 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
         const response = await fetch('/api/feeds', {
           headers: { Authorization: `Bearer ${adminToken}` },
         });
+        if (response.status === 401 || response.status === 403) {
+          sessionStorage.removeItem('calendar_admin_token');
+          window.location.reload();
+          return;
+        }
         if (response.ok) {
           const data = await response.json();
           setFeeds(data);
@@ -65,6 +70,11 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
         },
         body: JSON.stringify(feed),
       });
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem('calendar_admin_token');
+        window.location.reload();
+        return false;
+      }
       if (response.ok) {
         await fetchFeeds();
         return true;
@@ -83,6 +93,12 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${adminToken}` },
       });
+      if (response.status === 401 || response.status === 403) {
+        alert("Session expired. Please log in again.");
+        sessionStorage.removeItem('calendar_admin_token');
+        window.location.reload();
+        return false;
+      }
       if (response.ok) {
         setFeeds((prev) => prev.filter((f) => f.id !== id));
         return true;

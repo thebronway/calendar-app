@@ -1,27 +1,12 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-06-07* 
-*Current Version: v0.9.2*
+*Current Version: v0.9.3*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v0.9.3
-- iCal subscription system updates
-  - Feed Name Highlight gets cutoff on left side
-  - The Event Trigger sounds too technical 
-  - Dropdown for Trigger on
-    - Sounds too techincal
-    - Change From dropdown to the button select like the rest of the page (if user selects activits, show sctivites)
-  - Dropdown for Logic Rules
-    - Title sounds too technical
-    - Change From dropdown to the button select like the rest of the page
-  - Why does some buttons highlight blue, and other white and other green, all should be green if highlighted
-  - No public feed button if public feed is available, need to add it
-- After container reboot, you stay logged in, but if you try to do something it errors out and makes you logout and log back in - fix that
-- Location backend updates - keep the backend the same, but when a user types in a location, and clicked enter, it puts it in a pill with a x to remove it. change the flow there, just for the ui. 
 
 ### Release v0.9.4
 * **Role-Based Permissions**

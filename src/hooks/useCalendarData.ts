@@ -87,7 +87,7 @@ export function useCalendarData({
         });
         
         if (res.status === 401 || res.status === 403) {
-          alert("Session expired. Please log out and log back in.");
+          sessionStorage.removeItem('calendar_admin_token');
           window.location.reload();
           return;
         }
