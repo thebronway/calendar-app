@@ -34,7 +34,7 @@ import { useModals } from './hooks/useModals';
 import { useBulkEdit } from './hooks/useBulkEdit';
 import { useFeeds } from './hooks/useFeeds';
 
-import { slugify } from './utils/helpers';
+import { slugify, getAdjacentDateKey } from './utils/helpers';
 import { MONTHS } from './utils/constants';
 import type { Role, CalendarDataset, KeyItem } from './types';
 
@@ -286,7 +286,7 @@ export default function App() {
     }
   };
 
-  const handleDayUpdate = (updatedDayData: any) => {
+  const handleDayUpdate = (updatedDayData: any, nextAction?: 'prev' | 'next' | 'close') => {
     const ts = new Date().toLocaleDateString();
     const newDayData: CalendarDataset = { ...(calendarData ?? {}) };
 
@@ -313,6 +313,17 @@ export default function App() {
     setCalendarData(newDayData);
     setLastUpdatedText(ts);
     saveData({ dayData: newDayData, keyItems, lastUpdatedText: ts });
+
+    if (nextAction === 'prev' || nextAction === 'next') {
+      setActiveCell(getAdjacentDateKey(activeCell!, nextAction));
+    } else if (nextAction === 'close') {
+      setActiveCell(null);
+    }
+  };
+
+  const handleNavigateDay = (direction: 'prev' | 'next') => {
+    if (!activeCell || activeCell === 'bulk') return;
+    setActiveCell(getAdjacentDateKey(activeCell, direction));
   };
 
   const handleKeyUpdate = (newKeyItems: KeyItem[]) => {
@@ -364,6 +375,7 @@ export default function App() {
           <CellEditor
             isOpen={!!activeCell}
             onClose={() => setActiveCell(null)}
+            onNavigate={handleNavigateDay}
             dayData={
               activeCell === 'bulk'
                 ? ({ month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } as any)

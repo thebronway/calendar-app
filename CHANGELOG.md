@@ -1,12 +1,20 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-06-09*  
-*Current Version: v0.9.4*
+*Current Version: v0.9.5*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.5
+- CellEditor monolithic breakup
+- CellEditor UI Updates
+- App header UI Updates
+- Screenshot Updates
+- User Guide Updates
+
 ### Release v0.9.4
 - CellEditor Updates on Desktop
 

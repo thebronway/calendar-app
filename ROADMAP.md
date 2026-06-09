@@ -1,17 +1,16 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-06-09*  
-*Current Version: v0.9.4*
+*Current Version: v0.9.5*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v0.9.5
-- CellEditor monolithic breakup
-
 ### Release v0.9.6
+- Auto scroll down to active month confgiureable for both desktop and mobile seperatly.
+- Screenshots in the Userguide
 - **Session & Security Migration**
   - **Goal:** Replace the stateful, in-memory token system and `sessionStorage` with stateless JSON Web Tokens (JWT) and secure cookies to ensure sessions survive container reboots and prevent XSS.
   - **Backend Storage:** Install `jsonwebtoken` and `cookie-parser` (in package.json?). Update `POST /api/auth/login` to generate a stateless JWT containing `{ role: 'admin' }`.

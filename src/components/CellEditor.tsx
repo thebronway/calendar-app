@@ -1,26 +1,24 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
-import ReactQuill from 'react-quill';
-import { X, Tag, Activity, MapPin, Check, ArrowUp, ArrowDown, Search, Save, Pencil } from 'lucide-react';
-import { CATEGORY_COLORS, ICON_MAP, QUILL_MODULES } from '../utils/constants';
+import { X, Tag, MapPin } from 'lucide-react';
+import { CATEGORY_COLORS, ICON_MAP } from '../utils/constants';
 import { sanitizeHtml } from '../utils/helpers';
 import { useCloseGuard } from '../hooks/useUnsavedChanges';
 import type { DayData, IconEntry, KeyItem } from '../types';
 
-type SortOrder = 'key' | 'a-z' | 'z-a';
-type TabId = 'cat_act' | 'loc_notes';
+import { EditorCategories, CategoryOption } from './editor/EditorCategories';
+import { EditorActivities } from './editor/EditorActivities';
+import { EditorLocations } from './editor/EditorLocations';
+import { EditorNotes } from './editor/EditorNotes';
+import { EditorFooter } from './editor/EditorFooter';
 
-interface CategoryOption {
-  id: string;
-  label: string;
-  class: string;
-  bgClass: string;
-}
+type TabId = 'cat_act' | 'loc_notes';
 
 interface CellEditorProps {
   isOpen: boolean;
   onClose: () => void;
   dayData: Partial<DayData> | null;
-  onSave: (data: Partial<DayData>) => void;
+  onSave: (data: Partial<DayData>, nextAction?: 'prev' | 'next' | 'close') => void;
+  onNavigate?: (direction: 'prev' | 'next') => void;
   isAdmin: boolean;
   keyItems: KeyItem[];
   isBulkEdit: boolean;
@@ -29,22 +27,12 @@ interface CellEditorProps {
 }
 
 const CellEditor: React.FC<CellEditorProps> = memo(
-  ({ isOpen, onClose, dayData, onSave, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters }) => {
+  ({ isOpen, onClose, dayData, onSave, onNavigate, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters }) => {
     const categories = useMemo(() => keyItems.filter((k) => k.isColorKey), [keyItems]);
-    const availableActivities = useMemo(
-      () => keyItems.filter((k) => !k.isColorKey && k.icon !== 'None'),
-      [keyItems]
-    );
+    const availableActivities = useMemo(() => keyItems.filter((k) => !k.isColorKey && k.icon !== 'None'), [keyItems]);
 
     const categoryOptions = useMemo((): CategoryOption[] => {
-      const defaults: CategoryOption[] = [
-        {
-          id: 'none',
-          label: 'Home',
-          class: '',
-          bgClass: 'bg-gray-300 dark:bg-gray-600',
-        },
-      ];
+      const defaults: CategoryOption[] = [{ id: 'none', label: 'Home', class: '', bgClass: 'bg-gray-300 dark:bg-gray-600' }];
       const cats = categories.map((k) => {
         const colorDef = CATEGORY_COLORS.find((c) => c.id === k.colorCode) || CATEGORY_COLORS[0];
         return {
@@ -58,31 +46,21 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     }, [categories]);
 
     const [localLocations, setLocalLocations] = useState('');
-    const [locationInput, setLocationInput] = useState('');
     const [localDetails, setLocalDetails] = useState('');
     const [localColorId, setLocalColorId] = useState('none');
     const [localIcons, setLocalIcons] = useState<IconEntry[]>([]);
     const [activeTab, setActiveTab] = useState<TabId>('cat_act');
-    const [activitySearch, setActivitySearch] = useState('');
-    const [activitySort, setActivitySort] = useState<SortOrder>('key');
-    const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
-    const [editingIconName, setEditingIconName] = useState<string>('');
 
     useEffect(() => {
       if (isOpen && dayData) {
         setLocalLocations(dayData.locations || '');
-        setLocationInput('');
         setLocalDetails(dayData.details || '');
         setLocalColorId(dayData.colorId || 'none');
         setLocalIcons((dayData.icons as IconEntry[]) || []);
         setActiveTab('cat_act');
-        setActivitySearch('');
-        setEditingIconIndex(null);
-        setEditingIconName('');
       }
     }, [isOpen, dayData]);
 
-    // Track unsaved changes (only in admin edit mode)
     const isDirty = useMemo(() => {
       if (!isAdmin || !dayData) return false;
       return (
@@ -95,46 +73,34 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     const guardedClose = useCloseGuard(isDirty, onClose);
 
-    const filteredActivities = useMemo(() => {
-      let filtered = availableActivities;
-      if (activitySearch.trim()) {
-        const query = activitySearch.toLowerCase();
-        filtered = filtered.filter((item) => item.label.toLowerCase().includes(query));
-      }
-      return [...filtered].sort((a, b) => {
-        if (activitySort === 'a-z') return a.label.localeCompare(b.label);
-        if (activitySort === 'z-a') return b.label.localeCompare(a.label);
-        return 0;
-      });
-    }, [availableActivities, activitySearch, activitySort]);
+    useEffect(() => {
+      if (!isOpen || !dayData || isBulkEdit) return;
 
-    const handleSortChange = () => {
-      const orders: SortOrder[] = ['key', 'a-z', 'z-a'];
-      setActivitySort(orders[(orders.indexOf(activitySort) + 1) % orders.length]);
-    };
+      const handleKeyDown = (e: KeyboardEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+          return;
+        }
 
-    const handleSave = () => {
-      onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons });
-      onClose();
-    };
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          const direction = e.key === 'ArrowLeft' ? 'prev' : 'next';
+          
+          if (isDirty) {
+            if (window.confirm('You have unsaved changes. Discard them and move?')) {
+              onNavigate?.(direction);
+            }
+          } else {
+            onNavigate?.(direction);
+          }
+        }
+      };
 
-    const handleAddActivity = (keyItem: KeyItem) => {
-      if (localIcons.length >= 4) return;
-      setLocalIcons((prev) => [
-        ...prev,
-        { value: keyItem.icon, color: keyItem.iconColor ?? '' },
-      ]);
-    };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, dayData, isBulkEdit, isDirty, onNavigate]);
 
-    const handleIconDelete = (index: number) =>
-      setLocalIcons((prev) => prev.filter((_, i) => i !== index));
-
-    const handleIconMove = (index: number, direction: number) => {
-      const newIcons = [...localIcons];
-      const newIndex = index + direction;
-      if (newIndex < 0 || newIndex >= newIcons.length) return;
-      [newIcons[index], newIcons[newIndex]] = [newIcons[newIndex], newIcons[index]];
-      setLocalIcons(newIcons);
+    const handleSave = (nextAction?: 'prev' | 'next' | 'close') => {
+      onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons }, nextAction);
     };
 
     if (!isOpen || !dayData) return null;
@@ -149,9 +115,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
           <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 shrink-0">
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-              {isBulkEdit
-                ? `Bulk Edit (${bulkCount} Days)`
-                : `${isAdmin ? 'Edit Day' : 'View Day'} - ${dayData.month} ${dayData.day}, ${dayData.year}`}
+              {isBulkEdit ? `Bulk Edit (${bulkCount} Days)` : `${isAdmin ? 'Edit Day' : 'View Day'} - ${dayData.month} ${dayData.day}, ${dayData.year}`}
             </h3>
             <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               <X size={24} />
@@ -192,15 +156,11 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
                   <strong>Location(s):</strong>
                   {localLocations && localLocations.length > 0 ? (
-                    localLocations
-                      .split(',')
-                      .map((loc) => loc.trim())
-                      .filter(Boolean)
-                      .map((location, index) => (
-                        <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
-                          {location}
-                        </span>
-                      ))
+                    localLocations.split(',').map((loc) => loc.trim()).filter(Boolean).map((location, index) => (
+                      <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
+                        {location}
+                      </span>
+                    ))
                   ) : (
                     <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200">
                       Home
@@ -238,271 +198,40 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             ) : (
               <div className="md:grid md:grid-cols-2 md:gap-8 h-full min-h-0 flex-1">
                 
-                {/* --- LEFT COLUMN: Category & Activities --- */}
                 <div className={`${activeTab === 'cat_act' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 h-full min-h-0`}>
-                  
-                  {/* CATEGORIES */}
-                  <div className="shrink-0">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Category</h4>
-                    <div className="flex flex-wrap gap-2 min-h-12 items-center">
-                      {categoryOptions.map((color) => {
-                        const isSelected = localColorId === color.id;
-                        return (
-                          <button
-                            key={color.id}
-                            onClick={() => setLocalColorId(color.id)}
-                            className={`flex items-center px-3 py-1.5 rounded-full border transition-all text-sm font-medium ${
-                              isSelected
-                                ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass}`} />
-                            {color.label}
-                            {isSelected && <Check size={14} className="ml-1.5 shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* ACTIVITIES */}
-                  <div className="flex flex-col flex-1 min-h-0 pt-6 border-t dark:border-gray-700">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 shrink-0">Activities</h4>
-                    <div className="flex flex-col flex-1 min-h-0 space-y-4">
-                      
-                      {/* Selected Activities */}
-                      <div className="space-y-2 shrink-0">
-                        {localIcons.length === 0 && (
-                          <p className="text-sm italic text-gray-500">No activities selected.</p>
-                        )}
-                        {localIcons.map((item, index) => {
-                          const iconValue = item.value || item.icon;
-                          const IconComponent = iconValue ? ICON_MAP[iconValue] : null;
-                          if (!IconComponent) return null;
-                          const keyDef = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
-                          const defaultLabel = keyDef ? keyDef.label : iconValue;
-                          const displayLabel = item.displayName || defaultLabel;
-
-                          return (
-                            <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                              <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
-                                <IconComponent size={20} className={item.color + ' shrink-0'} />
-                                {editingIconIndex === index ? (
-                                  <div className="flex items-center space-x-2 flex-1">
-                                    <input
-                                      type="text"
-                                      value={editingIconName}
-                                      onChange={(e) => setEditingIconName(e.target.value)}
-                                      placeholder={defaultLabel}
-                                      className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                      autoFocus
-                                      onBlur={() => {
-                                        const newIcons = [...localIcons];
-                                        newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                                        setLocalIcons(newIcons);
-                                        setEditingIconIndex(null);
-                                      }}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          e.currentTarget.blur();
-                                        } else if (e.key === 'Escape') {
-                                          setEditingIconIndex(null);
-                                        }
-                                      }}
-                                    />
-                                  </div>
-                                ) : (
-                                  <>
-                                    <span className="text-sm font-medium dark:text-gray-200 truncate" title={displayLabel}>
-                                      {displayLabel}
-                                    </span>
-                                    <button
-                                      onClick={() => {
-                                        setEditingIconIndex(index);
-                                        setEditingIconName(item.displayName || '');
-                                      }}
-                                      className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
-                                    >
-                                      <Pencil size={14} />
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-1 shrink-0">
-                                <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                                  <ArrowUp size={16} />
-                                </button>
-                                <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                                  <ArrowDown size={16} />
-                                </button>
-                                <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded">
-                                  <X size={16} />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Add Activity Section */}
-                      {localIcons.length < 4 && (
-                        <div className="flex flex-col flex-1 min-h-0 pt-4 border-t dark:border-gray-700">
-                          <div className="flex gap-2 mb-3 shrink-0">
-                            <div className="flex-1 relative">
-                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                              <input
-                                type="text"
-                                placeholder="Search activities..."
-                                value={activitySearch}
-                                onChange={(e) => setActivitySearch(e.target.value)}
-                                className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                disabled={localIcons.length >= 4}
-                              />
-                            </div>
-                            <button
-                              onClick={handleSortChange}
-                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shrink-0"
-                              disabled={localIcons.length >= 4}
-                            >
-                              {activitySort === 'key' && <ArrowUp size={14} className="opacity-50" />}
-                              {activitySort === 'a-z' && <ArrowDown size={14} />}
-                              {activitySort === 'z-a' && <ArrowUp size={14} />}
-                              <span className="hidden sm:inline">
-                                {activitySort === 'key' ? 'Key' : activitySort === 'a-z' ? 'A-Z' : 'Z-A'}
-                              </span>
-                            </button>
-                          </div>
-                          
-                          {/* Scrolling list */}
-                          <div className="flex-1 overflow-y-auto min-h-0 pr-1">
-                            {filteredActivities.length > 0 ? (
-                              <div className="grid grid-cols-2 gap-2">
-                                {filteredActivities.map((keyItem) => {
-                                  const IconC = keyItem.icon ? ICON_MAP[keyItem.icon] : null;
-                                  const displayColor = !keyItem.iconColor || keyItem.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : keyItem.iconColor;
-                                  return (
-                                    <button
-                                      key={keyItem.id}
-                                      onClick={() => handleAddActivity(keyItem)}
-                                      disabled={localIcons.length >= 4}
-                                      className="flex items-center p-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                                    >
-                                      {IconC && <IconC size={16} className={`${displayColor} mr-2 shrink-0`} />}
-                                      <span className="text-xs font-medium truncate dark:text-gray-200">{keyItem.label}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
-                                {activitySearch.trim() ? `No activities match "${activitySearch}"` : 'No activities defined in Key. Go to Configure > Activities to add some.'}
-                              </div>
-                            )}
-                          </div>
-                          {availableActivities.length > 0 && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 text-right mt-2 shrink-0">
-                              {filteredActivities.length} of {availableActivities.length} activities
-                              {activitySearch.trim() && ` match "${activitySearch}"`}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {localIcons.length >= 4 && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium pt-2 border-t dark:border-gray-700 shrink-0">
-                          Maximum of 4 activities reached. Remove one to add another.
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <EditorCategories 
+                    categories={categoryOptions} 
+                    selectedId={localColorId} 
+                    onSelect={setLocalColorId} 
+                  />
+                  <EditorActivities 
+                    localIcons={localIcons} 
+                    setLocalIcons={setLocalIcons} 
+                    availableActivities={availableActivities} 
+                    keyItems={keyItems} 
+                  />
                 </div>
-
-                {/* --- RIGHT COLUMN: Locations & Notes --- */}
                 <div className={`${activeTab === 'loc_notes' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 h-full min-h-0`}>
-                  
-                  {/* LOCATIONS */}
-                  <div className="shrink-0">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Locations</h4>
-                    <div className="flex flex-wrap gap-2 p-2 w-full border rounded-lg dark:bg-gray-900 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 bg-white transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
-                      {localLocations.split(',').map(l => l.trim()).filter(Boolean).map((loc, index) => (
-                        <span key={index} className="flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-md text-sm font-bold">
-                          {loc}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                              setLocalLocations(currentLocs.filter(l => l !== loc).join(', '));
-                            }}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-100 p-0.5 rounded-sm hover:bg-blue-200 dark:hover:bg-blue-800"
-                          >
-                            <X size={14} />
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        id="location-input"
-                        type="text"
-                        value={locationInput}
-                        onChange={(e) => setLocationInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ',') {
-                            e.preventDefault();
-                            const newLoc = locationInput.trim();
-                            if (newLoc) {
-                              const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                              if (!currentLocs.includes(newLoc)) {
-                                setLocalLocations([...currentLocs, newLoc].join(', '));
-                              }
-                              setLocationInput('');
-                            }
-                          } else if (e.key === 'Backspace' && locationInput === '') {
-                            e.preventDefault();
-                            const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                            if (currentLocs.length > 0) {
-                              currentLocs.pop();
-                              setLocalLocations(currentLocs.join(', '));
-                            }
-                          }
-                        }}
-                        className="flex-1 min-w-[140px] bg-transparent outline-none text-sm font-bold dark:text-white placeholder-gray-400 py-1"
-                        placeholder={localLocations.split(',').filter(Boolean).length === 0 ? "Type a location and press Enter..." : ""}
-                      />
-                    </div>
-                  </div>
-
-                  {/* NOTES */}
-                  <div className="flex flex-col flex-1 min-h-0 border-t dark:border-gray-700 pt-6">
-                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 shrink-0">Notes</h4>
-                    <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-600">
-                      <ReactQuill
-                        theme="snow"
-                        value={localDetails}
-                        onChange={setLocalDetails}
-                        modules={QUILL_MODULES}
-                        className="quill-editor-custom flex-1 flex flex-col min-h-0"
-                      />
-                    </div>
-                  </div>
-
+                  <EditorLocations 
+                    localLocations={localLocations} 
+                    setLocalLocations={setLocalLocations} 
+                  />
+                  <EditorNotes 
+                    localDetails={localDetails} 
+                    setLocalDetails={setLocalDetails} 
+                  />
                 </div>
-
               </div>
             )}
           </div>
 
-          <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 flex justify-end space-x-3 shrink-0 rounded-b-xl">
-            {isAdmin && (
-              <button onClick={handleSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                <Save size={18} className="mr-2" /> Save
-              </button>
-            )}
-            {!isAdmin && (
-              <button onClick={onClose} className="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg">
-                Close
-              </button>
-            )}
-          </div>
+          <EditorFooter 
+            isAdmin={isAdmin} 
+            isBulkEdit={isBulkEdit} 
+            onSave={handleSave} 
+            onClose={guardedClose} 
+            onNavigate={onNavigate}
+          />
         </div>
       </div>
     );

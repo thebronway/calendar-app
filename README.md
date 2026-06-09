@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v0.9.3-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.9.5-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 ### A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
@@ -29,24 +29,37 @@ This self-hosted calendar provides a simple web dashboard to share your schedule
 
 ## Screenshots
 
+#### Click to expand screenshots
+
+
 <details>
-<summary>Click to expand screenshots</summary>
+<summary>Default View Mode (Desktop)</summary>
+<img src="./screenshots/0.9.5-Year_View.png" alt="Default Year View Screenshot" width="1000">
+</details>
 
-#### Default View Mode (Desktop)
-<img src="./screenshots/0.7-view.png" alt="Calendar Screenshot" width="600">
+<details>
+<summary>Planner View Mode (Desktop)</summary>
+<img src="./screenshots/0.9.5-Planner_View.png" alt="Planner View Screenshot" width="1000">
+</details>
 
-#### Default View Mode (Mobile)
-<img src="./screenshots/0.7-view-mobile.png" alt="Calendar Screenshot" width="200">
+<details>
+<summary>List View Mode (Desktop)</summary>
+<img src="./screenshots/0.9.5-List_View.png" alt="List View Screenshot" width="1000">
+</details>
 
-#### Admin Edit Day
-<img src="./screenshots/0.7-day-1.png" alt="Calendar Screenshot" width="400">
-<img src="./screenshots/0.7-day-2.png" alt="Calendar Screenshot" width="400">
-<img src="./screenshots/0.7-day-3.png" alt="Calendar Screenshot" width="400">
+<details>
+<summary>Edit Mode (Desktop)</summary>
+<img src="./screenshots/0.9.5-Edit_View.png" alt="Edit Mode Screenshot" width="600">
+</details>
 
-#### Admin Settings
-<img src="./screenshots/0.7-edit-2.png" alt="Calendar Screenshot" width="400">
-<img src="./screenshots/0.7-edit-1.png" alt="Calendar Screenshot" width="400">
+<details>
+<summary>iCal Feed Creator Mode (Desktop)</summary>
+<img src="./screenshots/0.9.5-Feed_Creator_View.png" alt="Feed Creator Screenshot" width="600">
+</details>
 
+<details>
+<summary>Default View Mode (Mobile)</summary>
+<img src="./screenshots/0.9.5-Mobile_View.png" alt="Mobile Year View Screenshot" width="400">
 </details>
 
 ## Quick Start

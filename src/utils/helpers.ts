@@ -71,3 +71,13 @@ export const generateCalendarForYear = (year: number): CalendarDataset => {
   }
   return days;
 };
+
+export const getAdjacentDateKey = (currentKey: string, direction: 'prev' | 'next'): string => {
+  if (!currentKey || currentKey === 'bulk') return currentKey;
+  const [y, m, d] = currentKey.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  date.setUTCDate(date.getUTCDate() + (direction === 'next' ? 1 : -1));
+  const nextMonth = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const nextDay = date.getUTCDate().toString().padStart(2, '0');
+  return `${date.getUTCFullYear()}-${nextMonth}-${nextDay}`;
+};

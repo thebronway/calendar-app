@@ -1,8 +1,8 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-06-05*  
+*Last updated: 2026-06-09*  
 
-Welcome to the Calendar App. This is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
+Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
 This guide covers everything you need to know to deploy, configure, and use your calendar.
 
@@ -141,7 +141,7 @@ To quickly log long trips:
 
 ## 7. Navigating the Calendar Views
 
-Use the navigation toggle in the header (or click a specific month name) to change your view:
+Use the navigation toggle in the header (to switch between Year, Planner, and List views) or click a specific month name to change your view:
 
 * **Year View (Default):** A dense, 12-month grid perfect for seeing your entire schedule at a glance.
 * **Planner View:** A split-screen dashboard showing a single month's grid on the left, and a continuous chronological feed of events for that month on the right.
@@ -163,6 +163,7 @@ Want to see every time you went skiing or visited New York?
 * Click any Category or Activity in the **Key**.
 * Click any Location in the **Stats panel**.
 * The calendar will instantly dim unrelated days and highlight your selections.
+* Click the **Clear Filters** button in the main page header at any time to reset active filters and return to the full calendar view.
 
 ### Dynamic URL Filtering (Hard Filtering)
 If you want to share a specific itinerary with someone (e.g., just your "Work Travel" and "Flights"):
@@ -175,7 +176,7 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 
 ## 9. Keyboard Shortcuts & Tips
 
-* **Arrow Keys (`←` / `→`):** Instantly navigate to the previous or next year (if no modals are open).
+* **Arrow Keys (`←` / `→`):** Instantly navigate to the previous or next year when viewing the main dashboards. If a single day cell is open in the viewer/editor, these keys instead step backward or forward to the adjacent day sequentially (and will explicitly warn you if you attempt to leave with unsaved changes).
 * **`Esc` Key:** Close any open modal or cancel out of the day editor without saving.
 * **Saving:** If you edit a day and attempt to close the window without saving, the app will warn you to prevent data loss.
 
