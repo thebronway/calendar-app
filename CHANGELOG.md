@@ -1,12 +1,14 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-06-07* 
-*Current Version: v0.9.3*
+*Last updated: 2026-06-09*  
+*Current Version: v0.9.4*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+### Release v0.9.4
+- CellEditor Updates on Desktop
 
 ### Release v0.9.3
 - iCal subscription system updates

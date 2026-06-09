@@ -5,3 +5,25 @@ html {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.quill-editor-custom {
+  display: flex;
+  flex-direction: column;
+}
+.quill-editor-custom .ql-toolbar {
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-radius: 0 !important;
+}
+.quill-editor-custom .ql-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: none !important;
+}
+.quill-editor-custom .ql-editor {
+  flex: 1;
+  overflow-y: auto;
+}

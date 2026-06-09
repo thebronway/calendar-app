@@ -7,12 +7,13 @@ import { useCloseGuard } from '../hooks/useUnsavedChanges';
 import type { DayData, IconEntry, KeyItem } from '../types';
 
 type SortOrder = 'key' | 'a-z' | 'z-a';
-type TabId = 'category' | 'activities' | 'location';
+type TabId = 'cat_act' | 'loc_notes';
 
 interface CategoryOption {
   id: string;
   label: string;
   class: string;
+  bgClass: string;
 }
 
 interface CellEditorProps {
@@ -40,7 +41,8 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         {
           id: 'none',
           label: 'Home',
-          class: 'bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-700',
+          class: '',
+          bgClass: 'bg-gray-300 dark:bg-gray-600',
         },
       ];
       const cats = categories.map((k) => {
@@ -49,6 +51,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           id: k.id,
           label: k.label,
           class: `${colorDef.bg} text-gray-900 border-2 ${colorDef.border}`,
+          bgClass: colorDef.bg,
         };
       });
       return [...defaults, ...cats];
@@ -59,7 +62,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     const [localDetails, setLocalDetails] = useState('');
     const [localColorId, setLocalColorId] = useState('none');
     const [localIcons, setLocalIcons] = useState<IconEntry[]>([]);
-    const [activeTab, setActiveTab] = useState<TabId>('category');
+    const [activeTab, setActiveTab] = useState<TabId>('cat_act');
     const [activitySearch, setActivitySearch] = useState('');
     const [activitySort, setActivitySort] = useState<SortOrder>('key');
     const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
@@ -72,7 +75,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         setLocalDetails(dayData.details || '');
         setLocalColorId(dayData.colorId || 'none');
         setLocalIcons((dayData.icons as IconEntry[]) || []);
-        setActiveTab('category');
+        setActiveTab('cat_act');
         setActivitySearch('');
         setEditingIconIndex(null);
         setEditingIconName('');
@@ -136,16 +139,15 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     if (!isOpen || !dayData) return null;
 
-    const tabs: { id: TabId; label: string; desktopLabel?: string; hiddenMd?: boolean; icon: React.ElementType }[] = [
-      { id: 'category', label: 'Category', desktopLabel: 'Category & Activities', icon: Tag },
-      { id: 'activities', label: 'Activities', hiddenMd: true, icon: Activity },
-      { id: 'location', label: 'Location & Notes', icon: MapPin },
+    const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+      { id: 'cat_act', label: 'Categories & Activities', icon: Tag },
+      { id: 'loc_notes', label: 'Locations & Notes', icon: MapPin },
     ];
 
     return (
       <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg">
-          <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
+          <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 shrink-0">
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
               {isBulkEdit
                 ? `Bulk Edit (${bulkCount} Days)`
@@ -157,37 +159,27 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           </div>
 
           {isAdmin && (
-            <div className="flex justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700">
+            <div className="flex md:hidden justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700 shrink-0">
               {tabs.map((tab) => {
-                let activeClass = '';
-                if (tab.id === 'category') {
-                  activeClass = activeTab === 'category' 
-                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
-                    : activeTab === 'activities'
-                      ? 'md:bg-white md:dark:bg-gray-700 md:text-blue-600 md:dark:text-blue-400 md:shadow text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
-                } else {
-                  activeClass = activeTab === tab.id 
-                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
-                }
+                const activeClass = activeTab === tab.id 
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
 
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all ${tab.hiddenMd ? 'md:hidden' : ''} ${activeClass}`}
+                    className={`flex-1 flex justify-center items-center px-3 py-2 rounded-lg text-sm font-medium transition-all mx-1 ${activeClass}`}
                   >
-                    <tab.icon size={16} className="mr-1.5" />
-                    <span className="md:hidden">{tab.label}</span>
-                    <span className="hidden md:inline">{tab.desktopLabel || tab.label}</span>
+                    <tab.icon size={16} className="mr-1.5 shrink-0" />
+                    <span className="truncate">{tab.label}</span>
                   </button>
                 );
               })}
             </div>
           )}
 
-          <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="p-6 flex-1 overflow-y-auto min-h-0 flex flex-col">
             {hasFilters && isAdmin && (
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-2">
                 <p className="text-xs text-amber-700 dark:text-amber-400 font-bold">
@@ -235,7 +227,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                     })}
                   </div>
                 )}
-                {localDetails && (
+                {localDetails && localDetails.replace(/<[^>]*>?/gm, '').trim() !== '' && (
                   <div
                     className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-y-auto"
                     style={{ maxHeight: '150px' }}
@@ -244,244 +236,262 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 )}
               </div>
             ) : (
-              <>
-                <div className={`${activeTab === 'category' ? 'block' : 'hidden'} ${(activeTab === 'category' || activeTab === 'activities') ? 'md:block' : 'md:hidden'} space-y-4`}>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 md:hidden">Select a category for this day:</p>
-                  <h4 className="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-2">Category</h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    {categoryOptions.map((color) => (
-                      <button
-                        key={color.id}
-                        onClick={() => setLocalColorId(color.id)}
-                        className={`flex items-center p-3 rounded-lg border transition-all ${color.class} ${localColorId === color.id ? 'ring-4 ring-blue-500 ring-offset-2' : 'border-transparent'}`}
-                      >
-                        <div className="flex-1 text-left font-bold">{color.label}</div>
-                        {localColorId === color.id && <Check size={20} />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={`${activeTab === 'activities' ? 'block' : 'hidden'} ${(activeTab === 'category' || activeTab === 'activities') ? 'md:block' : 'md:hidden'} space-y-6 md:pt-6 md:border-t md:dark:border-gray-700`}>
-                  <h4 className="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider mb-2">Activities</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Selected</h4>
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                          {localIcons.length} / 4
-                        </span>
-                      </div>
-                      {localIcons.length === 0 && (
-                        <p className="text-sm italic text-gray-500">No activities selected.</p>
-                      )}
-                      {localIcons.map((item, index) => {
-                        const iconValue = item.value || item.icon;
-                        const IconComponent = iconValue ? ICON_MAP[iconValue] : null;
-                        if (!IconComponent) return null;
-                        const keyDef = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
-                        const defaultLabel = keyDef ? keyDef.label : iconValue;
-                        const displayLabel = item.displayName || defaultLabel;
-
+              <div className="md:grid md:grid-cols-2 md:gap-8 h-full min-h-0 flex-1">
+                
+                {/* --- LEFT COLUMN: Category & Activities --- */}
+                <div className={`${activeTab === 'cat_act' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 h-full min-h-0`}>
+                  
+                  {/* CATEGORIES */}
+                  <div className="shrink-0">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Category</h4>
+                    <div className="flex flex-wrap gap-2 min-h-12 items-center">
+                      {categoryOptions.map((color) => {
+                        const isSelected = localColorId === color.id;
                         return (
-                          <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                            <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
-                              <IconComponent size={20} className={item.color + ' shrink-0'} />
-                              {editingIconIndex === index ? (
-                                <div className="flex items-center space-x-2 flex-1">
-                                  <input
-                                    type="text"
-                                    value={editingIconName}
-                                    onChange={(e) => setEditingIconName(e.target.value)}
-                                    placeholder={defaultLabel}
-                                    className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                    autoFocus
-                                    onBlur={() => {
-                                      const newIcons = [...localIcons];
-                                      newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                                      setLocalIcons(newIcons);
-                                      setEditingIconIndex(null);
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.currentTarget.blur();
-                                      } else if (e.key === 'Escape') {
-                                        setEditingIconIndex(null);
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              ) : (
-                                <>
-                                  <span className="text-sm font-medium dark:text-gray-200 truncate" title={displayLabel}>
-                                    {displayLabel}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      setEditingIconIndex(index);
-                                      setEditingIconName(item.displayName || '');
-                                    }}
-                                    className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
-                                  >
-                                    <Pencil size={14} />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-1 shrink-0">
-                              <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                                <ArrowUp size={16} />
-                              </button>
-                              <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-                                <ArrowDown size={16} />
-                              </button>
-                              <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded">
-                                <X size={16} />
-                              </button>
-                            </div>
-                          </div>
+                          <button
+                            key={color.id}
+                            onClick={() => setLocalColorId(color.id)}
+                            className={`flex items-center px-3 py-1.5 rounded-full border transition-all text-sm font-medium ${
+                              isSelected
+                                ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass}`} />
+                            {color.label}
+                            {isSelected && <Check size={14} className="ml-1.5 shrink-0" />}
+                          </button>
                         );
                       })}
                     </div>
-
-                    {localIcons.length < 4 && (
-                      <div className="space-y-2 pt-4 border-t dark:border-gray-700">
-                        <div className="flex justify-between items-center">
-                          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">Add Activity</h4>
-                          <div className="text-xs text-gray-500">{localIcons.length}/4 used</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                            <input
-                              type="text"
-                              placeholder="Search activities..."
-                              value={activitySearch}
-                              onChange={(e) => setActivitySearch(e.target.value)}
-                              className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                              disabled={localIcons.length >= 4}
-                            />
-                          </div>
-                          <button
-                            onClick={handleSortChange}
-                            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5"
-                            disabled={localIcons.length >= 4}
-                          >
-                            {activitySort === 'key' && <ArrowUp size={14} className="opacity-50" />}
-                            {activitySort === 'a-z' && <ArrowDown size={14} />}
-                            {activitySort === 'z-a' && <ArrowUp size={14} />}
-                            <span className="hidden sm:inline">
-                              {activitySort === 'key' ? 'Key' : activitySort === 'a-z' ? 'A-Z' : 'Z-A'}
-                            </span>
-                          </button>
-                        </div>
-                        {filteredActivities.length > 0 ? (
-                          <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                            {filteredActivities.map((keyItem) => {
-                              const IconC = keyItem.icon ? ICON_MAP[keyItem.icon] : null;
-                              const displayColor = !keyItem.iconColor || keyItem.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : keyItem.iconColor;
-                              return (
-                                <button
-                                  key={keyItem.id}
-                                  onClick={() => handleAddActivity(keyItem)}
-                                  disabled={localIcons.length >= 4}
-                                  className="flex items-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {IconC && <IconC size={16} className={`${displayColor} mr-2`} />}
-                                  <span className="text-xs font-medium truncate dark:text-gray-200">{keyItem.label}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
-                            {activitySearch.trim() ? `No activities match "${activitySearch}"` : 'No activities defined in Key. Go to Configure > Activities to add some.'}
-                          </div>
-                        )}
-                        {availableActivities.length > 0 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
-                            {filteredActivities.length} of {availableActivities.length} activities
-                            {activitySearch.trim() && ` match "${activitySearch}"`}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {localIcons.length >= 4 && (
-                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium pt-2 border-t dark:border-gray-700">
-                        Maximum of 4 activities reached. Remove one to add another.
-                      </p>
-                    )}
                   </div>
 
-                {activeTab === 'location' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Locations
-                      </label>
-                      <div className="flex flex-wrap gap-2 p-2 w-full border rounded-lg dark:bg-gray-900 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 bg-white transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
-                        {localLocations.split(',').map(l => l.trim()).filter(Boolean).map((loc, index) => (
-                          <span key={index} className="flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-md text-sm font-bold">
-                            {loc}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                                setLocalLocations(currentLocs.filter(l => l !== loc).join(', '));
-                              }}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-100 p-0.5 rounded-sm hover:bg-blue-200 dark:hover:bg-blue-800"
-                            >
-                              <X size={14} />
-                            </button>
-                          </span>
-                        ))}
-                        <input
-                          id="location-input"
-                          type="text"
-                          value={locationInput}
-                          onChange={(e) => setLocationInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ',') {
-                              e.preventDefault();
-                              const newLoc = locationInput.trim();
-                              if (newLoc) {
-                                const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                                if (!currentLocs.includes(newLoc)) {
-                                  setLocalLocations([...currentLocs, newLoc].join(', '));
-                                }
-                                setLocationInput('');
-                              }
-                            } else if (e.key === 'Backspace' && locationInput === '') {
-                              e.preventDefault();
-                              const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
-                              if (currentLocs.length > 0) {
-                                currentLocs.pop();
-                                setLocalLocations(currentLocs.join(', '));
-                              }
-                            }
-                          }}
-                          className="flex-1 min-w-[140px] bg-transparent outline-none text-sm font-bold dark:text-white placeholder-gray-400 py-1"
-                          placeholder={localLocations.split(',').filter(Boolean).length === 0 ? "Type a location and press Enter..." : ""}
-                        />
+                  {/* ACTIVITIES */}
+                  <div className="flex flex-col flex-1 min-h-0 pt-6 border-t dark:border-gray-700">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 shrink-0">Activities</h4>
+                    <div className="flex flex-col flex-1 min-h-0 space-y-4">
+                      
+                      {/* Selected Activities */}
+                      <div className="space-y-2 shrink-0">
+                        {localIcons.length === 0 && (
+                          <p className="text-sm italic text-gray-500">No activities selected.</p>
+                        )}
+                        {localIcons.map((item, index) => {
+                          const iconValue = item.value || item.icon;
+                          const IconComponent = iconValue ? ICON_MAP[iconValue] : null;
+                          if (!IconComponent) return null;
+                          const keyDef = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
+                          const defaultLabel = keyDef ? keyDef.label : iconValue;
+                          const displayLabel = item.displayName || defaultLabel;
+
+                          return (
+                            <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+                              <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
+                                <IconComponent size={20} className={item.color + ' shrink-0'} />
+                                {editingIconIndex === index ? (
+                                  <div className="flex items-center space-x-2 flex-1">
+                                    <input
+                                      type="text"
+                                      value={editingIconName}
+                                      onChange={(e) => setEditingIconName(e.target.value)}
+                                      placeholder={defaultLabel}
+                                      className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                                      autoFocus
+                                      onBlur={() => {
+                                        const newIcons = [...localIcons];
+                                        newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
+                                        setLocalIcons(newIcons);
+                                        setEditingIconIndex(null);
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.currentTarget.blur();
+                                        } else if (e.key === 'Escape') {
+                                          setEditingIconIndex(null);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span className="text-sm font-medium dark:text-gray-200 truncate" title={displayLabel}>
+                                      {displayLabel}
+                                    </span>
+                                    <button
+                                      onClick={() => {
+                                        setEditingIconIndex(index);
+                                        setEditingIconName(item.displayName || '');
+                                      }}
+                                      className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
+                                    >
+                                      <Pencil size={14} />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-1 shrink-0">
+                                <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                                  <ArrowUp size={16} />
+                                </button>
+                                <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                                  <ArrowDown size={16} />
+                                </button>
+                                <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded">
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
+
+                      {/* Add Activity Section */}
+                      {localIcons.length < 4 && (
+                        <div className="flex flex-col flex-1 min-h-0 pt-4 border-t dark:border-gray-700">
+                          <div className="flex gap-2 mb-3 shrink-0">
+                            <div className="flex-1 relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                              <input
+                                type="text"
+                                placeholder="Search activities..."
+                                value={activitySearch}
+                                onChange={(e) => setActivitySearch(e.target.value)}
+                                className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                disabled={localIcons.length >= 4}
+                              />
+                            </div>
+                            <button
+                              onClick={handleSortChange}
+                              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shrink-0"
+                              disabled={localIcons.length >= 4}
+                            >
+                              {activitySort === 'key' && <ArrowUp size={14} className="opacity-50" />}
+                              {activitySort === 'a-z' && <ArrowDown size={14} />}
+                              {activitySort === 'z-a' && <ArrowUp size={14} />}
+                              <span className="hidden sm:inline">
+                                {activitySort === 'key' ? 'Key' : activitySort === 'a-z' ? 'A-Z' : 'Z-A'}
+                              </span>
+                            </button>
+                          </div>
+                          
+                          {/* Scrolling list */}
+                          <div className="flex-1 overflow-y-auto min-h-0 pr-1">
+                            {filteredActivities.length > 0 ? (
+                              <div className="grid grid-cols-2 gap-2">
+                                {filteredActivities.map((keyItem) => {
+                                  const IconC = keyItem.icon ? ICON_MAP[keyItem.icon] : null;
+                                  const displayColor = !keyItem.iconColor || keyItem.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : keyItem.iconColor;
+                                  return (
+                                    <button
+                                      key={keyItem.id}
+                                      onClick={() => handleAddActivity(keyItem)}
+                                      disabled={localIcons.length >= 4}
+                                      className="flex items-center p-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                    >
+                                      {IconC && <IconC size={16} className={`${displayColor} mr-2 shrink-0`} />}
+                                      <span className="text-xs font-medium truncate dark:text-gray-200">{keyItem.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+                                {activitySearch.trim() ? `No activities match "${activitySearch}"` : 'No activities defined in Key. Go to Configure > Activities to add some.'}
+                              </div>
+                            )}
+                          </div>
+                          {availableActivities.length > 0 && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 text-right mt-2 shrink-0">
+                              {filteredActivities.length} of {availableActivities.length} activities
+                              {activitySearch.trim() && ` match "${activitySearch}"`}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {localIcons.length >= 4 && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium pt-2 border-t dark:border-gray-700 shrink-0">
+                          Maximum of 4 activities reached. Remove one to add another.
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                  </div>
+                </div>
+
+                {/* --- RIGHT COLUMN: Locations & Notes --- */}
+                <div className={`${activeTab === 'loc_notes' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 h-full min-h-0`}>
+                  
+                  {/* LOCATIONS */}
+                  <div className="shrink-0">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Locations</h4>
+                    <div className="flex flex-wrap gap-2 p-2 w-full border rounded-lg dark:bg-gray-900 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 bg-white transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
+                      {localLocations.split(',').map(l => l.trim()).filter(Boolean).map((loc, index) => (
+                        <span key={index} className="flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-md text-sm font-bold">
+                          {loc}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
+                              setLocalLocations(currentLocs.filter(l => l !== loc).join(', '));
+                            }}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-100 p-0.5 rounded-sm hover:bg-blue-200 dark:hover:bg-blue-800"
+                          >
+                            <X size={14} />
+                          </button>
+                        </span>
+                      ))}
+                      <input
+                        id="location-input"
+                        type="text"
+                        value={locationInput}
+                        onChange={(e) => setLocationInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ',') {
+                            e.preventDefault();
+                            const newLoc = locationInput.trim();
+                            if (newLoc) {
+                              const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
+                              if (!currentLocs.includes(newLoc)) {
+                                setLocalLocations([...currentLocs, newLoc].join(', '));
+                              }
+                              setLocationInput('');
+                            }
+                          } else if (e.key === 'Backspace' && locationInput === '') {
+                            e.preventDefault();
+                            const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
+                            if (currentLocs.length > 0) {
+                              currentLocs.pop();
+                              setLocalLocations(currentLocs.join(', '));
+                            }
+                          }
+                        }}
+                        className="flex-1 min-w-[140px] bg-transparent outline-none text-sm font-bold dark:text-white placeholder-gray-400 py-1"
+                        placeholder={localLocations.split(',').filter(Boolean).length === 0 ? "Type a location and press Enter..." : ""}
+                      />
+                    </div>
+                  </div>
+
+                  {/* NOTES */}
+                  <div className="flex flex-col flex-1 min-h-0 border-t dark:border-gray-700 pt-6">
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 shrink-0">Notes</h4>
+                    <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-800 rounded-lg overflow-hidden border dark:border-gray-600">
                       <ReactQuill
                         theme="snow"
                         value={localDetails}
                         onChange={setLocalDetails}
                         modules={QUILL_MODULES}
-                        className="quill-editor-custom"
+                        className="quill-editor-custom flex-1 flex flex-col min-h-0"
                       />
                     </div>
                   </div>
-                )}
-              </>
+
+                </div>
+
+              </div>
             )}
           </div>
 
-          <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 flex justify-end space-x-3">
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700 flex justify-end space-x-3 shrink-0 rounded-b-xl">
             {isAdmin && (
               <button onClick={handleSave} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center">
                 <Save size={18} className="mr-2" /> Save

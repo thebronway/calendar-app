@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: June 5, 2026*
+*Last updated: 2026-06-05*  
 
 Welcome to the Calendar App. This is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
