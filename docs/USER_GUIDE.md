@@ -122,6 +122,11 @@ Click the **Key icon** to define the visual language of your calendar.
 
 ## 6. Adding and Editing Events
 
+<details>
+<summary>View Day Editor Interface (Desktop)</summary>
+<img src="../public/screenshots/0.9.5-Edit_View.png" alt="Edit Mode Screenshot" width="800">
+</details>
+
 ### Single Day Editing
 Click any day on the calendar to open the Cell Editor.
 1. **Category:** Select one category (or "Home" to clear it).
@@ -140,6 +145,26 @@ To quickly log long trips:
 ---
 
 ## 7. Navigating the Calendar Views
+
+<details>
+<summary>View Year Layout (Desktop)</summary>
+<img src="../public/screenshots/0.9.5-Year_View.png" alt="Default Year View Screenshot" width="1000">
+</details>
+
+<details>
+<summary>View Planner Layout (Desktop)</summary>
+<img src="../public/screenshots/0.9.5-Planner_View.png" alt="Planner View Screenshot" width="1000">
+</details>
+
+<details>
+<summary>View List Layout (Desktop)</summary>
+<img src="../public/screenshots/0.9.5-List_View.png" alt="List View Screenshot" width="1000">
+</details>
+
+<details>
+<summary>View Mobile Layout</summary>
+<img src="../public/screenshots/0.9.5-Mobile_View.png" alt="Mobile Year View Screenshot" width="400">
+</details>
 
 Use the navigation toggle in the header (to switch between Year, Planner, and List views) or click a specific month name to change your view:
 
@@ -185,6 +210,11 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 ## 10. iCal Subscriptions (Syncing)
 
 You can sync your travel and activities directly to your personal calendar (Apple Calendar, Google Calendar, Outlook) using custom continuous iCal feeds. 
+
+<details>
+<summary>View Feed Creator Interface (Desktop)</summary>
+<img src="../public/screenshots/0.9.5-Feed_Creator_View.png" alt="Feed Creator Screenshot" width="800">
+</details>
 
 ### Creating a Feed (Admin Only)
 1. Click the **Feeds (RSS) icon** in the header to open the Feed Manager.
