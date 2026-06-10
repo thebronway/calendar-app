@@ -38,8 +38,6 @@ import { slugify, getAdjacentDateKey } from './utils/helpers';
 import { MONTHS } from './utils/constants';
 import type { Role, CalendarDataset, KeyItem } from './types';
 
-const SESSION_TOKEN_KEY = 'calendar_admin_token';
-
 export default function App() {
   const { route, navigate } = useCustomRoute();
   const year = route.year;
@@ -52,20 +50,16 @@ export default function App() {
   }, [navigate]);
 
   const [role, setRole] = useState<Role>('view');
-  const [adminToken, setAdminToken] = useState<string | null>(() =>
-    sessionStorage.getItem(SESSION_TOKEN_KEY)
-  );
 
   const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
-  const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ adminToken, role });
+  const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
 
   // --- Hooks ---
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
-    adminToken,
     role,
   });
 
@@ -82,7 +76,7 @@ export default function App() {
     saveData,
     connectWebSocket,
     disconnectWebSocket,
-  } = useCalendarData({ year, role, adminToken, onConfigUpdate: setConfig });
+  } = useCalendarData({ year, role, onConfigUpdate: setConfig });
 
   const { filteredKeyItems, filteredCalendarData } = useFilteredData({
     calendarData,
@@ -195,13 +189,14 @@ export default function App() {
     navigate(`/${year}/${slugify(month)}${currentSearch}`);
   }, [navigate, year]);
 
-  // --- Restore admin session on mount ---
+  // --- Check active session on mount ---
   useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_TOKEN_KEY);
-    if (saved) {
-      setAdminToken(saved);
-      setRole('admin');
-    }
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.role) setRole(data.role);
+      })
+      .catch(err => console.error('Failed to check session', err));
   }, []);
 
   // --- Effects ---
@@ -224,12 +219,28 @@ export default function App() {
     }
     const idx = now.getMonth();
     setExpandedMonths({ [idx]: true });
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        document.getElementById(`month-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 500);
+    
+    const isMobile = window.innerWidth < 768;
+    const shouldScroll = isMobile ? config.autoScrollMobile : config.autoScrollDesktop;
+    
+    let scrollTimeout: ReturnType<typeof setTimeout>;
+    
+    if (shouldScroll) {
+      scrollTimeout = setTimeout(() => {
+        const el = document.getElementById(`month-${idx}`);
+        if (el) {
+          // Use a smaller offset for mobile, larger for desktop to give breathing room
+          const offset = isMobile ? 16 : 32;
+          const y = el.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 600); // Bumped to 600ms to guarantee accordion animations are finished
     }
-  }, [config.timezone]);
+    
+    return () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [config.timezone, config.autoScrollMobile, config.autoScrollDesktop]);
 
   useEffect(() => {
     const n = config.ownerName || 'Name';
@@ -265,16 +276,17 @@ export default function App() {
   });
 
   // --- Handlers ---
-  const handleAuthenticate = (r: Role, t: string) => {
+  const handleAuthenticate = (r: Role) => {
     setRole(r);
-    setAdminToken(t);
-    sessionStorage.setItem(SESSION_TOKEN_KEY, t);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
     setRole('view');
-    setAdminToken(null);
-    sessionStorage.removeItem(SESSION_TOKEN_KEY);
     clearBulkEdit();
   };
 
@@ -424,6 +436,7 @@ export default function App() {
     >
       {route.view === 'year' && (
           <KeySection
+            config={config}
             keyItems={filteredKeyItems}
             stats={stats}
             iconCounts={iconCounts}
@@ -438,6 +451,7 @@ export default function App() {
 
         {route.view === 'year' && !hasActiveFilters && (
           <StatsSection
+            config={config}
             year={year}
             stats={stats}
             locationCounts={locationCounts}

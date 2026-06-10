@@ -1,31 +1,34 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-06-09*  
-*Current Version: v0.9.5*
+*Current Version: v0.9.6*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v0.9.6
-- Auto scroll down to active month confgiureable for both desktop and mobile seperatly.
-- Screenshots in the Userguide
-- **Session & Security Migration**
-  - **Goal:** Replace the stateful, in-memory token system and `sessionStorage` with stateless JSON Web Tokens (JWT) and secure cookies to ensure sessions survive container reboots and prevent XSS.
-  - **Backend Storage:** Install `jsonwebtoken` and `cookie-parser` (in package.json?). Update `POST /api/auth/login` to generate a stateless JWT containing `{ role: 'admin' }`.
-  - **Delivery Mechanism:** Issue this JWT to the frontend via an `HttpOnly`, `Secure`, `SameSite=Strict` cookie instead of returning it in the JSON body.
-  - **Middleware Update:** Rewrite the `verifyAdminToken` middleware in `server.js` to extract the JWT from the cookie and verify its signature.
-  - **Frontend State Sync:** Remove all `sessionStorage` logic in `App.tsx` and `AuthModal.tsx`. Create a new backend endpoint (`GET /api/auth/me`) that the frontend calls on initial load to determine the user's active session state from their cookie. (nginx considerations?)
-
-### Release v0.9.7
-* **Role-Based Access**
-  - **Goal:** Introduce a shared "view" password for family/friends, managed by a new `VIEW_MODE` environment variable that dictates the UI flow.
-  - **Configuration:** Introduce `VIEW_PASSWORD` and `VIEW_MODE` (which defaults to `none`).
-  - **Role-Based JWTs:** Update `POST /api/auth/login` to evaluate the input password. If it matches `ADMIN_PASSWORD`, sign the JWT with `role: 'admin'`. If it matches `VIEW_PASSWORD`, sign with `role: 'view'`.
-  - **Authorization:** Ensure API routes that modify data (like `POST /api/data/:year`) strictly check that `req.user.role === 'admin'`. Viewers should get a `403 Forbidden`.
-  - **Flow (view_mode="none"):** The calendar remains public and read-only to anyone who visits. Admins authenticate via the existing lock icon in the header.
-  - **Flow (view_mode="simple"):** The entire calendar is hidden behind a full-screen password prompt upon visiting the site. The user must enter either the view or admin password to see the dashboard. (If they enter the view password, admins can still click the header lock later to upgrade their session).
+### Release v0.9.7: Advanced Access Control & Logging
+* **Global Visibility Toggle (`VIEW_MODE`)**
+  * Introduce a new configuration setting to switch the calendar between "Public" and "Private" modes.
+  * **Public Mode:** Calendar remains read-only to anyone; admins authenticate via the header lock.
+  * **Private Mode:** Unauthenticated visitors are blocked by a full-screen login prompt.
+* **Hybrid Authentication System**
+  * Update `POST /api/auth/login` to support multiple credential tiers.
+  * Step 1: Evaluate input against the `ADMIN_PASSWORD` environment variable (issues `role: 'admin'` JWT).
+  * Step 2: Evaluate input against a new local `data/access.json` file (issues `role: 'view'` JWT).
+  * Step 3: Return `401 Unauthorized` if neither match. (Create Custom 401 Page in app)
+* **UI-Managed View Passwords**
+  * Add a dedicated "Access Control" tab to the Settings Modal.
+  * Build a management table allowing admins to dynamically create, name, and revoke multiple view-only passwords.
+  * Add support for optional expiration dates for temporary sharing (e.g., auto-expiring a "Ski Trip" password).
+* **Access Logging & Auditing**
+  * Create a `data/logs.json` backend storage mechanism to track authentication events.
+  * Capture key details on login: exact timestamp, IP address (via Nginx `X-Forwarded-For`), granted role, and the associated account name.
+  * Track both successful logins and failed brute-force attempts.
+  * Implement automatic log rotation (e.g., cap at the 500 most recent entries) to prevent file bloat.
+  * Expose a protected `GET /api/auth/logs` backend route.
+  * Display a "Recent Activity" data table at the bottom of the Access Control tab so admins can monitor exactly who is logging in and when.
 
 ### Release v0.9.8
 - **SSO Authentication & Auto-Redirect**
@@ -55,6 +58,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   * **Value:** Easier onboarding and reduced maintenance burden.
 * **Add AI usage declration**
 * First time lauch modal
+- Screenshots in the Userguide
 
 ### Release v1.0.2:
 **Focus:** Establishing a professional-grade foundation for long-term maintenance.

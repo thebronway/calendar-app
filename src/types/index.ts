@@ -12,6 +12,12 @@ export interface AppConfig {
   ownerName: string;
   headerIcon: string;
   bannerHtml?: string | null;
+  autoScrollMobile?: boolean;
+  autoScrollDesktop?: boolean;
+  collapseKeyMobile?: boolean;
+  collapseKeyDesktop?: boolean;
+  collapseStatsMobile?: boolean;
+  collapseStatsDesktop?: boolean;
 }
 
 // --- Calendar Data ---

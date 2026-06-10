@@ -7,7 +7,6 @@ import type { AppConfig, CalendarDataset, KeyItem, WsMessage } from '../types';
 interface UseCalendarDataParams {
   year: number;
   role: string;
-  adminToken: string | null;
   onConfigUpdate?: (config: AppConfig) => void;
 }
 
@@ -33,13 +32,9 @@ interface UseCalendarDataReturn {
   disconnectWebSocket: () => void;
 }
 
-/**
- * Manages calendar data fetching, saving, and WebSocket sync.
- */
 export function useCalendarData({
   year,
   role,
-  adminToken,
   onConfigUpdate,
 }: UseCalendarDataParams): UseCalendarDataReturn {
   const [calendarData, setCalendarData] = useState<CalendarDataset | null>(null);
@@ -74,20 +69,18 @@ export function useCalendarData({
 
   const saveData = useCallback(
     async (dataToSave: SavePayload) => {
-      if (role !== 'admin' || !adminToken) return;
+      if (role !== 'admin') return;
       setIsSaving(true);
       try {
         const res = await fetch(`/api/data/${year}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${adminToken}`,
           },
           body: JSON.stringify(dataToSave),
         });
         
         if (res.status === 401 || res.status === 403) {
-          sessionStorage.removeItem('calendar_admin_token');
           window.location.reload();
           return;
         }
@@ -104,7 +97,7 @@ export function useCalendarData({
         setTimeout(() => setIsSaving(false), 500);
       }
     },
-    [role, adminToken, year]
+    [role, year]
   );
 
   const connectWebSocket = useCallback(() => {

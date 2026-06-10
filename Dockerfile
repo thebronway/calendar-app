@@ -27,7 +27,7 @@ WORKDIR /app
 # express-rate-limit = brute-force protection on the auth endpoint.
 # All frontend code (react, vite, etc.) is already compiled into the static
 # build and does not need to be present in the production image.
-RUN npm install express@4 ws express-rate-limit
+RUN npm install express@4 ws express-rate-limit cookie-parser jsonwebtoken
 
 # Copy the backend server and services
 COPY server.js .

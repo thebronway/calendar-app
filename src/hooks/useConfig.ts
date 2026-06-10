@@ -7,10 +7,15 @@ const DEFAULT_CONFIG: AppConfig = {
   browserTitleStyle: 'simple',
   ownerName: '',
   headerIcon: 'CalendarDays',
+  autoScrollMobile: true,
+  autoScrollDesktop: false,
+  collapseKeyMobile: true,
+  collapseKeyDesktop: false,
+  collapseStatsMobile: true,
+  collapseStatsDesktop: false,
 };
 
 interface UseConfigParams {
-  adminToken: string | null;
   role: string;
   onYearChange?: (year: number) => void;
 }
@@ -22,17 +27,14 @@ interface UseConfigReturn {
   saveConfig: (newConfig: AppConfig) => Promise<void>;
 }
 
-/**
- * Manages app config fetching and saving.
- */
-export function useConfig({ adminToken, role, onYearChange }: UseConfigParams): UseConfigReturn {
+export function useConfig({ role, onYearChange }: UseConfigParams): UseConfigReturn {
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
 
   const fetchConfig = useCallback(async () => {
     try {
       const response = await fetch('/api/config');
       const appConfig: AppConfig = await response.json();
-      setConfig(appConfig);
+      setConfig((prev) => ({ ...DEFAULT_CONFIG, ...appConfig }));
       try {
         const now = new Date(
           new Date().toLocaleString('en-US', { timeZone: appConfig.timezone })
@@ -48,18 +50,16 @@ export function useConfig({ adminToken, role, onYearChange }: UseConfigParams): 
 
   const saveConfig = useCallback(
     async (newConfig: AppConfig) => {
-      if (role !== 'admin' || !adminToken) return;
+      if (role !== 'admin') return;
       try {
         const res = await fetch('/api/config', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${adminToken}`,
           },
           body: JSON.stringify(newConfig),
         });
         if (res.status === 401 || res.status === 403) {
-          sessionStorage.removeItem('calendar_admin_token');
           window.location.reload();
           return;
         }
@@ -68,7 +68,7 @@ export function useConfig({ adminToken, role, onYearChange }: UseConfigParams): 
         console.error('Config save error', e);
       }
     },
-    [role, adminToken]
+    [role]
   );
 
   return { config, setConfig, fetchConfig, saveConfig };

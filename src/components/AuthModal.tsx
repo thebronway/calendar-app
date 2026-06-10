@@ -5,7 +5,7 @@ import type { Role } from '../types';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuthenticate: (role: Role, token: string) => void;
+  onAuthenticate: (role: Role) => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }) => {
@@ -39,8 +39,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }
       clearTimeout(timeout);
 
       if (response.ok) {
-        const { role, token } = await response.json();
-        onAuthenticate(role, token);
+        const { role } = await response.json();
+        onAuthenticate(role);
         onClose();
       } else if (response.status === 401) {
         setLocalError('Incorrect password.');

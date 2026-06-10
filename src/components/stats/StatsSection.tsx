@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import type { CalendarStats, HighlightFilters } from '../../types';
+import type { CalendarStats, HighlightFilters, AppConfig } from '../../types';
 
 interface StatsSectionProps {
+  config: AppConfig;
   year: number;
   stats: CalendarStats;
   locationCounts: [string, number][];
@@ -11,13 +12,25 @@ interface StatsSectionProps {
 }
 
 const StatsSection: React.FC<StatsSectionProps> = ({
+  config,
   year,
   stats,
   locationCounts,
   highlightFilters,
   onLocationFilterToggle,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const isMobile = window.innerWidth < 768;
+    return isMobile ? !config.collapseStatsMobile : !config.collapseStatsDesktop;
+  });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768;
+      setIsExpanded(isMobile ? !config.collapseStatsMobile : !config.collapseStatsDesktop);
+    }
+  }, [config.collapseStatsMobile, config.collapseStatsDesktop]);
 
   return (
     <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">

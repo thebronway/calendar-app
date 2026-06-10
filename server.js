@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { rateLimit } = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const { generateICalFeed } = require('./services/iCalGenerator');
 
 // --- Configuration ---
@@ -21,10 +23,16 @@ const DEFAULT_CONFIG = {
   ownerName: '',
   timezone: process.env.TIMEZONE || 'UTC',
   bannerHtml: process.env.PAGE_BANNER_HTML || null,
+  autoScrollMobile: true,
+  autoScrollDesktop: false,
+  collapseKeyMobile: true,
+  collapseKeyDesktop: false,
+  collapseStatsMobile: true,
+  collapseStatsDesktop: false,
 };
 
-// In-memory store for valid admin tokens
-const validAdmins = new Set();
+// Derived JWT secret from the admin password to ensure it survives reboots
+const JWT_SECRET = crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || 'default_fallback').digest('hex');
 
 // File write locks per year to prevent concurrent writes
 const writeLocks = new Map();
@@ -82,15 +90,25 @@ wss.on('close', function close() {
 
 // --- Middleware ---
 app.use(express.json({ limit: '50mb' }));
+app.use(cookieParser());
 app.use(express.static(CLIENT_BUILD_PATH));
 
 // Token Verification Middleware
 const verifyAdminToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) return res.sendStatus(401);
-  if (validAdmins.has(token)) next();
-  else return res.sendStatus(403);
+  const token = req.cookies.token;
+  if (!token) return res.sendStatus(401);
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role === 'admin') {
+      req.user = decoded;
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  } catch (err) {
+    res.sendStatus(403);
+  }
 };
 
 // --- Utility Functions ---
@@ -246,10 +264,10 @@ app.post('/api/config', verifyAdminToken, (req, res) => {
   }
 });
 
-// Rate limiter: max 5 attempts per 15 minutes per IP
+// Rate limiter: max 10 attempts per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
@@ -260,14 +278,37 @@ const authLimiter = rateLimit({
 app.post('/api/auth/login', authLimiter, (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
-    const token = crypto.randomBytes(32).toString('hex');
-    validAdmins.add(token);
-    // Token expires after 24 hours (86,400,000 ms)
-    setTimeout(() => validAdmins.delete(token), 1000 * 60 * 60 * 24);
-    res.json({ role: 'admin', token: token });
+    const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+    
+    res.json({ role: 'admin' });
   } else {
-    res.status(401).json({ role: 'view', token: null });
+    res.status(401).json({ role: 'view' });
   }
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.json({ role: 'view' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ role: decoded.role });
+  } catch (err) {
+    res.clearCookie('token');
+    res.json({ role: 'view' });
+  }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ success: true });
 });
 
 // Year validation helper

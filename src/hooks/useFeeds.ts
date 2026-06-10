@@ -21,23 +21,19 @@ export interface FeedProfile {
 }
 
 interface UseFeedsParams {
-  adminToken: string | null;
   role: string;
 }
 
-export function useFeeds({ adminToken, role }: UseFeedsParams) {
+export function useFeeds({ role }: UseFeedsParams) {
   const [feeds, setFeeds] = useState<FeedProfile[]>([]);
   const [isFeedsLoading, setIsFeedsLoading] = useState(false);
 
   const fetchFeeds = useCallback(async () => {
     setIsFeedsLoading(true);
     try {
-      if (role === 'admin' && adminToken) {
-        const response = await fetch('/api/feeds', {
-          headers: { Authorization: `Bearer ${adminToken}` },
-        });
+      if (role === 'admin') {
+        const response = await fetch('/api/feeds');
         if (response.status === 401 || response.status === 403) {
-          sessionStorage.removeItem('calendar_admin_token');
           window.location.reload();
           return;
         }
@@ -57,21 +53,19 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
     } finally {
       setIsFeedsLoading(false);
     }
-  }, [adminToken, role]);
+  }, [role]);
 
   const saveFeed = useCallback(async (feed: FeedProfile) => {
-    if (role !== 'admin' || !adminToken) return false;
+    if (role !== 'admin') return false;
     try {
       const response = await fetch('/api/feeds', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminToken}`,
         },
         body: JSON.stringify(feed),
       });
       if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem('calendar_admin_token');
         window.location.reload();
         return false;
       }
@@ -84,18 +78,16 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
       console.error('Failed to save feed', e);
       return false;
     }
-  }, [adminToken, role, fetchFeeds]);
+  }, [role, fetchFeeds]);
 
   const deleteFeed = useCallback(async (id: string) => {
-    if (role !== 'admin' || !adminToken) return false;
+    if (role !== 'admin') return false;
     try {
       const response = await fetch(`/api/feeds/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${adminToken}` },
       });
       if (response.status === 401 || response.status === 403) {
         alert("Session expired. Please log in again.");
-        sessionStorage.removeItem('calendar_admin_token');
         window.location.reload();
         return false;
       }
@@ -108,7 +100,7 @@ export function useFeeds({ adminToken, role }: UseFeedsParams) {
       console.error('Failed to delete feed', e);
       return false;
     }
-  }, [adminToken, role]);
+  }, [role]);
 
   return { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed };
 }

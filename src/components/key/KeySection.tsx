@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, X, List, Layout } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP } from '../../utils/constants';
-import type { CalendarStats, HighlightFilters, KeyItem } from '../../types';
+import type { CalendarStats, HighlightFilters, KeyItem, AppConfig } from '../../types';
 
 interface KeySectionProps {
+  config: AppConfig;
   keyItems: KeyItem[];
   stats: CalendarStats;
   iconCounts: Record<string, number>;
@@ -16,6 +17,7 @@ interface KeySectionProps {
 }
 
 const KeySection: React.FC<KeySectionProps> = ({
+  config,
   keyItems,
   stats,
   iconCounts,
@@ -26,7 +28,18 @@ const KeySection: React.FC<KeySectionProps> = ({
   onViewAsList,
   onViewAsPlanner,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const isMobile = window.innerWidth < 768;
+    return isMobile ? !config.collapseKeyMobile : !config.collapseKeyDesktop;
+  });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768;
+      setIsExpanded(isMobile ? !config.collapseKeyMobile : !config.collapseKeyDesktop);
+    }
+  }, [config.collapseKeyMobile, config.collapseKeyDesktop]);
 
   const keyCategories = keyItems.filter((k) => k.isColorKey);
   const keyActivities = keyItems.filter((k) => !k.isColorKey);

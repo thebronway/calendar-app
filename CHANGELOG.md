@@ -1,12 +1,17 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-06-09*  
-*Current Version: v0.9.5*
+*Current Version: v0.9.6*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.6
+- Layout preference settings (Auto-scroll, collapse panels)
+- Session & security migration to stateless JWTs
+- Secure HttpOnly cookie implementation
 
 ### Release v0.9.5
 - CellEditor monolithic breakup
