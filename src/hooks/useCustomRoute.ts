@@ -57,6 +57,7 @@ export function useCustomRoute() {
   const navigate = useCallback((newPath: string) => {
     window.history.pushState({}, '', newPath);
     setRoute(parseUrl());
+    window.scrollTo(0, 0);
   }, [parseUrl]);
 
   return { route, navigate };

@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
+  HelpCircle,
   Key,
   Loader,
   Lock,
@@ -37,6 +38,7 @@ interface AppHeaderProps {
   onOpenKeyModal: () => void;
   onOpenFeeds: () => void;
   onOpenSettings: () => void;
+  onOpenHelp: () => void;
   onLogout: () => void;
   onOpenAuth: () => void;
   onGoToGuide: () => void;
@@ -62,6 +64,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onOpenKeyModal,
   onOpenFeeds,
   onOpenSettings,
+  onOpenHelp,
   onLogout,
   onOpenAuth,
   onGoToGuide,
@@ -205,6 +208,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 {/* ICONS ON LINE 1 (Desktop Only) */}
                 <div className="hidden sm:flex items-center gap-3">
                   <button
+                    onClick={onOpenHelp}
+                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Help & Shortcuts"
+                  >
+                    <HelpCircle size={20} />
+                  </button>
+
+                  <button
                     onClick={onGoToGuide}
                     className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     title="User Guide"
@@ -255,6 +266,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 
                 {/* ICONS ON LINE 2 (Mobile Only) */}
                 <div className="flex sm:hidden items-center gap-3">
+                  <button
+                    onClick={onOpenHelp}
+                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Help & Shortcuts"
+                  >
+                    <HelpCircle size={20} />
+                  </button>
+
                   <button
                     onClick={onGoToGuide}
                     className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

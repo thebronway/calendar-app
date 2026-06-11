@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-06-09*  
-*Current Version: v0.9.6*
+*Last updated: 2026-06-11*  
+*Current Version: v0.9.7*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.7
+- Added advanced global keyboard shortcuts for navigation and admin actions
+- Added Help Modal to UI and app header
+- Added open-source and AI Acknowledgments section to the User Guide
+- Bugfix: Corrected Unraid Docker health check failures (IPv6 fallback)
+- Bugfix: Fixed scroll position resets and User Guide markdown links
 
 ### Release v0.9.6
 - Layout preference settings (Auto-scroll, collapse panels)

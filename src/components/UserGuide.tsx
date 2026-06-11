@@ -2,6 +2,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import rehypeSlug from 'rehype-slug';
 import rawGuideContent from '../../docs/USER_GUIDE.md?raw';
 
 // Seamlessly rewrite GitHub-native relative paths into absolute production assets at runtime
@@ -16,7 +17,20 @@ const UserGuide: React.FC = () => {
       <div className="prose prose-blue dark:prose-invert max-w-none">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]} 
-          rehypePlugins={[rehypeRaw]}
+          rehypePlugins={[rehypeRaw, rehypeSlug]}
+          components={{
+            a: ({ node, ...props }) => {
+              // Check if the link is an external HTTP link
+              const isExternal = props.href?.startsWith('http');
+              return (
+                <a
+                  {...props}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                />
+              );
+            },
+          }}
         >
           {transformedContent}
         </ReactMarkdown>

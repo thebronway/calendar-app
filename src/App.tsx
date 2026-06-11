@@ -19,6 +19,7 @@ import SettingsModal from './components/SettingsModal';
 import AuthModal from './components/AuthModal';
 import KeyConfigModal from './components/KeyConfigModal';
 import FeedManagerModal from './components/FeedManagerModal';
+import HelpModal from './components/HelpModal';
 import UserGuide from './components/UserGuide';
 
 // Hooks
@@ -51,7 +52,7 @@ export default function App() {
 
   const [role, setRole] = useState<Role>('view');
 
-  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, activeCell, setActiveCell } = useModals();
+  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
   const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
@@ -267,12 +268,24 @@ export default function App() {
     showSettingsModal,
     showKeyModal,
     showAuthModal,
+    showFeedsModal,
+    showHelpModal,
     setActiveCell,
     setShowSettingsModal,
     setShowKeyModal,
     setShowAuthModal,
+    setShowFeedsModal,
+    setShowHelpModal,
     handlePrevNav,
     handleNextNav,
+    onToggleBulkEdit: toggleBulkEdit,
+    onToggleDarkMode: toggleDarkMode,
+    onViewToggle: (view) => navigate(`/${year}/${view}${window.location.search}`),
+    onGoToGuide: () => navigate('/guide'),
+    routeView: route.view,
+    year,
+    navigate,
+    role
   });
 
   // --- Handlers ---
@@ -377,6 +390,7 @@ export default function App() {
           onOpenKeyModal={() => setShowKeyModal(true)}
           onOpenFeeds={() => setShowFeedsModal(true)}
           onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenHelp={() => setShowHelpModal(true)}
           onLogout={handleLogout}
           onOpenAuth={() => setShowAuthModal(true)}
           onGoToGuide={() => navigate('/guide')}
@@ -430,6 +444,14 @@ export default function App() {
             isOpen={showAuthModal}
             onClose={() => setShowAuthModal(false)}
             onAuthenticate={handleAuthenticate}
+          />
+          <HelpModal
+            isOpen={showHelpModal}
+            onClose={() => setShowHelpModal(false)}
+            onGoToGuide={() => {
+              setShowHelpModal(false);
+              navigate('/guide');
+            }}
           />
         </>
       }

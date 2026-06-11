@@ -19,6 +19,7 @@ This guide covers everything you need to know to deploy, configure, and use your
 8. [Stats, Filters, and Sharing](#8-stats-filters-and-sharing)
 9. [Keyboard Shortcuts & Tips](#9-keyboard-shortcuts--tips)
 10. [iCal Subscriptions (Syncing)](#10-ical-subscriptions-syncing)
+11. [Acknowledgments](#11-acknowledgments)
 
 ---
 
@@ -203,7 +204,14 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 
 * **Arrow Keys (`←` / `→`):** Instantly navigate to the previous or next year when viewing the main dashboards. If a single day cell is open in the viewer/editor, these keys instead step backward or forward to the adjacent day sequentially (and will explicitly warn you if you attempt to leave with unsaved changes).
 * **`Esc` Key:** Close any open modal or cancel out of the day editor without saving.
+* **`D` Key:** Toggle between Dark and Light mode.
+* **`V` Key:** Rotate quickly between Year, Planner, and List views.
+* **`Y`, `P`, `L`, `M` Keys:** Jump instantly to the Year (`Y`), Planner (`P`), List (`L`), or current Month (`M`) view.
+* **`H` or `U` Keys:** Open the Help Modal (`H`) or jump directly to this User Guide (`U`).
+* **`A` Key:** Prompt for Authentication (Log in).
+* **`B`, `K`, `F`, `S` Keys (Admin Only):** Toggle Bulk Edit mode (`B`), open Key configuration (`K`), manage Feeds (`F`), or open Settings (`S`).
 * **Saving:** If you edit a day and attempt to close the window without saving, the app will warn you to prevent data loss.
+* **Viewing and Editing Details:** To view or edit a day's details, simply click on it directly within any of the calendar grid or list views.
 
 ---
 
@@ -241,3 +249,15 @@ Once a feed is created, click **Copy URL**.
 ### Reverse Proxy Bypass
 If running the application behind an authentication proxy (such as Authentik), you must add an unauthenticated bypass line for the feed extraction route explicitly above your catch-all route:
 `location /api/feed/`
+
+---
+
+## 11. Acknowledgments
+
+This project was made possible by the incredible open-source community. Special thanks to the creators and maintainers of:
+* **[React](https://react.dev/) & [Node.js](https://nodejs.org/)** for the core framework.
+* **[Tailwind CSS](https://tailwindcss.com/)** for the styling system.
+* **[Lucide](https://lucide.dev/)** for the beautiful, consistent icon set used throughout the app.
+
+**AI Assistance:**
+This project was developed with the assistance of AI tools to brainstorm, generate boilerplate, and refine code. Every line of code has been meticulously reviewed, tested, and approved by hand. For more details, please see the [AI Acknowledgment](https://github.com/thebronway/calendar-app/blob/main/AIACKNOWLEDGMENT.md).
