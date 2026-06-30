@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { X, Tag, MapPin } from 'lucide-react';
-import { CATEGORY_COLORS, ICON_MAP } from '../utils/constants';
+import { CATEGORY_COLORS, ICON_MAP, MONTHS } from '../utils/constants';
 import { sanitizeHtml } from '../utils/helpers';
 import { useCloseGuard } from '../hooks/useUnsavedChanges';
 import type { DayData, IconEntry, KeyItem } from '../types';
@@ -28,6 +28,17 @@ interface CellEditorProps {
 
 const CellEditor: React.FC<CellEditorProps> = memo(
   ({ isOpen, onClose, dayData, onSave, onNavigate, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters }) => {
+    const dateStrings = useMemo(() => {
+      if (!dayData || isBulkEdit) return { full: '', short: '' };
+      const mIndex = MONTHS.indexOf(dayData.month || '');
+      if (mIndex === -1) return { full: '', short: '' };
+      const dateObj = new Date(dayData.year || new Date().getFullYear(), mIndex, dayData.day || 1);
+      return {
+        full: dateObj.toLocaleDateString('en-US', { weekday: 'long' }),
+        short: dateObj.toLocaleDateString('en-US', { weekday: 'short' })
+      };
+    }, [dayData, isBulkEdit]);
+
     const categories = useMemo(() => keyItems.filter((k) => k.isColorKey), [keyItems]);
     const availableActivities = useMemo(() => keyItems.filter((k) => !k.isColorKey && k.icon !== 'None'), [keyItems]);
 
@@ -63,9 +74,14 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     const isDirty = useMemo(() => {
       if (!isAdmin || !dayData) return false;
+      
+      // Quill rich text editor defaults empty content to "<p><br></p>"
+      const normalizedLocalDetails = localDetails === '<p><br></p>' ? '' : localDetails;
+      const normalizedDayDetails = dayData.details === '<p><br></p>' ? '' : (dayData.details || '');
+
       return (
         localLocations !== (dayData.locations || '') ||
-        localDetails !== (dayData.details || '') ||
+        normalizedLocalDetails !== normalizedDayDetails ||
         localColorId !== (dayData.colorId || 'none') ||
         JSON.stringify(localIcons) !== JSON.stringify((dayData.icons as IconEntry[]) || [])
       );
@@ -115,7 +131,13 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
           <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 shrink-0">
             <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-              {isBulkEdit ? `Bulk Edit (${bulkCount} Days)` : `${isAdmin ? 'Edit Day' : 'View Day'} - ${dayData.month} ${dayData.day}, ${dayData.year}`}
+              {isBulkEdit ? (
+                `Bulk Edit (${bulkCount} Days)`
+              ) : (
+                <>
+                  {isAdmin ? 'Edit Day' : 'View Day'} - <span className="hidden sm:inline">{dateStrings.full} </span><span className="sm:hidden">{dateStrings.short} </span>{dayData.month} {dayData.day}, {dayData.year}
+                </>
+              )}
             </h3>
             <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               <X size={24} />

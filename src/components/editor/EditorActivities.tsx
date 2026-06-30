@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { X, ArrowUp, ArrowDown, Search, Pencil } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { X, Search, Pencil, Check, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { ICON_MAP } from '../../utils/constants';
 import type { KeyItem, IconEntry } from '../../types';
 
@@ -17,6 +17,19 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
   const [activitySort, setActivitySort] = useState<SortOrder>('key');
   const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
   const [editingIconName, setEditingIconName] = useState<string>('');
+
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+
+  const handleSort = () => {
+    if (dragItem.current === null || dragOverItem.current === null) return;
+    const _localIcons = [...localIcons];
+    const draggedItemContent = _localIcons.splice(dragItem.current, 1)[0];
+    _localIcons.splice(dragOverItem.current, 0, draggedItemContent);
+    setLocalIcons(_localIcons);
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
 
   const filteredActivities = useMemo(() => {
     let filtered = availableActivities;
@@ -47,14 +60,6 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
   const handleIconDelete = (index: number) =>
     setLocalIcons((prev) => prev.filter((_, i) => i !== index));
 
-  const handleIconMove = (index: number, direction: number) => {
-    const newIcons = [...localIcons];
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= newIcons.length) return;
-    [newIcons[index], newIcons[newIndex]] = [newIcons[newIndex], newIcons[index]];
-    setLocalIcons(newIcons);
-  };
-
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-6">
       <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-3 shrink-0">Activities</h4>
@@ -75,8 +80,17 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
             const displayLabel = item.displayName || defaultLabel;
 
             return (
-              <div key={index} className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+              <div 
+                key={index} 
+                draggable
+                onDragStart={() => (dragItem.current = index)}
+                onDragEnter={() => (dragOverItem.current = index)}
+                onDragEnd={handleSort}
+                onDragOver={(e) => e.preventDefault()}
+                className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm cursor-grab active:cursor-grabbing"
+              >
                 <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
+                  <GripVertical size={16} className="text-gray-400 shrink-0" />
                   <IconComponent size={20} className={item.color + ' shrink-0'} />
                   {editingIconIndex === index ? (
                     <div className="flex items-center space-x-2 flex-1">
@@ -87,16 +101,15 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                         placeholder={defaultLabel}
                         className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                         autoFocus
-                        onBlur={() => {
-                          const newIcons = [...localIcons];
-                          newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                          setLocalIcons(newIcons);
-                          setEditingIconIndex(null);
-                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            e.currentTarget.blur();
+                            e.preventDefault();
+                            const newIcons = [...localIcons];
+                            newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
+                            setLocalIcons(newIcons);
+                            setEditingIconIndex(null);
                           } else if (e.key === 'Escape') {
+                            e.preventDefault();
                             setEditingIconIndex(null);
                           }
                         }}
@@ -120,15 +133,33 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                   )}
                 </div>
                 <div className="flex items-center space-x-1 shrink-0">
-                  <button onClick={() => handleIconMove(index, -1)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                    <ArrowUp size={16} />
-                  </button>
-                  <button onClick={() => handleIconMove(index, 1)} disabled={index === localIcons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                    <ArrowDown size={16} />
-                  </button>
-                  <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 p-1 rounded">
-                    <X size={16} />
-                  </button>
+                  {editingIconIndex === index ? (
+                    <>
+                      <button 
+                        onClick={() => {
+                          const newIcons = [...localIcons];
+                          newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
+                          setLocalIcons(newIcons);
+                          setEditingIconIndex(null);
+                        }}
+                        className="text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 p-1 rounded transition-colors"
+                        title="Save"
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button 
+                        onClick={() => setEditingIconIndex(null)}
+                        className="text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition-colors"
+                        title="Cancel"
+                      >
+                        <X size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded transition-colors">
+                      <X size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             );

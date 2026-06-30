@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-06-11*  
-*Current Version: v0.9.7*
+*Last updated: 2026-06-30*  
+*Current Version: v0.9.8*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.8
+- Added drag-and-drop reordering for Locations, Cell Editor Activities, and Key Config items
+- Added day of the week display to the Cell Editor header
+- Added inline activity editor Save/Cancel buttons
+- Bugfix: Location input saves when clicking away
+- Bugfix: PFixed "unsaved changes" warnings when opening days with empty notes
 
 ### Release v0.9.7
 - Added advanced global keyboard shortcuts for navigation and admin actions

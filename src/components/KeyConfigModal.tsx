@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Key, ChevronLeft, ChevronRight, X, Palette, List, Loader,
-  CalendarSearch, Plus, ArrowUp, ArrowDown, Search, Save, AlertCircle, CheckCircle,
+  CalendarSearch, Plus, Search, Save, AlertCircle, CheckCircle, GripVertical
 } from 'lucide-react';
 import ToggleSwitch from './ToggleSwitch';
 import IconEditor from './IconEditor';
@@ -86,13 +86,30 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   const handleDeleteItem = (id: string) =>
     setLocalKeyItems((prev) => prev.filter((item) => item.id !== id));
 
-  const handleKeyMove = (index: number, direction: number, isCategory: boolean) => {
-    const items = isCategory ? categories : icons;
-    const newIndex = index + direction;
-    if (newIndex < 0 || newIndex >= items.length) return;
-    const swapped = [...items];
-    [swapped[index], swapped[newIndex]] = [swapped[newIndex], swapped[index]];
-    setLocalKeyItems(isCategory ? [...swapped, ...icons] : [...categories, ...swapped]);
+  const dragCatItem = useRef<number | null>(null);
+  const dragCatOverItem = useRef<number | null>(null);
+  
+  const handleCatSort = () => {
+    if (dragCatItem.current === null || dragCatOverItem.current === null) return;
+    const _categories = [...categories];
+    const dragged = _categories.splice(dragCatItem.current, 1)[0];
+    _categories.splice(dragCatOverItem.current, 0, dragged);
+    setLocalKeyItems([..._categories, ...icons]);
+    dragCatItem.current = null;
+    dragCatOverItem.current = null;
+  };
+
+  const dragActItem = useRef<number | null>(null);
+  const dragActOverItem = useRef<number | null>(null);
+
+  const handleActSort = () => {
+    if (dragActItem.current === null || dragActOverItem.current === null) return;
+    const _icons = [...icons];
+    const dragged = _icons.splice(dragActItem.current, 1)[0];
+    _icons.splice(dragActOverItem.current, 0, dragged);
+    setLocalKeyItems([...categories, ..._icons]);
+    dragActItem.current = null;
+    dragActOverItem.current = null;
   };
 
   const handleIconEditClick = (id: string) => {
@@ -231,7 +248,16 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
             </div>
               <div className="grid gap-4">
                 {categories.map((cat, index) => (
-                  <div key={cat.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4">
+                  <div 
+                    key={cat.id} 
+                    draggable
+                    onDragStart={() => (dragCatItem.current = index)}
+                    onDragEnter={() => (dragCatOverItem.current = index)}
+                    onDragEnd={handleCatSort}
+                    onDragOver={(e) => e.preventDefault()}
+                    className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4 cursor-grab active:cursor-grabbing"
+                  >
+                    <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
                     <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       {CATEGORY_COLORS.map((c) => (
                         <button
@@ -260,16 +286,10 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                       <ToggleSwitch checked={!!cat.showCount} onChange={() => handleUpdateItem(cat.id, 'showCount', !cat.showCount)} />
                     </div>
                     <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
-                      <button onClick={() => handleKeyMove(index, -1, true)} disabled={index === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                        <ArrowUp size={16} />
-                      </button>
-                      <button onClick={() => handleKeyMove(index, 1, true)} disabled={index === categories.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                        <ArrowDown size={16} />
+                      <button onClick={() => handleDeleteItem(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg">
+                        <X size={20} />
                       </button>
                     </div>
-                    <button onClick={() => handleDeleteItem(cat.id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg">
-                      <X size={20} />
-                    </button>
                   </div>
                 ))}
                 <div className="mt-6 pt-6 border-t dark:border-gray-700">
@@ -312,7 +332,16 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                     const IconC = item.icon ? ICON_MAP[item.icon] : null;
                     const displayColor = !item.iconColor || item.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
                     return (
-                      <div key={item.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4">
+                      <div 
+                        key={item.id} 
+                        draggable
+                        onDragStart={() => (dragActItem.current = originalIndex)}
+                        onDragEnter={() => (dragActOverItem.current = originalIndex)}
+                        onDragEnd={handleActSort}
+                        onDragOver={(e) => e.preventDefault()}
+                        className="bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4 cursor-grab active:cursor-grabbing"
+                      >
+                        <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
                         <button onClick={() => handleIconEditClick(item.id)} className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border dark:border-gray-600 hover:bg-gray-200">
                           {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs">None</span>}
                         </button>
@@ -335,16 +364,10 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                           <ToggleSwitch checked={!!item.showCount} onChange={() => handleUpdateItem(item.id, 'showCount', !item.showCount)} />
                         </div>
                         <div className="flex items-center space-x-1 border-l pl-2 dark:border-gray-700">
-                          <button onClick={() => handleKeyMove(originalIndex, -1, false)} disabled={originalIndex === 0} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                            <ArrowUp size={16} />
-                          </button>
-                          <button onClick={() => handleKeyMove(originalIndex, 1, false)} disabled={originalIndex === icons.length - 1} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-30">
-                            <ArrowDown size={16} />
+                          <button onClick={() => handleDeleteItem(item.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
+                            <X size={18} />
                           </button>
                         </div>
-                        <button onClick={() => handleDeleteItem(item.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
-                          <X size={18} />
-                        </button>
                       </div>
                     );
                   })
