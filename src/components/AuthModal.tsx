@@ -9,12 +9,14 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setUsername('');
       setPassword('');
       setLocalError(null);
       setIsLoading(false);
@@ -33,7 +35,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
         signal: controller.signal,
       });
       clearTimeout(timeout);
@@ -43,7 +45,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }
         onAuthenticate(role);
         onClose();
       } else if (response.status === 401) {
-        setLocalError('Incorrect password.');
+        setLocalError('Incorrect username or password.');
       } else {
         setLocalError(`Server error (${response.status}). Please try again.`);
       }
@@ -77,22 +79,39 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate }
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
+              id="admin-username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setLocalError(null);
+              }}
+              className={`w-full border rounded-lg p-3 text-lg dark:bg-gray-700 dark:text-white transition-colors mb-3 ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
+              placeholder="Username (e.g. admin)"
+              disabled={isLoading}
+              autoFocus
+            />
+            <input
+              id="admin-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
                 setLocalError(null);
               }}
               className={`w-full border rounded-lg p-3 text-lg dark:bg-gray-700 dark:text-white transition-colors ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`}
-              placeholder="Enter Password"
+              placeholder="Password"
               disabled={isLoading}
-              autoFocus
             />
             {localError && <p className="text-red-500 text-sm mt-2 font-bold">{localError}</p>}
           </div>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !username || !password}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors"
           >
             {isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}

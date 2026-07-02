@@ -67,7 +67,7 @@ app.locals.broadcastConfigUpdate = (config) => {
 };
 
 // --- Middleware ---
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 app.use(express.static(CLIENT_BUILD_PATH));
 

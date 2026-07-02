@@ -56,6 +56,8 @@ services:
     environment:
       # REQUIRED: Set this to a secure password
       - ADMIN_PASSWORD=your_secure_password_here
+      # OPTIONAL: Custom session signing key (auto-generated if left blank)
+      - JWT_SECRET=your_secure_jwt_secret_here
       # OPTIONAL VARIABLES:
       - TIMEZONE=America/New_York
       - PAGE_BANNER_HTML=<b>Welcome!</b>
@@ -66,7 +68,8 @@ Run `docker-compose up -d` to start the application. It will be accessible at `h
 ### Environment Variables
 | Variable | Description |
 | :--- | :--- |
-| **`ADMIN_PASSWORD`** | **(Required)** The master password used to log in and edit the calendar. |
+| **`ADMIN_PASSWORD`** | **(Required)** The password assigned to the account username "admin" to manage and edit the calendar. |
+| **`JWT_SECRET`** | (Optional) Session cookie cryptographic signature string. Automatically fallback-generated if empty. |
 | **`DATA_DIR`** | **(Required)** Path where JSON data files are stored. Defaults to `/app/data`. |
 | **`TIMEZONE`** | (Optional) Default timezone for the calendar (e.g., `UTC`, `America/Chicago`). |
 | **`PAGE_BANNER_HTML`** | (Optional) Custom HTML banner displayed at the very top of the page. |
@@ -78,16 +81,16 @@ Run `docker-compose up -d` to start the application. It will be accessible at `h
 The calendar operates on a permission system controlled by global visibility configurations and specific access profiles:
 
 ### Visibility Modes
-* **Public Mode:** Anyone who visits the URL can view the calendar dashboard in read-only mode. Admins authenticate by clicking the **Lock icon** in the header to enable editing privileges.
-* **Private Mode:** The entire application is blocked behind a full-screen login prompt. Visitors must provide a valid view-only password or admin password to see the calendar grid.
+* **Public Mode:** Anyone who visits the URL can view the calendar dashboard in read-only mode. Administrators authenticate using the username "admin" and the configured password by clicking the **Lock icon** in the header.
+* **Private Mode:** The entire application is hidden behind a full-screen login screen requiring a valid username and password combination. Master administrators use the username "admin". Guest visitors use the profile Name/Label as their username alongside their designated profile password.
 
 ### Access Control Panel
 When logged in as an administrator, click the **Access Control (shield check) icon** on the floating navigation bar to manage visibility restrictions, credentials, and security logs.
 
-* **View Passwords:** Admins can generate multiple read-only passwords for external sharing. 
+* **View Passwords:** Admins can generate multiple read-only user credentials for external sharing. 
   * *Uniqueness Constraints:* The backend prevents creation of matching names/labels or matching password strings to keep account tracking distinct users.
   * *Expirations:* You can optionally select an expiration date. If no date is selected, access is unlimited.
-  * *Mode Toggling Note:* Switching the calendar from Private Mode back to Public Mode automatically deletes all generated view-only passwords from the system database.
+  * *Mode Toggling Note:* Switching the calendar from Private Mode back to Public Mode automatically deletes all generated guest credentials from the system database.
 * **Access Logging & Auditing:** The panel displays a "Recent Activity" ledger containing the last 500 authentication events. It tracks the exact timestamp, incoming connection IP address, account profile name, and success or failure status of each login attempt.
 
 *Note: Active login sessions expire automatically after 24 hours. Users can click the Logout button in the header to terminate a session immediately.*

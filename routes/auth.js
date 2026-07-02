@@ -16,10 +16,16 @@ const authLimiter = rateLimit({
 });
 
 router.post('/login', authLimiter, (req, res) => {
-  const { password } = req.body;
+  const { username, password } = req.body;
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-  if (password === ADMIN_PASSWORD) {
+  if (!username || !password) {
+    logAuthAttempt(ip, 'failed', 'none', username || 'Unknown');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // 1. Check for Master Admin
+  if (username.toLowerCase() === 'admin' && password === ADMIN_PASSWORD) {
     const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, {
       httpOnly: true,
@@ -31,31 +37,30 @@ router.post('/login', authLimiter, (req, res) => {
     return res.json({ role: 'admin' });
   }
 
+  // 2. Targeted lookup for View Profiles
   const accessList = readAccess();
   const now = new Date();
-  let matchedView = null;
+  
+  const matchedView = accessList.find(a => a.name.toLowerCase() === username.toLowerCase());
 
-  for (const access of accessList) {
-    if (access.expiresAt && new Date(access.expiresAt) < now) continue; 
-    if (verifyPassword(password, access.passwordHash)) {
-      matchedView = access;
-      break;
+  if (matchedView) {
+    if (matchedView.expiresAt && new Date(matchedView.expiresAt) < now) {
+       // Profile is expired, fall through to generic error
+    } else if (verifyPassword(password, matchedView.passwordHash)) {
+      const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: '24h' });
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 
+      });
+      logAuthAttempt(ip, 'success', 'view', matchedView.name);
+      return res.json({ role: 'view' });
     }
   }
 
-  if (matchedView) {
-    const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: '24h' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 
-    });
-    logAuthAttempt(ip, 'success', 'view', matchedView.name);
-    return res.json({ role: 'view' });
-  }
-
-  logAuthAttempt(ip, 'failed', 'none', 'Unknown');
+  // Generic error to prevent account enumeration
+  logAuthAttempt(ip, 'failed', 'none', username);
   res.status(401).json({ error: 'Unauthorized' });
 });
 

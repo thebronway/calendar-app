@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.1*
+*Current Version: v1.0.2*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.2
+- Upgraded authentication to standard Username and Password login
+- Implemented secure JWT_SECRET environment configuration with persistent fallback
+- Reduced API JSON parsing limit to 2MB to prevent DoS vulnerabilities
+- Documentation updates (README and User Guide)
 
 ### Release v1.0.1
 - server.js monolithic breakup

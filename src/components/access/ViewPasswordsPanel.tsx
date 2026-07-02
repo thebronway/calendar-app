@@ -122,7 +122,7 @@ const ViewPasswordsPanel: React.FC<ViewPasswordsPanelProps> = ({ accessList, onA
         <h5 className="font-bold text-sm text-gray-800 dark:text-gray-200">Create New Password</h5>
         <div className="flex flex-col md:flex-row gap-4 items-start">
           <div className="flex-1 w-full">
-            <label className="block text-xs font-bold text-gray-500 mb-1">Name / Label</label>
+            <label className="block text-xs font-bold text-gray-500 mb-1">Username</label>
             <input 
               type="text" 
               required 
