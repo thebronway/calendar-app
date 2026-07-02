@@ -13,6 +13,8 @@ const DEFAULT_CONFIG: AppConfig = {
   collapseKeyDesktop: false,
   collapseStatsMobile: true,
   collapseStatsDesktop: false,
+  sessionTimeout: 24,
+  statsVisibility: 'all',
 };
 
 interface UseConfigParams {

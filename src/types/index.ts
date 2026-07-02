@@ -20,6 +20,10 @@ export interface AppConfig {
   collapseStatsDesktop?: boolean;
   viewMode?: 'public' | 'private';
   loginMessage?: string;
+  sessionTimeout?: number;
+  statsVisibility?: 'all' | 'admin' | 'none';
+  gaId?: string;
+  umamiId?: string;
 }
 
 // --- Calendar Data ---

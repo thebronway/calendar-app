@@ -37,6 +37,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useModals } from './hooks/useModals';
 import { useBulkEdit } from './hooks/useBulkEdit';
 import { useFeeds } from './hooks/useFeeds';
+import { useAnalytics } from './hooks/useAnalytics';
 
 import { slugify, getAdjacentDateKey } from './utils/helpers';
 import { MONTHS } from './utils/constants';
@@ -66,6 +67,10 @@ export default function App() {
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
     role,
   });
+
+  useAnalytics(config);
+  
+  const showStats = config.statsVisibility === 'all' || (config.statsVisibility === 'admin' && role === 'admin');
 
   const {
     calendarData,
@@ -479,10 +484,11 @@ export default function App() {
             onClearFilters={clearFilters}
             onViewAsList={handleViewAsList}
             onViewAsPlanner={handleViewAsPlanner}
+            showStats={showStats}
           />
         )}
 
-        {route.view === 'year' && !hasActiveFilters && (
+        {route.view === 'year' && !hasActiveFilters && showStats && (
           <StatsSection
             config={config}
             year={year}
@@ -526,6 +532,7 @@ export default function App() {
             calendarData={filteredCalendarData}
             keyItems={filteredKeyItems}
             shouldHighlightCell={shouldHighlightCell}
+            showStats={showStats}
             isBulkEditMode={isBulkEditMode}
             selectedCells={selectedCells}
             onCellClick={handleCellClick}
@@ -552,6 +559,7 @@ export default function App() {
                     setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
                   }
                   shouldHighlightCell={shouldHighlightCell}
+                  showStats={showStats}
                   isBulkEditMode={isBulkEditMode}
                   selectedCells={selectedCells}
                   onCellClick={handleCellClick}
@@ -569,6 +577,7 @@ export default function App() {
             expandedMonths={expandedMonths}
             setExpandedMonths={setExpandedMonths}
             shouldHighlightCell={shouldHighlightCell}
+            showStats={showStats}
             isBulkEditMode={isBulkEditMode}
             selectedCells={selectedCells}
             onCellClick={handleCellClick}

@@ -12,6 +12,7 @@ interface SingleMonthViewProps {
   expandedMonths: Record<number, boolean>;
   setExpandedMonths: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   shouldHighlightCell: (dayInfo: DayData) => boolean;
+  showStats: boolean;
   isBulkEditMode: boolean;
   selectedCells: string[];
   onCellClick: (key: string) => void;
@@ -25,6 +26,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
   expandedMonths,
   setExpandedMonths,
   shouldHighlightCell,
+  showStats,
   isBulkEditMode,
   selectedCells,
   onCellClick,
@@ -53,9 +55,11 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
             {monthName} {year}
           </h3>
-          <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
-            {activeDays.length} / {daysInMonth} days
-          </span>
+          {showStats && (
+            <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
+              {activeDays.length} / {daysInMonth} days
+            </span>
+          )}
         </div>
 
         {/* 3-COLUMN CONTENT */}
@@ -71,6 +75,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                 setExpandedMonths((prev) => ({ ...prev, [idx]: !prev[idx] }))
               }
               shouldHighlightCell={shouldHighlightCell}
+              showStats={showStats}
               isBulkEditMode={isBulkEditMode}
               selectedCells={selectedCells}
               onCellClick={onCellClick}

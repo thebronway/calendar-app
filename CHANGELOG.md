@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.2*
+*Current Version: v1.0.3*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.3
+- Login page title, icon updates and autofocus updates
+- Standardized desktop layout width and styling across admin modals
+- Added options to hide stats to non-admin users
+- Added session timeout configuration options
+- Added Umami and Google Analytics options
 
 ### Release v1.0.2
 - Upgraded authentication to standard Username and Password login

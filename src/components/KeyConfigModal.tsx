@@ -138,9 +138,9 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative">
-        <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-4 shrink-0 rounded-t-xl">
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-            <Key size={24} className="mr-3 text-blue-500" /> Key Configuration
+            <Key size={24} className="mr-3 text-purple-500" /> Key Configuration
           </h3>
           <div className="flex items-center gap-6">
             <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600 shadow-sm">
@@ -174,7 +174,7 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900" ref={scrollContainerRef}>
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900/50" ref={scrollContainerRef}>
           {localKeyItems.length === 0 && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 text-center mb-6">
               <p className="text-gray-700 dark:text-blue-100 mb-4">No key defined for {year} yet.</p>
@@ -230,7 +230,7 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
           </div>
         </div>
 
-        <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center">
+        <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0 rounded-b-xl">
           <button
             onClick={importFromPreviousYear}
             disabled={importStatus === 'loading'}

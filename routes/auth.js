@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { rateLimit } = require('express-rate-limit');
-const { logAuthAttempt, readAccess, readLogs } = require('../utils/fileOps');
+const { logAuthAttempt, readAccess, readLogs, readConfig } = require('../utils/fileOps');
 const { ADMIN_PASSWORD, JWT_SECRET, verifyPassword, verifyAdminToken } = require('../utils/authUtils');
 
 const router = express.Router();
@@ -24,14 +24,17 @@ router.post('/login', authLimiter, (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  const config = readConfig();
+  const timeoutHours = config.sessionTimeout || 24;
+
   // 1. Check for Master Admin
   if (username.toLowerCase() === 'admin' && password === ADMIN_PASSWORD) {
-    const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: `${timeoutHours}h` });
     res.cookie('token', token, {
       httpOnly: true,
       secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 
+      maxAge: timeoutHours * 60 * 60 * 1000 
     });
     logAuthAttempt(ip, 'success', 'admin', 'Master Admin');
     return res.json({ role: 'admin' });
@@ -47,12 +50,12 @@ router.post('/login', authLimiter, (req, res) => {
     if (matchedView.expiresAt && new Date(matchedView.expiresAt) < now) {
        // Profile is expired, fall through to generic error
     } else if (verifyPassword(password, matchedView.passwordHash)) {
-      const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: '24h' });
+      const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: `${timeoutHours}h` });
       res.cookie('token', token, {
         httpOnly: true,
         secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000 
+        maxAge: timeoutHours * 60 * 60 * 1000 
       });
       logAuthAttempt(ip, 'success', 'view', matchedView.name);
       return res.json({ role: 'view' });

@@ -12,6 +12,7 @@ interface MonthViewProps {
   isExpanded: boolean;
   onToggleMonth: (idx: number) => void;
   shouldHighlightCell: (dayInfo: DayData) => boolean;
+  showStats: boolean;
   isBulkEditMode: boolean;
   selectedCells: string[];
   onCellClick: (key: string) => void;
@@ -28,6 +29,7 @@ const MonthView: React.FC<MonthViewProps> = ({
   isExpanded,
   onToggleMonth,
   shouldHighlightCell,
+  showStats,
   isBulkEditMode,
   selectedCells,
   onCellClick,
@@ -169,9 +171,11 @@ const MonthView: React.FC<MonthViewProps> = ({
               {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </span>
           </h2>
-          <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
-            {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
-          </span>
+          {showStats && (
+            <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+              {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
+            </span>
+          )}
         </div>
       )}
 

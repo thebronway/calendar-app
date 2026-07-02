@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Lock, Loader, LogIn, CalendarDays, User } from 'lucide-react';
 import type { Role, AppConfig } from '../types';
 import { ICON_MAP } from '../utils/constants';
@@ -13,9 +13,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Ensure cursor starts in the username field reliably on mount
+    usernameRef.current?.focus();
+  }, []);
 
   const HeaderIcon = ICON_MAP[config.headerIcon || 'CalendarDays'] || CalendarDays;
-  const title = config.ownerName ? `${config.ownerName}'s Calendar` : 'Private Calendar';
+  
+  const n = config.ownerName || 'Name';
+  const style = config.headerStyle || 'simple';
+  let title = 'Calendar';
+  if (style === 'possessive') title = `${n}'s Calendar`;
+  if (style === 'question') title = `Where is ${n}?`;
+
   const loginMessage = config.loginMessage;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +89,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
                 className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
                 placeholder="Username"
                 disabled={isLoading}
-                autoFocus
+                ref={usernameRef}
               />
             </div>
           </div>

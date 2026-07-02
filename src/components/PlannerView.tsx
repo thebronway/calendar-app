@@ -8,6 +8,7 @@ interface PlannerViewProps {
   calendarData: CalendarDataset | null;
   keyItems: KeyItem[];
   shouldHighlightCell: (dayInfo: DayData) => boolean;
+  showStats: boolean;
   isBulkEditMode: boolean;
   selectedCells: string[];
   onCellClick: (key: string) => void;
@@ -18,6 +19,7 @@ const PlannerView: React.FC<PlannerViewProps> = ({
   calendarData,
   keyItems,
   shouldHighlightCell,
+  showStats,
   isBulkEditMode,
   selectedCells,
   onCellClick,
@@ -49,9 +51,11 @@ const PlannerView: React.FC<PlannerViewProps> = ({
             {/* FULL WIDTH HEADER */}
             <div className="bg-gray-100 dark:bg-gray-900 px-6 py-3 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{month} {year}</h3>
-              <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
-                {days.length} / {daysInMonth} days
-              </span>
+              {showStats && (
+                <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
+                  {days.length} / {daysInMonth} days
+                </span>
+              )}
             </div>
 
             {/* 3-COLUMN CONTENT */}
@@ -66,6 +70,7 @@ const PlannerView: React.FC<PlannerViewProps> = ({
                   isExpanded={true}
                   onToggleMonth={() => {}}
                   shouldHighlightCell={shouldHighlightCell}
+                  showStats={showStats}
                   isBulkEditMode={isBulkEditMode}
                   selectedCells={selectedCells}
                   onCellClick={onCellClick}

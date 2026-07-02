@@ -1,35 +1,24 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.2*
+*Current Version: v1.0.3*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
  
-### Release v1.0.3
-- Login Page
-  - Login Page title and logo should match site title and logo in settings (Exclude Year Numbers). Options:
-    - Where is Brian
-    - Calendar
-    - Brian's Calendar
-  - cursor should start on username field.
-- UI updates
-  - Make all admin modals (key, feeds, access, settings) wider on desktop, make them all the same width, make sure content fills the width
-  - Key modal UI and background update to keeps in line with all other admin modals
-  - Color match key title like other admin modals
-- Add Set session timeout in Access Settings (make sure new sections are in their own files or added to the correct one, follow current logic)
-- Settings updates (make sure new sections are in their own files or added to the correct one, follow current logic)
-  - Add a setting to make stats admin only (Main year stats, month stats, and counts) - options are no stats, admin only, all users (wordsmith that)
-    - if no stats, stats are still kept, just hidden
-  - Add Settings for tracking code injection like umami, and google analtyics. How to prevent malicous code input?
-- First time lauch modal for admin login (new file)
-  - Very brief intro to features, link to userguide
+### Release v1.0.4
+- Split Privacy & Analytics
+  - Add url regex for selfhosted umami instaces
+- First time lauch modal for admin login (new file(s))
+  - Very brief intro to features, how to get started, link to userguide
   - Changelog from most recent version, link to full github changlog
   - Flag should be reset after every version, so admin sees the the popup on first login if its a new version
+- Confirm User guide is still up to date (update with tracking and new settings)
+- Redo Readme Key features
 
-### Release v1.0.4
+### Release v1.0.5
 - Demo mode flag docker var
   - Add helper text on login screen
       - Admin password
@@ -37,9 +26,8 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Always show first time admin modal
   - Maybe I should make access json files read only to prevent mode change and password changing?
 - confrim nginx conf
-- Confirm User guide is still up to date
 
-### Release v1.0.5
+### Release v1.0.6
 - Private Local vs Private SSO vs Private LDAP
 - **SSO Authentication & Auto-Redirect**
   - **Goal:** Integrate enterprise OIDC/OAuth2 (like Authentik) while maintaining the local password system as a "break-glass" fallback.
@@ -48,7 +36,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - **Frontend Auto-Redirect:** In `App.tsx`, if the user is unauthenticated and `AUTO_SSO_REDIRECT=true`, automatically redirect their browser to the backend SSO login route.
   - **The Break-Glass Backdoor:** Navigating to the root URL (/) must automatically redirect unauthenticated users to the SSO login flow. Navigating directly to /login must bypass this automatic redirect and render the standard local password screen alongside an SSO login button.
 
-### Release v1.0.6: PTO & Vacation Tracker Dashboard
+### Release v1.0.7: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**
   - Introduce a new backend data store file `data/pto_config.json` managed exclusively by the admin credential tier to store the global bank definitions.
   - Define each PTO Bank entry structure with fields: `id` (UUID string), `name` (string, e.g., "Vacation"), `startingBalance` (number in hours), `accrualRate` (number in hours), `accrualFrequency` (enum: `'none'`, `'weekly'`, `'biweekly'`, `'monthly'`, `'annually'`), and `startDate` (ISO string date template).
@@ -74,22 +62,23 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.0.7
+### Release v1.0.8
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
   - Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals. For Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v1.0.8
+### Release v1.0.9
 - Standardize and cleanup comments, remove dead code, and clean up inline styles while splitting components. 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
 - More Screenshots in the User guide
 - iCal syncing - how does it deal with activities which only happen in a certain year and not the next year. Should the iCals be confined to a year?
 
-### Release v1.0.9
+### Release v1.1.0
 - Establishing test suite of professional-grade foundation for long-term maintenance.
   - Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering which should prevent regressions during major refactors.
+- Package Updates
 
 ### Release v2.0.0
 - Offline Support (PWA)

@@ -20,6 +20,8 @@ const DEFAULT_CONFIG = {
   collapseStatsMobile: true,
   collapseStatsDesktop: false,
   viewMode: 'public',
+  sessionTimeout: 24,
+  statsVisibility: 'all',
 };
 
 // File write locks per year to prevent concurrent writes

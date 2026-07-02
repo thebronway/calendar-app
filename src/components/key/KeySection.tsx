@@ -14,6 +14,7 @@ interface KeySectionProps {
   onClearFilters: () => void;
   onViewAsList: () => void;
   onViewAsPlanner: () => void;
+  showStats: boolean;
 }
 
 const KeySection: React.FC<KeySectionProps> = ({
@@ -27,6 +28,7 @@ const KeySection: React.FC<KeySectionProps> = ({
   onClearFilters,
   onViewAsList,
   onViewAsPlanner,
+  showStats,
 }) => {
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -126,7 +128,7 @@ const KeySection: React.FC<KeySectionProps> = ({
                   <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">
                     {item.label}
                   </span>
-                  {item.showCount && (
+                  {showStats && item.showCount && (
                     <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
                       {stats.categories[item.id] || 0}
                     </span>

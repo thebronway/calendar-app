@@ -85,7 +85,7 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
         
         <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
@@ -97,7 +97,7 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900/50">
-          <div className="space-y-8 max-w-2xl mx-auto">
+          <div className="space-y-8">
             <GlobalVisibilityPanel
               config={localConfig}
               onConfigChange={handleConfigChange}
