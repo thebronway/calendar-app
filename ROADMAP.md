@@ -12,19 +12,18 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Login Page
   - Login Page title and logo should match site title and logo in settings
 - UI updates
-  - Make all other admin modals (key, feeds, access, settings) wider on desktop, make them all the same width
+  - Make all other admin modals (key, feeds, access, settings) wider on desktop, make them all the same width, make sure content fills the width
   - Key modal UI and background update to keeps in line with all other admin modals
-  - Color match key title like other modals
-- Settings updates (make sure new sections are in their own files, follow current logic)
-  - Set session timeout in Settings
+  - Color match key title like other admin modals
+- Set session timeout in Access Settings (make sure new sections are in their own files or added to the correct one, follow current logic)
+- Settings updates (make sure new sections are in their own files or added to the correct one, follow current logic)
   - Add a setting to make stats admin only (Main year stats, month stats, and counts) - options are no stats, admin only, all users (wordsmith that)
     - if no stats, stats are still kept, just hidden
   - Add Settings for tracking code injection like umami, and google analtyics. How to prevent malicous code input?
 - First time lauch modal for admin login
-  - What setting to set (very brief intro to features)
-  - Changelog from most recent version
-  - Flag should be reset after every version
-- Confirm User guide is still up to date
+  - Very brief intro to features, link to userguide
+  - Changelog from most recent version, link to full github changlog
+  - Flag should be reset after every version, so admin sees the the popup on first login if its a new version
 
 ### Release v1.0.4
 - Demo mode flag docker var
@@ -33,6 +32,8 @@ This document tracks planned improvements, enhancements, and technical debt for 
       - User password
   - Always show first time admin modal
   - Maybe I should make access json files read only to prevent mode change and password changing?
+- confrim nginx conf
+- Confirm User guide is still up to date
 
 ### Release v1.0.5
 - Private Local vs Private SSO vs Private LDAP
@@ -80,6 +81,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
 - More Screenshots in the User guide
+- iCal syncing - how does it deal with activities which only happen in a certain year and not the next year. Should the iCals be confined to a year?
 
 ### Release v1.0.9
 - Establishing test suite of professional-grade foundation for long-term maintenance.
