@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FeedProfile } from '../hooks/useFeeds';
-import { Info } from 'lucide-react';
+import { Info, Save } from 'lucide-react';
 import { FeedTriggerStep } from './FeedTriggerStep';
 import { FeedPayloadStep } from './FeedPayloadStep';
 
@@ -8,6 +8,7 @@ interface FeedBuilderFormProps {
   initialData?: FeedProfile | null;
   onSave: (feed: Omit<FeedProfile, 'token'> & { id?: string; token?: string }) => void;
   onCancel: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   // Pass down context data from current viewed year
   currentYear: number;
   availableCategories: Array<{ id: string; label: string }>;
@@ -19,6 +20,7 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
   initialData,
   onSave,
   onCancel,
+  onDirtyChange,
   currentYear,
   availableCategories,
   availableActivities,
@@ -41,6 +43,45 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
   const [selectedPayload, setSelectedPayload] = useState<string[]>(
     Array.isArray(initialData?.descriptionPayload) ? initialData.descriptionPayload : []
   );
+
+  React.useEffect(() => {
+    if (!onDirtyChange) return;
+
+    const currentState = {
+      name,
+      isPublic,
+      triggerType,
+      dataTriggerMode,
+      dataLogicalOperator,
+      selectedCategories,
+      selectedActivities,
+      locationMode,
+      selectedLocations,
+      includeLocationField,
+      descriptionPayload: selectedPayload,
+    };
+
+    const initialState = {
+      name: initialData?.name || '',
+      isPublic: initialData?.isPublic || false,
+      triggerType: initialData?.triggerType || 'data',
+      dataTriggerMode: initialData?.dataTriggerMode || 'categories',
+      dataLogicalOperator: initialData?.dataLogicalOperator || 'OR',
+      selectedCategories: initialData?.selectedCategories || [],
+      selectedActivities: initialData?.selectedActivities || [],
+      locationMode: initialData?.locationMode || 'any',
+      selectedLocations: initialData?.selectedLocations || [],
+      includeLocationField: initialData?.includeLocationField ?? true,
+      descriptionPayload: Array.isArray(initialData?.descriptionPayload) ? initialData.descriptionPayload : [],
+    };
+
+    const isDirty = JSON.stringify(currentState) !== JSON.stringify(initialState);
+    onDirtyChange(isDirty);
+  }, [
+    name, isPublic, triggerType, dataTriggerMode, dataLogicalOperator,
+    selectedCategories, selectedActivities, locationMode, selectedLocations,
+    includeLocationField, selectedPayload, initialData, onDirtyChange
+  ]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,8 +114,9 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 -mx-1 pr-2">
-      {/* Feed Name & Visibility */}
+    <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Feed Name & Visibility */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Feed Name</label>
@@ -141,21 +183,22 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
         selectedPayload={selectedPayload}
         setSelectedPayload={setSelectedPayload}
       />
+      </div>
 
       {/* Action Footers */}
-      <div className="flex justify-end space-x-2 pt-2 border-t dark:border-gray-700">
+      <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3 shrink-0 rounded-b-xl">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors"
+          className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center transition-colors"
         >
-          Save Profile Rules
+          <Save size={18} className="mr-2" /> Save Profile Rules
         </button>
       </div>
     </form>

@@ -24,7 +24,6 @@ interface AppHeaderProps {
   role: Role;
   isDarkMode: boolean;
   isSaving: boolean;
-  isBulkEditMode: boolean;
   lastUpdatedText: string;
   hasFilters: boolean;
   routeView?: string;
@@ -34,10 +33,7 @@ interface AppHeaderProps {
   onYearPrev: () => void;
   onYearNext: () => void;
   onToggleDarkMode: () => void;
-  onToggleBulkEdit: () => void;
-  onOpenKeyModal: () => void;
   onOpenFeeds: () => void;
-  onOpenSettings: () => void;
   onOpenHelp: () => void;
   onLogout: () => void;
   onOpenAuth: () => void;
@@ -50,7 +46,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   role,
   isDarkMode,
   isSaving,
-  isBulkEditMode,
   lastUpdatedText,
   hasFilters,
   routeView,
@@ -60,10 +55,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onYearPrev,
   onYearNext,
   onToggleDarkMode,
-  onToggleBulkEdit,
-  onOpenKeyModal,
   onOpenFeeds,
-  onOpenSettings,
   onOpenHelp,
   onLogout,
   onOpenAuth,
@@ -318,54 +310,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                     </>
                   )}
                 </div>
-
-                {/* ADMIN ICONS ON LINE 2 (Desktop and Mobile) */}
-                {role === 'admin' && (
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <button
-                      onClick={onToggleBulkEdit}
-                      className={`h-10 px-4 flex items-center justify-center text-white rounded-lg transition-all ${
-                        isBulkEditMode ? 'bg-indigo-700 ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-gray-900' : 'bg-indigo-500 hover:bg-indigo-600'
-                      }`}
-                      title="Bulk Edit"
-                    >
-                      <CalendarRange size={20} className="sm:mr-2" />
-                      <span className="text-sm font-bold sm:inline hidden">
-                        {isBulkEditMode ? 'Cancel Bulk' : 'Bulk Edit'}
-                      </span>
-                      <span className="text-sm font-bold sm:hidden ml-1">
-                        {isBulkEditMode ? 'Cancel' : 'Bulk Edit'}
-                      </span>
-                    </button>
-                    <button
-                      onClick={onOpenKeyModal}
-                      className="h-10 px-4 flex items-center justify-center bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-bold text-sm"
-                      title="Edit Key"
-                    >
-                      <Key size={20} className="sm:mr-2" />
-                      <span className="sm:inline hidden">Key</span>
-                      <span className="sm:hidden ml-1">Key</span>
-                    </button>
-                    <button
-                      onClick={onOpenFeeds}
-                      className="h-10 px-4 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-bold text-sm"
-                      title="Manage Feeds"
-                    >
-                      <Rss size={20} className="sm:mr-2" />
-                      <span className="sm:inline hidden">Feeds</span>
-                      <span className="sm:hidden ml-1">Feeds</span>
-                    </button>
-                    <button
-                      onClick={onOpenSettings}
-                      className="h-10 px-4 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-bold text-sm"
-                      title="Settings"
-                    >
-                      <Settings size={20} className="sm:mr-2" />
-                      <span className="sm:inline hidden">Settings</span>
-                      <span className="sm:hidden ml-1">Settings</span>
-                    </button>
-                  </div>
-                )}
               </div>
             </>
           )}

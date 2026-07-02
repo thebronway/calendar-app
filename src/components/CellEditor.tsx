@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, memo } from 'react';
 import { X, Tag, MapPin } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP, MONTHS } from '../utils/constants';
 import { sanitizeHtml } from '../utils/helpers';
-import { useCloseGuard } from '../hooks/useUnsavedChanges';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import type { DayData, IconEntry, KeyItem } from '../types';
 
 import { EditorCategories, CategoryOption } from './editor/EditorCategories';
@@ -87,22 +88,29 @@ const CellEditor: React.FC<CellEditorProps> = memo(
       );
     }, [isAdmin, dayData, localLocations, localDetails, localColorId, localIcons]);
 
-    const guardedClose = useCloseGuard(isDirty, onClose);
+    const { confirm } = useConfirm();
+    usePreventTabClose(isDirty);
+
+    const handleClose = async () => {
+      if (isDirty && !(await confirm())) return;
+      onClose();
+    };
 
     useEffect(() => {
       if (!isOpen || !dayData || isBulkEdit) return;
 
-      const handleKeyDown = (e: KeyboardEvent) => {
+      const handleKeyDown = async (e: KeyboardEvent) => {
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
           return;
         }
 
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
           const direction = e.key === 'ArrowLeft' ? 'prev' : 'next';
           
           if (isDirty) {
-            if (window.confirm('You have unsaved changes. Discard them and move?')) {
+            if (await confirm({ message: 'You have unsaved changes. Discard them and move?' })) {
               onNavigate?.(direction);
             }
           } else {
@@ -117,6 +125,19 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     const handleSave = (nextAction?: 'prev' | 'next' | 'close') => {
       onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons }, nextAction);
+    };
+
+    const handleClearAll = async () => {
+      if (await confirm({ 
+        title: 'Clear Day', 
+        message: 'Are you sure you want to clear all data for this day?', 
+        confirmText: 'Clear Data' 
+      })) {
+        setLocalColorId('none');
+        setLocalIcons([]);
+        setLocalLocations('');
+        setLocalDetails('');
+      }
     };
 
     if (!isOpen || !dayData) return null;
@@ -139,7 +160,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 </>
               )}
             </h3>
-            <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               <X size={24} />
             </button>
           </div>
@@ -251,8 +272,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             isAdmin={isAdmin} 
             isBulkEdit={isBulkEdit} 
             onSave={handleSave} 
-            onClose={guardedClose} 
+            onClose={handleClose} 
             onNavigate={onNavigate}
+            onClearAll={isBulkEdit ? undefined : handleClearAll}
           />
         </div>
       </div>

@@ -3,7 +3,8 @@ import { Settings, X, Layout, Globe, Save, AlertCircle, Maximize2 } from 'lucide
 import ToggleSwitch from './ToggleSwitch';
 import { ICON_KEYS, ICON_MAP } from '../utils/constants';
 import { isValidTimezone } from '../utils/helpers';
-import { useCloseGuard } from '../hooks/useUnsavedChanges';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import type { AppConfig } from '../types';
 
 interface SettingsModalProps {
@@ -27,7 +28,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
   }, [isOpen, config]);
 
   const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
-  const guardedClose = useCloseGuard(isDirty, onClose);
+  const { confirm } = useConfirm();
+  usePreventTabClose(isDirty);
+
+  const handleClose = async () => {
+    if (isDirty && !(await confirm())) return;
+    onClose();
+  };
 
   const handleConfigChange = <K extends keyof AppConfig>(field: K, value: AppConfig[K]) => {
     setLocalConfig((prev) => ({ ...prev, [field]: value }));
@@ -71,7 +78,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             <Settings size={24} className="mr-3 text-blue-500" /> Settings
           </h3>
-          <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+          <button onClick={handleClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <X size={24} />
           </button>
         </div>
@@ -297,7 +304,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
         </div>
 
         <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3 rounded-b-xl">
-          <button onClick={guardedClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+          <button onClick={handleClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
             Cancel
           </button>
           <button onClick={handleSave} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center">

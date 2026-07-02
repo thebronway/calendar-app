@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-06-09*  
+*Last updated: 2026-07-01*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -77,7 +77,7 @@ Run `docker-compose up -d` to start the application. It will be accessible at `h
 
 The calendar operates on a dual-tier access system:
 * **Public View-Only Mode:** Anyone who visits your URL can see the calendar, click on days to read notes, and use the filters. They cannot make any changes.
-* **Admin Mode:** Clicking the **Lock icon** in the header allows you to enter your `ADMIN_PASSWORD`. Once authenticated, you will see new buttons for Bulk Edit, Key configuration, and Settings, and you can edit individual days.
+* **Admin Mode:** Clicking the **Lock icon** in the header allows you to enter your `ADMIN_PASSWORD`. Once authenticated, you will see a floating navigation bar at the bottom of the screen with buttons for Bulk Edit, Key configuration, and Settings.
 
 *Note: Your session will automatically expire after 24 hours, or you can click the Logout button to end it immediately.*
 
@@ -136,11 +136,16 @@ Click any day on the calendar to open the Cell Editor.
 3. **Location & Notes:** * Add comma-separated locations (e.g., "NYC, London"). These will be tracked in your stats.
     * Add rich-text notes (bold, lists, links) to record flight numbers, hotel details, or journaling.
 
+**Editor Actions:**
+* **Clear Day:** Resets the day's data (clears activities, locations, notes, and resets color).
+* **Save & Close:** Saves your data and returns to the calendar.
+* **Save & Previous / Save & Next:** Saves and opens the adjacent day.
+
 ### Bulk Edit Mode
 To quickly log long trips:
-1. Click **Bulk Edit** in the header.
+1. Click **Bulk Edit** in the bottom admin navigation bar.
 2. Click multiple days on the calendar (they will highlight with a purple ring).
-3. A floating bar will appear at the bottom. Click **Edit**.
+3. A floating bar will appear at the bottom. Click **Edit** to apply changes, or **Cancel** to exit Bulk Edit mode.
 4. Any Category, Activity, or Location you apply will be saved to *all* selected days at once.
 
 ---
@@ -210,7 +215,7 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 * **`H` or `U` Keys:** Open the Help Modal (`H`) or jump directly to this User Guide (`U`).
 * **`A` Key:** Prompt for Authentication (Log in).
 * **`B`, `K`, `F`, `S` Keys (Admin Only):** Toggle Bulk Edit mode (`B`), open Key configuration (`K`), manage Feeds (`F`), or open Settings (`S`).
-* **Saving:** If you edit a day and attempt to close the window without saving, the app will warn you to prevent data loss.
+* **Saving:** If you attempt to click away, close a window, or accidentally close the browser tab with unsaved data, a confirmation prompt will appear to prevent accidental data loss.
 * **Viewing and Editing Details:** To view or edit a day's details, simply click on it directly within any of the calendar grid or list views.
 
 ---

@@ -1,30 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 
 /**
- * Tracks whether local state differs from the original saved state.
- * Returns isDirty flag and a reset function.
+ * Automatically adds a beforeunload listener to protect against browser tab closures.
  */
-export function useUnsavedChanges<T>(original: T, current: T): boolean {
-  const [isDirty, setIsDirty] = useState(false);
-
+export function usePreventTabClose(isDirty: boolean) {
   useEffect(() => {
-    setIsDirty(JSON.stringify(original) !== JSON.stringify(current));
-  }, [original, current]);
-
-  return isDirty;
-}
-
-/**
- * Wraps a close handler with an "unsaved changes" confirmation guard.
- */
-export function useCloseGuard(isDirty: boolean, onClose: () => void): () => void {
-  return useCallback(() => {
-    if (isDirty) {
-      if (window.confirm('You have unsaved changes. Discard them and close?')) {
-        onClose();
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = ''; // Required by modern browsers to trigger the native prompt
       }
-    } else {
-      onClose();
-    }
-  }, [isDirty, onClose]);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 }

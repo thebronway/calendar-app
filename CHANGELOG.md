@@ -1,12 +1,22 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-06-30*  
-*Current Version: v0.9.8*
+*Last updated: 2026-07-01*  
+*Current Version: v0.9.9*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v0.9.9
+- Moved admin navigation to bottom bar
+- Hid admin navigation during Bulk Edit and on User Guide
+- Added Cancel button to Bulk Edit bar
+- Made Save and Cancel buttons sticky in Feed Editor
+- Implemented global confirm modal context to replace native browser prompts
+- Added hook to prevent browser tab closure with unsaved changes
+- Added Clear Day button to Cell Editor
+- Adjusted mobile and desktop button layouts in Cell Editor footer
 
 ### Release v0.9.8
 - Added drag-and-drop reordering for Locations, Cell Editor Activities, and Key Config items

@@ -6,7 +6,8 @@ import {
 import ToggleSwitch from './ToggleSwitch';
 import IconEditor from './IconEditor';
 import { CATEGORY_COLORS, ICON_COLOR_OPTIONS, ICON_MAP } from '../utils/constants';
-import { useCloseGuard } from '../hooks/useUnsavedChanges';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import { slugify } from '../utils/helpers';
 import type { KeyItem } from '../types';
 
@@ -46,7 +47,13 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   }, [isOpen, keyItems]);
 
   const isDirty = JSON.stringify(localKeyItems) !== JSON.stringify(keyItems);
-  const guardedClose = useCloseGuard(isDirty, onClose);
+  const { confirm } = useConfirm();
+  usePreventTabClose(isDirty);
+
+  const handleClose = async () => {
+    if (isDirty && !(await confirm())) return;
+    onClose();
+  };
 
   const categories = localKeyItems.filter((i) => i.isColorKey);
   const icons = localKeyItems.filter((i) => !i.isColorKey);
@@ -174,7 +181,7 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
                 <ChevronRight size={20} />
               </button>
             </div>
-            <button onClick={guardedClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
               <X size={24} />
             </button>
           </div>
@@ -401,7 +408,7 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
             Import from {year - 1}
           </button>
           <div className="flex space-x-3">
-            <button onClick={guardedClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+            <button onClick={handleClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
               Cancel
             </button>
             <button onClick={handleSaveAll} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center">

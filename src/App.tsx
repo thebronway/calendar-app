@@ -9,6 +9,7 @@ import AppHeader from './components/layout/AppHeader';
 import KeySection from './components/key/KeySection';
 import StatsSection from './components/stats/StatsSection';
 import BulkEditBar from './components/calendar/BulkEditBar';
+import AdminFloatingNav from './components/AdminFloatingNav';
 // Modals & Components
 import MonthView from './components/MonthView';
 import SingleMonthView from './components/SingleMonthView';
@@ -368,6 +369,7 @@ export default function App() {
 
   return (
     <MainLayout
+      hasBottomNav={role === 'admin' && !isBulkEditMode && route.view !== 'guide'}
       bannerHtml={config.bannerHtml}
       header={
         <AppHeader
@@ -376,7 +378,6 @@ export default function App() {
           role={role}
           isDarkMode={isDarkMode}
           isSaving={isSaving}
-          isBulkEditMode={isBulkEditMode}
           lastUpdatedText={lastUpdatedText}
           hasFilters={isCustomView}
           routeView={route.view}
@@ -386,10 +387,7 @@ export default function App() {
           onYearPrev={handlePrevNav}
           onYearNext={handleNextNav}
           onToggleDarkMode={toggleDarkMode}
-          onToggleBulkEdit={toggleBulkEdit}
-          onOpenKeyModal={() => setShowKeyModal(true)}
           onOpenFeeds={() => setShowFeedsModal(true)}
-          onOpenSettings={() => setShowSettingsModal(true)}
           onOpenHelp={() => setShowHelpModal(true)}
           onLogout={handleLogout}
           onOpenAuth={() => setShowAuthModal(true)}
@@ -487,6 +485,16 @@ export default function App() {
             selectedCells={selectedCells}
             onEditSelected={() => setActiveCell('bulk')}
             onClear={clearSelection}
+            onCancel={clearBulkEdit}
+          />
+        )}
+
+        {role === 'admin' && !isBulkEditMode && route.view !== 'guide' && (
+          <AdminFloatingNav
+            onToggleBulkEdit={toggleBulkEdit}
+            onOpenKeyModal={() => setShowKeyModal(true)}
+            onOpenFeeds={() => setShowFeedsModal(true)}
+            onOpenSettings={() => setShowSettingsModal(true)}
           />
         )}
 

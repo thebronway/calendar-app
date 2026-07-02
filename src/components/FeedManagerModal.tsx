@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Rss, Loader } from 'lucide-react';
 import { FeedBuilderForm } from './FeedBuilderForm';
+import { useConfirm } from '../contexts/ConfirmContext';
+import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import { FeedList } from './FeedList';
 import type { FeedProfile } from '../hooks/useFeeds';
 import type { KeyItem, DayData, Role } from '../types';
@@ -34,6 +36,15 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
   const [editingFeed, setEditingFeed] = useState<FeedProfile | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { confirm } = useConfirm();
+  usePreventTabClose(isDirty);
+
+  const handleClose = async () => {
+    if (isDirty && !(await confirm())) return;
+    onClose();
+  };
 
   // Reset to list view when modal is closed
   useEffect(() => {
@@ -42,6 +53,7 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
         setView('list');
         setEditingFeed(null);
         setCopiedId(null);
+        setIsDirty(false);
       }, 300); // Wait for exit animation
     }
   }, [isOpen]);
@@ -76,8 +88,26 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
 
   const handleDelete = async (id?: string) => {
     if (!id) return;
-    if (window.confirm('Are you sure you want to delete this feed? Anyone subscribed to it will stop receiving updates.')) {
+    if (await confirm({ 
+      title: 'Delete Feed', 
+      message: 'Are you sure you want to delete this feed? Anyone subscribed to it will stop receiving updates.',
+      confirmText: 'Delete' 
+    })) {
       await onDeleteFeed(id);
+    }
+  };
+
+  const handleCancelForm = async () => {
+    if (isDirty) {
+      if (await confirm({ message: 'You have unsaved changes. Discard them and close?' })) {
+        setView('list');
+        setEditingFeed(null);
+        setIsDirty(false);
+      }
+    } else {
+      setView('list');
+      setEditingFeed(null);
+      setIsDirty(false);
     }
   };
 
@@ -93,7 +123,7 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
             {view === 'list' ? 'iCal Subscriptions' : editingFeed ? 'Edit Feed' : 'Create New Feed'}
           </h3>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
           >
             <X size={24} />
@@ -101,8 +131,8 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {view === 'list' ? (
+        {view === 'list' ? (
+          <div className="flex-1 overflow-y-auto p-6">
             <FeedList
               feeds={feeds}
               isFeedsLoading={isFeedsLoading}
@@ -114,28 +144,26 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
-          ) : (
-            <div className="relative">
-              {isSaving && (
-                <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center rounded-xl">
-                  <Loader size={32} className="animate-spin text-blue-600" />
-                </div>
-              )}
-              <FeedBuilderForm
-                initialData={editingFeed}
-                onSave={handleSave}
-                onCancel={() => {
-                  setView('list');
-                  setEditingFeed(null);
-                }}
-                currentYear={year || new Date().getFullYear()}
-                availableCategories={keyItems.filter(k => k.isColorKey).map(k => ({ id: k.id, label: k.label }))}
-                availableActivities={keyItems.filter(k => !k.isColorKey).map(k => ({ icon: k.icon || '', value: k.id, label: k.label, color: k.iconColor || '' }))}
-                availableLocations={Array.from(new Set(Object.values(calendarData).map(d => d.locations).filter(Boolean).flatMap(l => l.split(',').map(s => s.trim()))))}
-              />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col overflow-hidden relative">
+            {isSaving && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
+                <Loader size={32} className="animate-spin text-blue-600" />
+              </div>
+            )}
+            <FeedBuilderForm
+              initialData={editingFeed}
+              onSave={handleSave}
+              onCancel={handleCancelForm}
+              onDirtyChange={setIsDirty}
+              currentYear={year || new Date().getFullYear()}
+              availableCategories={keyItems.filter(k => k.isColorKey).map(k => ({ id: k.id, label: k.label }))}
+              availableActivities={keyItems.filter(k => !k.isColorKey).map(k => ({ icon: k.icon || '', value: k.id, label: k.label, color: k.iconColor || '' }))}
+              availableLocations={Array.from(new Set(Object.values(calendarData).map(d => d.locations).filter(Boolean).flatMap(l => l.split(',').map(s => s.trim()))))}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
