@@ -10,17 +10,21 @@ This document tracks planned improvements, enhancements, and technical debt for 
  
 ### Release v1.0.3
 - Login Page
-  - Login Page title and logo should match site title and logo in settings
+  - Login Page title and logo should match site title and logo in settings (Exclude Year Numbers). Options:
+    - Where is Brian
+    - Calendar
+    - Brian's Calendar
+  - cursor should start on username field.
 - UI updates
-  - Make all other admin modals (key, feeds, access, settings) wider on desktop, make them all the same width, make sure content fills the width
+  - Make all admin modals (key, feeds, access, settings) wider on desktop, make them all the same width, make sure content fills the width
   - Key modal UI and background update to keeps in line with all other admin modals
   - Color match key title like other admin modals
-- Set session timeout in Access Settings (make sure new sections are in their own files or added to the correct one, follow current logic)
+- Add Set session timeout in Access Settings (make sure new sections are in their own files or added to the correct one, follow current logic)
 - Settings updates (make sure new sections are in their own files or added to the correct one, follow current logic)
   - Add a setting to make stats admin only (Main year stats, month stats, and counts) - options are no stats, admin only, all users (wordsmith that)
     - if no stats, stats are still kept, just hidden
   - Add Settings for tracking code injection like umami, and google analtyics. How to prevent malicous code input?
-- First time lauch modal for admin login
+- First time lauch modal for admin login (new file)
   - Very brief intro to features, link to userguide
   - Changelog from most recent version, link to full github changlog
   - Flag should be reset after every version, so admin sees the the popup on first login if its a new version
