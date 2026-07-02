@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.0*
+*Current Version: v1.0.1*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.1
+- server.js monolithic breakup
+- SettingsModal.tsx monolithic breakup
+- KeyConfigModal.tsx monolithic breakup
+- AccessControlModal.tsx monolithic breakup
 
 ### Release v1.0.0
 - Added public and private modes

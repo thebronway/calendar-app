@@ -1,17 +1,12 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.0*
+*Current Version: v1.0.1*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.0.1
-- Server monolithic breakup
-- Admin modals (key, feeds, access, settings) monolithic breakup
-- Look for other files that are monolthic
 
 ### Release v1.0.2
 - security audit for new password access
@@ -23,6 +18,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Make all other admin modals (key, feeds, access, settings) wider on desktop, make them all the same width
   - Key modal UI and background update to keep in line with all other admin modals
   - User guide Updates
+  - README updates
 - Add a setting to make stats admin only (Main year stats, month stats, and counts) - options are no stats, admin only, all users (wordsmith that)
 
 ### Release v1.0.4

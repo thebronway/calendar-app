@@ -29,8 +29,10 @@ WORKDIR /app
 # build and does not need to be present in the production image.
 RUN npm install express@4 ws express-rate-limit cookie-parser jsonwebtoken
 
-# Copy the backend server and services
+# Copy the backend server, routes, utils, and services
 COPY server.js .
+COPY routes/ ./routes/
+COPY utils/ ./utils/
 COPY services/ ./services/
 
 # Create the directory for the client files (as expected by server.js)
