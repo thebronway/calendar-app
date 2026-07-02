@@ -18,6 +18,8 @@ export interface AppConfig {
   collapseKeyDesktop?: boolean;
   collapseStatsMobile?: boolean;
   collapseStatsDesktop?: boolean;
+  viewMode?: 'public' | 'private';
+  loginMessage?: string;
 }
 
 // --- Calendar Data ---
@@ -55,7 +57,7 @@ export interface KeyItem {
 
 // --- Auth ---
 
-export type Role = 'admin' | 'view';
+export type Role = 'admin' | 'view' | 'none';
 
 // --- Category / Icon Map ---
 

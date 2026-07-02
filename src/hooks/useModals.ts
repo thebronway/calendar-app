@@ -6,6 +6,7 @@ export function useModals() {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showFeedsModal, setShowFeedsModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showAccessModal, setShowAccessModal] = useState(false);
   const [activeCell, setActiveCell] = useState<string | null>(null);
 
   return {
@@ -14,6 +15,7 @@ export function useModals() {
     showKeyModal, setShowKeyModal,
     showFeedsModal, setShowFeedsModal,
     showHelpModal, setShowHelpModal,
+    showAccessModal, setShowAccessModal,
     activeCell, setActiveCell,
   };
 }

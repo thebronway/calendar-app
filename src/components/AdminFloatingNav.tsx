@@ -1,11 +1,12 @@
 import React from 'react';
-import { CalendarRange, Key, Rss, Settings } from 'lucide-react';
+import { CalendarRange, Key, Rss, Settings, ShieldCheck } from 'lucide-react';
 
 interface AdminFloatingNavProps {
   onToggleBulkEdit: () => void;
   onOpenKeyModal: () => void;
   onOpenFeeds: () => void;
   onOpenSettings: () => void;
+  onOpenAccess: () => void;
 }
 
 const AdminFloatingNav: React.FC<AdminFloatingNavProps> = ({
@@ -13,6 +14,7 @@ const AdminFloatingNav: React.FC<AdminFloatingNavProps> = ({
   onOpenKeyModal,
   onOpenFeeds,
   onOpenSettings,
+  onOpenAccess,
 }) => {
   return (
     <div className="fixed bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-2 sm:p-3 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-40 flex items-center gap-2 sm:gap-3 w-[90%] sm:w-auto min-w-[280px] justify-center transition-all duration-300">
@@ -39,6 +41,14 @@ const AdminFloatingNav: React.FC<AdminFloatingNavProps> = ({
       >
         <Rss size={18} className="sm:mr-2" />
         <span className="hidden sm:inline">Feeds</span>
+      </button>
+      <button
+        onClick={onOpenAccess}
+        className="flex-1 sm:flex-none h-10 sm:h-12 px-3 sm:px-5 flex items-center justify-center bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-bold text-xs sm:text-sm shadow-sm"
+        title="Access Control"
+      >
+        <ShieldCheck size={18} className="sm:mr-2" />
+        <span className="hidden sm:inline">Access</span>
       </button>
       <button
         onClick={onOpenSettings}

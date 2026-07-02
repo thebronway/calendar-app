@@ -16,6 +16,8 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const FEEDS_FILE = path.join(DATA_DIR, 'feeds.json');
+const ACCESS_FILE = path.join(DATA_DIR, 'access.json');
+const LOGS_FILE = path.join(DATA_DIR, 'logs.json');
 
 // Environment variable defaults (used only if config.json doesn't exist)
 const DEFAULT_CONFIG = {
@@ -29,6 +31,7 @@ const DEFAULT_CONFIG = {
   collapseKeyDesktop: false,
   collapseStatsMobile: true,
   collapseStatsDesktop: false,
+  viewMode: 'public',
 };
 
 // Derived JWT secret from the admin password to ensure it survives reboots
@@ -184,6 +187,81 @@ const writeFeeds = (feeds) => {
   }
 };
 
+// Password Hashing
+const hashPassword = (password) => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+};
+
+const verifyPassword = (password, storedHash) => {
+  if (!storedHash || !storedHash.includes(':')) return false;
+  const [salt, key] = storedHash.split(':');
+  try {
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    return key === hash;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Access Data Handlers
+const readAccess = () => {
+  ensureDataDir();
+  if (fs.existsSync(ACCESS_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(ACCESS_FILE, 'utf8'));
+    } catch (e) {
+      logError('Access read', e);
+    }
+  }
+  return [];
+};
+
+const writeAccess = (accessList) => {
+  ensureDataDir();
+  try {
+    fs.writeFileSync(ACCESS_FILE, JSON.stringify(accessList, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    logError('Access write', e);
+    return false;
+  }
+};
+
+// Logs Handlers
+const readLogs = () => {
+  ensureDataDir();
+  if (fs.existsSync(LOGS_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(LOGS_FILE, 'utf8'));
+    } catch (e) {
+      logError('Logs read', e);
+    }
+  }
+  return [];
+};
+
+const logAuthAttempt = (ip, status, role, accountName) => {
+  const logs = readLogs();
+  logs.unshift({
+    timestamp: new Date().toISOString(),
+    ip: ip || 'unknown',
+    status,
+    role,
+    accountName
+  });
+  
+  // Cap at 500 entries to prevent file bloat
+  if (logs.length > 500) logs.length = 500;
+  
+  try {
+    fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2), 'utf8');
+  } catch (e) {
+    logError('Log write', e);
+  }
+};
+
 const readData = (year) => {
   const filePath = getDataFilePath(year);
   if (fs.existsSync(filePath)) {
@@ -277,6 +355,10 @@ const authLimiter = rateLimit({
 // 3. Authentication
 app.post('/api/auth/login', authLimiter, (req, res) => {
   const { password } = req.body;
+  // Use X-Forwarded-For to get IP behind a reverse proxy (like Nginx)
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  // Step 1: Evaluate against Master Admin Password
   if (password === ADMIN_PASSWORD) {
     const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     
@@ -287,28 +369,122 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
     
-    res.json({ role: 'admin' });
-  } else {
-    res.status(401).json({ role: 'view' });
+    logAuthAttempt(ip, 'success', 'admin', 'Master Admin');
+    return res.json({ role: 'admin' });
   }
+
+  // Step 2: Evaluate against Secondary View Passwords
+  const accessList = readAccess();
+  const now = new Date();
+  let matchedView = null;
+
+  for (const access of accessList) {
+    if (access.expiresAt && new Date(access.expiresAt) < now) continue; // Skip expired
+    if (verifyPassword(password, access.passwordHash)) {
+      matchedView = access;
+      break;
+    }
+  }
+
+  if (matchedView) {
+    const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: '24h' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+    logAuthAttempt(ip, 'success', 'view', matchedView.name);
+    return res.json({ role: 'view' });
+  }
+
+  // Step 3: Reject Unauthenticated
+  logAuthAttempt(ip, 'failed', 'none', 'Unknown');
+  res.status(401).json({ error: 'Unauthorized' });
 });
 
 app.get('/api/auth/me', (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.json({ role: 'view' });
+  // Return 'none' so the frontend knows there is no active session
+  if (!token) return res.json({ role: 'none' });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     res.json({ role: decoded.role });
   } catch (err) {
     res.clearCookie('token');
-    res.json({ role: 'view' });
+    res.json({ role: 'none' });
   }
 });
 
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ success: true });
+});
+
+// 3.1 Access Control & Logs (Protected)
+app.get('/api/auth/logs', verifyAdminToken, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(readLogs());
+});
+
+app.get('/api/access', verifyAdminToken, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const accessList = readAccess().map(a => ({
+    id: a.id,
+    name: a.name,
+    expiresAt: a.expiresAt,
+    createdAt: a.createdAt
+  }));
+  res.json(accessList);
+});
+
+app.post('/api/access', verifyAdminToken, (req, res) => {
+  const { name, password, expiresAt } = req.body;
+  if (!name || !password) return res.status(400).json({ error: 'Name and password are required' });
+  
+  const accessList = readAccess();
+
+  // Check for duplicate names and passwords
+  for (const access of accessList) {
+    if (access.name.toLowerCase() === name.toLowerCase()) {
+      return res.status(409).json({ error: 'name_exists' });
+    }
+    if (verifyPassword(password, access.passwordHash)) {
+      return res.status(409).json({ error: 'password_exists' });
+    }
+  }
+
+  const newAccess = {
+    id: crypto.randomUUID(),
+    name,
+    passwordHash: hashPassword(password),
+    expiresAt: expiresAt || null,
+    createdAt: new Date().toISOString()
+  };
+  
+  accessList.push(newAccess);
+  if (writeAccess(accessList)) {
+    res.json({ id: newAccess.id, name: newAccess.name, expiresAt: newAccess.expiresAt, createdAt: newAccess.createdAt });
+  } else {
+    res.status(500).json({ error: 'Failed to save access profile' });
+  }
+});
+
+app.delete('/api/access/:id', verifyAdminToken, (req, res) => {
+  let accessList = readAccess();
+  const initialLength = accessList.length;
+  accessList = accessList.filter(a => a.id !== req.params.id);
+  
+  if (accessList.length === initialLength) {
+    return res.status(404).json({ error: 'Profile not found' });
+  }
+
+  if (writeAccess(accessList)) {
+    res.json({ success: true });
+  } else {
+    res.status(500).json({ error: 'Failed to delete access profile' });
+  }
 });
 
 // Year validation helper

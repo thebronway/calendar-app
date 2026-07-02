@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-07-01*  
+*Last updated: 2026-07-02*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -75,11 +75,22 @@ Run `docker-compose up -d` to start the application. It will be accessible at `h
 
 ## 3. Authentication & Access
 
-The calendar operates on a dual-tier access system:
-* **Public View-Only Mode:** Anyone who visits your URL can see the calendar, click on days to read notes, and use the filters. They cannot make any changes.
-* **Admin Mode:** Clicking the **Lock icon** in the header allows you to enter your `ADMIN_PASSWORD`. Once authenticated, you will see a floating navigation bar at the bottom of the screen with buttons for Bulk Edit, Key configuration, and Settings.
+The calendar operates on a permission system controlled by global visibility configurations and specific access profiles:
 
-*Note: Your session will automatically expire after 24 hours, or you can click the Logout button to end it immediately.*
+### Visibility Modes
+* **Public Mode:** Anyone who visits the URL can view the calendar dashboard in read-only mode. Admins authenticate by clicking the **Lock icon** in the header to enable editing privileges.
+* **Private Mode:** The entire application is blocked behind a full-screen login prompt. Visitors must provide a valid view-only password or admin password to see the calendar grid.
+
+### Access Control Panel
+When logged in as an administrator, click the **Access Control (shield check) icon** on the floating navigation bar to manage visibility restrictions, credentials, and security logs.
+
+* **View Passwords:** Admins can generate multiple read-only passwords for external sharing. 
+  * *Uniqueness Constraints:* The backend prevents creation of matching names/labels or matching password strings to keep account tracking distinct users.
+  * *Expirations:* You can optionally select an expiration date. If no date is selected, access is unlimited.
+  * *Mode Toggling Note:* Switching the calendar from Private Mode back to Public Mode automatically deletes all generated view-only passwords from the system database.
+* **Access Logging & Auditing:** The panel displays a "Recent Activity" ledger containing the last 500 authentication events. It tracks the exact timestamp, incoming connection IP address, account profile name, and success or failure status of each login attempt.
+
+*Note: Active login sessions expire automatically after 24 hours. Users can click the Logout button in the header to terminate a session immediately.*
 
 ### Reverse Proxy Routing
 If running the application behind an authentication proxy (such as Authentik), ensure your server configuration route matches the standard login endpoint under this section:

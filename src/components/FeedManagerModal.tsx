@@ -132,19 +132,26 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
 
         {/* Content Body */}
         {view === 'list' ? (
-          <div className="flex-1 overflow-y-auto p-6">
-            <FeedList
-              feeds={feeds}
-              isFeedsLoading={isFeedsLoading}
-              role={role}
-              keyItems={keyItems}
-              copiedId={copiedId}
-              onCreateNew={handleCreateNew}
-              onCopyUrl={handleCopyUrl}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          </div>
+          <>
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900/50">
+              <FeedList
+                feeds={feeds}
+                isFeedsLoading={isFeedsLoading}
+                role={role}
+                keyItems={keyItems}
+                copiedId={copiedId}
+                onCreateNew={handleCreateNew}
+                onCopyUrl={handleCopyUrl}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
+            <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end shrink-0 rounded-b-xl">
+              <button onClick={handleClose} className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold transition-colors shadow-sm">
+                Close
+              </button>
+            </div>
+          </>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden relative">
             {isSaving && (

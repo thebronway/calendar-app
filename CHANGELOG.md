@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-01*  
-*Current Version: v0.9.9*
+*Last updated: 2026-07-02*  
+*Current Version: v1.0.0*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.0
+- Added public and private modes
+- Added access control modal for admin users
+- Implemented view-only password management with unique name/password validation and optional expirations
+- Added custom login message configuration for the login screen
+- Added login activity logging
 
 ### Release v0.9.9
 - Moved admin navigation to bottom bar

@@ -1,36 +1,31 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-01*  
-*Current Version: v0.9.9*
+*Last updated: 2026-07-02*  
+*Current Version: v1.0.0*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.0.0: Advanced Access Control & Logging
-- Global Visibility Toggle (`VIEW_MODE`)
-  - Introduce a new configuration setting to switch the calendar between "Public" and "Private" modes.
-  - Public Mode: Calendar remains read-only to anyone; admins authenticate via the header lock.
-  - Private Mode: Unauthenticated visitors are blocked by a full-screen login prompt.
-- Hybrid Authentication System
-  - Update `POST /api/auth/login` to support multiple credential tiers.
-  - Step 1: Evaluate input against the `ADMIN_PASSWORD` environment variable (issues `role: 'admin'` JWT).
-  - Step 2: Evaluate input against a new local `data/access.json` file (issues `role: 'view'` JWT).
-  - Step 3: Return `401 Unauthorized` if neither match. (Create Custom 401 Page in app)
-- UI-Managed View Passwords
-  - Add a dedicated "Access Control" tab to the Settings Modal.
-  - Build a management table allowing admins to dynamically create, name, and revoke multiple view-only passwords.
-  - Add support for optional expiration dates for temporary sharing (e.g., auto-expiring a "Ski Trip" password).
-- Access Logging & Auditing
-  - Create a `data/logs.json` backend storage mechanism to track authentication events.
-  - Capture key details on login: exact timestamp, IP address (via Nginx `X-Forwarded-For`), granted role, and the associated account name.
-  - Track both successful logins and failed brute-force attempts.
-  - Implement automatic log rotation (e.g., cap at the 500 most recent entries) to prevent file bloat.
-  - Expose a protected `GET /api/auth/logs` backend route.
-  - Display a "Recent Activity" data table at the bottom of the Access Control tab so admins can monitor exactly who is logging in and when.
-
 ### Release v1.0.1
+- Server monolithic breakup
+- Admin modals (key, feeds, access, settings) monolithic breakup
+- Look for other files that are monolthic
+
+### Release v1.0.2
+- security audit for new password access
+  - confirm best practices
+  - confirm that Google won't flag the site for being insecure by just only having a password and not a username password
+ 
+### Release v1.0.3
+- UI updates
+  - Make all other admin modals (key, feeds, access, settings) wider on desktop, make them all the same width
+  - Key modal UI and background update to keep in line with all other admin modals
+  - User guide Updates
+- Add a setting to make stats admin only (Main year stats, month stats, and counts) - options are no stats, admin only, all users (wordsmith that)
+
+### Release v1.0.4
 - **SSO Authentication & Auto-Redirect**
   - **Goal:** Integrate enterprise OIDC/OAuth2 (like Authentik) while maintaining the local password system as a "break-glass" fallback.
   - **Backend OIDC Setup:** Use an OIDC client library (e.g., `openid-client`). Add variables for `OIDC_ISSUER`, client credentials, `ADMIN_GROUP`, `VIEW_GROUP`, and an `AUTO_SSO_REDIRECT` boolean.
@@ -38,7 +33,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - **Frontend Auto-Redirect:** In `App.tsx`, if the user is unauthenticated and `AUTO_SSO_REDIRECT=true`, automatically redirect their browser to the backend SSO login route.
   - **The Break-Glass Backdoor:** Navigating to the root URL (/) must automatically redirect unauthenticated users to the SSO login flow. Navigating directly to /login must bypass this automatic redirect and render the standard local password screen alongside an SSO login button.
 
-### Release v1.0.2: PTO & Vacation Tracker Dashboard
+### Release v1.0.5: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**
   - Introduce a new backend data store file `data/pto_config.json` managed exclusively by the admin credential tier to store the global bank definitions.
   - Define each PTO Bank entry structure with fields: `id` (UUID string), `name` (string, e.g., "Vacation"), `startingBalance` (number in hours), `accrualRate` (number in hours), `accrualFrequency` (enum: `'none'`, `'weekly'`, `'biweekly'`, `'monthly'`, `'annually'`), and `startDate` (ISO string date template).
@@ -64,20 +59,21 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.0.3
+### Release v1.0.6
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
   - Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals. For Faster initial page loads, particularly crucial for mobile users on cellular networks.
+- Add Settings for tracking code injection like umami, and google analtyics. How to prevent malicous code input?
 
-### Release v1.0.4
+### Release v1.0.7
 - Standardize and cleanup comments, remove dead code, and clean up inline styles while splitting components. 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
 - First time lauch modal
 - More Screenshots in the User guide
 
-### Release v1.0.5
+### Release v1.0.8
 - Establishing test suite of professional-grade foundation for long-term maintenance.
   - Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering which should prevent regressions during major refactors.
 

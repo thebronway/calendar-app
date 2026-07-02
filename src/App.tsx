@@ -17,11 +17,13 @@ import ListView from './components/ListView';
 import PlannerView from './components/PlannerView';
 import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
+import AccessControlModal from './components/AccessControlModal';
 import AuthModal from './components/AuthModal';
 import KeyConfigModal from './components/KeyConfigModal';
 import FeedManagerModal from './components/FeedManagerModal';
 import HelpModal from './components/HelpModal';
 import UserGuide from './components/UserGuide';
+import LoginScreen from './components/LoginScreen';
 
 // Hooks
 import { useCalendarData } from './hooks/useCalendarData';
@@ -51,9 +53,9 @@ export default function App() {
     navigate(`/${newYear}/${currentView}${currentSearch}`);
   }, [navigate]);
 
-  const [role, setRole] = useState<Role>('view');
+  const [role, setRole] = useState<Role>('none');
 
-  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, activeCell, setActiveCell } = useModals();
+  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, showAccessModal, setShowAccessModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
   const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
@@ -300,7 +302,7 @@ export default function App() {
     } catch (err) {
       console.error('Logout failed', err);
     }
-    setRole('view');
+    setRole('none');
     clearBulkEdit();
   };
 
@@ -367,6 +369,11 @@ export default function App() {
     );
   }
 
+  // Intercept the render if View Mode is Private and the user is unauthenticated
+  if (config.viewMode === 'private' && role === 'none') {
+    return <LoginScreen config={config} onAuthenticate={handleAuthenticate} />;
+  }
+
   return (
     <MainLayout
       hasBottomNav={role === 'admin' && !isBulkEditMode && route.view !== 'guide'}
@@ -415,6 +422,12 @@ export default function App() {
           <SettingsModal
             isOpen={showSettingsModal}
             onClose={() => setShowSettingsModal(false)}
+            config={config}
+            onConfigSave={saveConfig}
+          />
+          <AccessControlModal
+            isOpen={showAccessModal}
+            onClose={() => setShowAccessModal(false)}
             config={config}
             onConfigSave={saveConfig}
           />
@@ -495,6 +508,7 @@ export default function App() {
             onOpenKeyModal={() => setShowKeyModal(true)}
             onOpenFeeds={() => setShowFeedsModal(true)}
             onOpenSettings={() => setShowSettingsModal(true)}
+            onOpenAccess={() => setShowAccessModal(true)}
           />
         )}
 

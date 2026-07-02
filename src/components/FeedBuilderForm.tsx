@@ -198,7 +198,7 @@ export const FeedBuilderForm: React.FC<FeedBuilderFormProps> = ({
           type="submit"
           className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center transition-colors"
         >
-          <Save size={18} className="mr-2" /> Save Profile Rules
+          <Save size={18} className="mr-2" /> Save Feed
         </button>
       </div>
     </form>
