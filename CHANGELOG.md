@@ -8,6 +8,15 @@ This document tracks past changes starting with v0.7.1.
 
 ## Changelog
 
+### Release v1.0.4
+- Split Privacy and Analytics settings into separate components
+- Added URL validation regex for self-hosted Umami tracking
+- Added dynamic first-time launch welcome modal for admins
+- Fixed login screen transition timing bug
+- Updated .dockerignore to fix markdown build exclusions
+- Documentation updates (README Key Features and User Guide)
+- Updated Help Modal
+
 ### Release v1.0.3
 - Login page title, icon updates and autofocus updates
 - Standardized desktop layout width and styling across admin modals

@@ -7,7 +7,8 @@ import AppearanceSettings from './settings/AppearanceSettings';
 import LayoutPreferences from './settings/LayoutPreferences';
 import RegionalSettings from './settings/RegionalSettings';
 import SessionSettings from './settings/SessionSettings';
-import PrivacyAnalyticsSettings from './settings/PrivacyAnalyticsSettings';
+import StatsSettings from './settings/StatsSettings';
+import TrackingSettings from './settings/TrackingSettings';
 import type { AppConfig } from '../types';
 
 interface SettingsModalProps {
@@ -83,7 +84,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
             config={localConfig} 
             onConfigChange={handleConfigChange} 
           />
-          <PrivacyAnalyticsSettings 
+          <StatsSettings 
+            config={localConfig} 
+            onConfigChange={handleConfigChange} 
+          />
+          <TrackingSettings 
             config={localConfig} 
             onConfigChange={handleConfigChange} 
           />

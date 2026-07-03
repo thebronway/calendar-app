@@ -24,7 +24,7 @@ export function useAnalytics(config: AppConfig) {
       }
     }
 
-    // Umami Cloud Analytics Injection
+    // Umami Analytics Injection
     if (config.umamiId && /^[a-zA-Z0-9-]+$/.test(config.umamiId)) {
       if (!document.getElementById('umami-script')) {
         const script = document.createElement('script');
@@ -32,9 +32,24 @@ export function useAnalytics(config: AppConfig) {
         script.async = true;
         script.defer = true;
         script.dataset.websiteId = config.umamiId;
-        script.src = 'https://cloud.umami.is/script.js';
+
+        // Default to Umami Cloud
+        let srcUrl = 'https://cloud.umami.is/script.js';
+        
+        // Evaluate self-hosted URL override with strict Regex
+        // Allows http/https, domain or IP, optional port, and optional path
+        if (config.umamiUrl) {
+          const urlRegex = /^https?:\/\/[a-zA-Z0-9.-]+(:\d{1,5})?(\/.*)?$/;
+          if (urlRegex.test(config.umamiUrl)) {
+            srcUrl = config.umamiUrl;
+          } else {
+            console.warn('Invalid Umami URL provided. Falling back to default cloud URL to prevent injection.');
+          }
+        }
+        
+        script.src = srcUrl;
         document.head.appendChild(script);
       }
     }
-  }, [config.gaId, config.umamiId]);
+  }, [config.gaId, config.umamiId, config.umamiUrl]);
 }

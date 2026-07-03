@@ -207,13 +207,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                     <HelpCircle size={20} />
                   </button>
 
-                  <button
-                    onClick={onGoToGuide}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    title="User Guide"
-                  >
-                    <BookOpen size={20} />
-                  </button>
+                  {role === 'admin' && (
+                    <button
+                      onClick={onGoToGuide}
+                      className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="User Guide"
+                    >
+                      <BookOpen size={20} />
+                    </button>
+                  )}
 
                   <button
                     onClick={onToggleDarkMode}
@@ -264,13 +266,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                     <HelpCircle size={20} />
                   </button>
 
-                  <button
-                    onClick={onGoToGuide}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    title="User Guide"
-                  >
-                    <BookOpen size={20} />
-                  </button>
+                  {role === 'admin' && (
+                    <button
+                      onClick={onGoToGuide}
+                      className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="User Guide"
+                    >
+                      <BookOpen size={20} />
+                    </button>
+                  )}
 
                   <button
                     onClick={onToggleDarkMode}

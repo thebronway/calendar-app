@@ -24,6 +24,8 @@ import FeedManagerModal from './components/FeedManagerModal';
 import HelpModal from './components/HelpModal';
 import UserGuide from './components/UserGuide';
 import LoginScreen from './components/LoginScreen';
+import WelcomeModal from './components/WelcomeModal';
+import packageInfo from '../package.json';
 
 // Hooks
 import { useCalendarData } from './hooks/useCalendarData';
@@ -55,11 +57,13 @@ export default function App() {
   }, [navigate]);
 
   const [role, setRole] = useState<Role>('none');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, showAccessModal, setShowAccessModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
   const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // --- Hooks ---
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -205,7 +209,8 @@ export default function App() {
       .then(data => {
         if (data.role) setRole(data.role);
       })
-      .catch(err => console.error('Failed to check session', err));
+      .catch(err => console.error('Failed to check session', err))
+      .finally(() => setIsCheckingAuth(false));
   }, []);
 
   // --- Effects ---
@@ -220,6 +225,29 @@ export default function App() {
   useEffect(() => { fetchData(year); }, [year, fetchData]);
 
   useEffect(() => {
+    // Show Welcome Modal if admin logs in and hasn't seen the current version
+    if (role === 'admin' && config.lastSeenVersion !== packageInfo.version) {
+      const timer = setTimeout(() => setShowWelcome(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [role, config.lastSeenVersion]);
+
+  const handleCloseWelcome = () => {
+    setShowWelcome(false);
+    saveConfig({ ...config, lastSeenVersion: packageInfo.version });
+  };
+
+  useEffect(() => {
+    // Redirect non-admins away from the guide
+    if (!isCheckingAuth && route.view === 'guide' && role !== 'admin') {
+      navigate(`/${year}/year${window.location.search}`);
+    }
+  }, [isCheckingAuth, route.view, role, year, navigate]);
+
+  useEffect(() => {
+    // Prevent scrolling logic from firing if the login screen is currently active
+    if (config.viewMode === 'private' && role === 'none') return;
+
     let now: Date;
     try {
       now = new Date(new Date().toLocaleString('en-US', { timeZone: config.timezone }));
@@ -243,13 +271,13 @@ export default function App() {
           const y = el.getBoundingClientRect().top + window.scrollY - offset;
           window.scrollTo({ top: y, behavior: 'smooth' });
         }
-      }, 600); // Bumped to 600ms to guarantee accordion animations are finished
+      }, 600);
     }
     
     return () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
-  }, [config.timezone, config.autoScrollMobile, config.autoScrollDesktop]);
+  }, [config.timezone, config.autoScrollMobile, config.autoScrollDesktop, config.viewMode, role]);
 
   useEffect(() => {
     const n = config.ownerName || 'Name';
@@ -309,6 +337,7 @@ export default function App() {
     }
     setRole('none');
     clearBulkEdit();
+    navigate('/');
   };
 
   const handleCellClick = (key: string) => {
@@ -468,6 +497,15 @@ export default function App() {
               setShowHelpModal(false);
               navigate('/guide');
             }}
+            isAdmin={role === 'admin'}
+          />
+          <WelcomeModal
+            isOpen={showWelcome}
+            onClose={handleCloseWelcome}
+            onGoToGuide={() => {
+              handleCloseWelcome();
+              navigate('/guide');
+            }}
           />
         </>
       }
@@ -518,7 +556,7 @@ export default function App() {
           />
         )}
 
-        {route.view === 'guide' ? (
+        {route.view === 'guide' && role === 'admin' ? (
           <UserGuide />
         ) : route.view === 'list' ? (
           <ListView 

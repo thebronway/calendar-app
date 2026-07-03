@@ -17,13 +17,12 @@ This self-hosted calendar provides a simple web dashboard to share your schedule
 
 ## Features
 
-* **Visual Dashboards:** Responsive Year, Month, Planner, and List views with dark mode.
-* **Customization:** Color-coded categories, icons, and daily display names.
-* **Smart Tracking:** Real-time stats, location tagging, and rich-text notes.
-* **Quick Editing:** Multi-day bulk editing and instant WebSocket sync.
-* **Interactive Sharing:** Clickable highlight filters and dynamic URL sharing.
-* **Calendar Sync:** Custom iCal subscriptions to export filtered events to your Apple/Google calendar.
-* **Access Control:** Username and password protection supporting a public read-only view or a restricted private view.
+* **Multiple Views:** Year, Month, Planner, and List layouts. Dark mode supported.
+* **Customization:** Assign colors to categories and icons to daily activities.
+* **Data Entry:** Multi-day bulk editing, location tagging, and rich-text notes. Live WebSocket sync.
+* **Sharing & Sync:** Filter views via URL parameters. Generate custom iCal feeds for Apple/Google Calendar.
+* **Access Control:** Public read-only or private password-protected modes. Configurable session timeouts.
+* **Analytics:** Built-in tracking support for Google Analytics and Umami (Cloud or self-hosted).
 
 ## Screenshots
 

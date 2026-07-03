@@ -87,7 +87,7 @@ export function useKeyboardShortcuts({
         
         // Global
         if (key === 'h') { setShowHelpModal(true); matched = true; }
-        if (key === 'u') { onGoToGuide(); matched = true; }
+        if (key === 'u' && role === 'admin') { onGoToGuide(); matched = true; }
         if (key === 'd') { onToggleDarkMode(); matched = true; }
         
         if (key === 'y') { onViewToggle('year'); matched = true; }

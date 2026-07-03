@@ -109,10 +109,17 @@ Once logged in, click the **Settings (gear) icon** to customize how your calenda
 * **Main Page Icon:** Change the large icon displayed next to your header title.
 * **Header Title & Browser Tab Style:** Choose between Simple (`2026 Calendar`), Possessive (`John's Calendar`), or Question formats (`Where is John in 2026?`).
 * **Owner Name:** If using a Possessive or Question format, enter your name here.
-* **Hide Key & Stats on Desktop:** Toggle this to hide the Key and Stats panels on large screens by default (mobile views will keep them in collapsible accordions).
+* **Layout Preferences:** Toggle auto-scrolling to the current month or hiding the Key/Stats panels on mobile and desktop individually.
 
 ### Regional Settings
 * **Timezone:** Ensure your calendar highlights "Today" correctly based on your location. 
+
+### Session Settings
+* **Login Session Timeout:** Configurable duration (from 1 hour to 30 days) before users need to re-authenticate.
+
+### Privacy & Stats
+* **Stats & Counters Visibility:** Choose who can see the total days traveling, location leaderboards, and category/activity counts (Visible to Everyone, Visible to Admins Only, or Hidden Completely).
+* **Tracking Integrations:** Add your Google Analytics ID (`G-XXXXXXX`) or Umami Website ID. Self-hosted Umami users can also  input their custom tracking script URL.
 
 ---
 

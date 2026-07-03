@@ -24,6 +24,8 @@ export interface AppConfig {
   statsVisibility?: 'all' | 'admin' | 'none';
   gaId?: string;
   umamiId?: string;
+  umamiUrl?: string;
+  lastSeenVersion?: string;
 }
 
 // --- Calendar Data ---
