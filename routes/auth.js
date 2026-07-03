@@ -27,6 +27,27 @@ router.post('/login', authLimiter, (req, res) => {
   const config = readConfig();
   const timeoutHours = config.sessionTimeout || 24;
 
+  // --- DEMO MODE INTERCEPTOR ---
+  if (process.env.DEMO_MODE === 'true') {
+    const demoAdminPass = process.env.DEMO_ADMIN_PASSWORD || 'admin';
+    const demoGuestPass = process.env.DEMO_GUEST_PASSWORD || 'guest';
+
+    if (username.toLowerCase() === 'admin' && password === demoAdminPass) {
+      const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: `${timeoutHours}h` });
+      res.cookie('token', token, { httpOnly: true, secure: req.secure || req.headers['x-forwarded-proto'] === 'https', sameSite: 'strict', maxAge: timeoutHours * 60 * 60 * 1000 });
+      logAuthAttempt(ip, 'success', 'admin', 'Demo Admin');
+      return res.json({ role: 'admin' });
+    }
+
+    if (username.toLowerCase() === 'guest' && password === demoGuestPass) {
+      const token = jwt.sign({ role: 'view' }, JWT_SECRET, { expiresIn: `${timeoutHours}h` });
+      res.cookie('token', token, { httpOnly: true, secure: req.secure || req.headers['x-forwarded-proto'] === 'https', sameSite: 'strict', maxAge: timeoutHours * 60 * 60 * 1000 });
+      logAuthAttempt(ip, 'success', 'view', 'Demo Guest');
+      return res.json({ role: 'view' });
+    }
+  }
+  // -----------------------------
+
   // 1. Check for Master Admin
   if (username.toLowerCase() === 'admin' && password === ADMIN_PASSWORD) {
     const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: `${timeoutHours}h` });

@@ -26,6 +26,9 @@ export interface AppConfig {
   umamiId?: string;
   umamiUrl?: string;
   lastSeenVersion?: string;
+  isDemoMode?: boolean;
+  demoAdminPass?: string;
+  demoGuestPass?: string;
 }
 
 // --- Calendar Data ---

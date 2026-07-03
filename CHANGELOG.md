@@ -1,12 +1,16 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.4*
+*Current Version: v1.0.5*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.5
+- Added Demo Mode with 15-minute data resets
+- Implemented seed snapshots to save demo state
 
 ### Release v1.0.4
 - Split Privacy and Analytics settings into separate components

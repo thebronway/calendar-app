@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const { logError } = require('./utils/logger');
 const apiRoutes = require('./routes/index');
 const { ADMIN_PASSWORD } = require('./utils/authUtils');
+const { startDemoMode } = require('./utils/demoManager');
 
 const PORT = process.env.PORT || 3000;
 const CLIENT_BUILD_PATH = path.join(__dirname, 'client/build');
@@ -89,6 +90,9 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   logError('Unhandled Rejection', new Error('Unhandled Promise Rejection'), { reason });
 });
+
+// --- Start Demo Mode (If Enabled) ---
+startDemoMode();
 
 // --- Start Server ---
 server.listen(PORT, () => {

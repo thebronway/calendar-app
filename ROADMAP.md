@@ -1,21 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-02*  
-*Current Version: v1.0.4*
+*Last updated: 2026-07-03*  
+*Current Version: v1.0.5*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.0.5
-- Demo mode flag docker var
-  - Add helper text on login screen
-      - Admin password
-      - User password
-  - Always show first time admin modal
-  - Maybe I should make access json files read only to prevent mode change and password changing? or should it all be programtic?
-- confrim nginx conf
 
 ### Release v1.0.6
 - Custom themeing

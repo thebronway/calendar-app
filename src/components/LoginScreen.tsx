@@ -67,6 +67,37 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
         {loginMessage && (
           <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">{loginMessage}</p>
         )}
+        
+        {config.isDemoMode && (
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 w-full">
+            <div className="text-center mb-4">
+              <span className="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                Demo Mode Active
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium">
+                Data automatically resets every 15 minutes on the clock.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 p-4 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-blue-100 dark:hover:bg-blue-900/40">
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">Admin Profile</span>
+                <div className="font-mono text-sm text-blue-900 dark:text-blue-200 space-y-1">
+                  <div><span className="opacity-60 text-xs mr-1">U:</span> <strong>admin</strong></div>
+                  <div><span className="opacity-60 text-xs mr-1">P:</span> <strong>{config.demoAdminPass}</strong></div>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 p-4 rounded-xl flex flex-col items-center sm:items-start text-center sm:text-left transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/40">
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2">Guest Profile</span>
+                <div className="font-mono text-sm text-emerald-900 dark:text-emerald-200 space-y-1">
+                  <div><span className="opacity-60 text-xs mr-1">U:</span> <strong>guest</strong></div>
+                  <div><span className="opacity-60 text-xs mr-1">P:</span> <strong>{config.demoGuestPass}</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 border dark:border-gray-700">

@@ -52,6 +52,14 @@ const readConfig = () => {
   if (process.env.PAGE_BANNER_HTML) {
     finalConfig.bannerHtml = process.env.PAGE_BANNER_HTML;
   }
+  
+  // Inject Demo Mode configuration directly to the frontend
+  if (process.env.DEMO_MODE === 'true') {
+    finalConfig.isDemoMode = true;
+    finalConfig.demoAdminPass = process.env.DEMO_ADMIN_PASSWORD || 'admin';
+    finalConfig.demoGuestPass = process.env.DEMO_GUEST_PASSWORD || 'guest';
+  }
+  
   return finalConfig;
 };
 

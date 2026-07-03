@@ -225,12 +225,12 @@ export default function App() {
   useEffect(() => { fetchData(year); }, [year, fetchData]);
 
   useEffect(() => {
-    // Show Welcome Modal if admin logs in and hasn't seen the current version
-    if (role === 'admin' && config.lastSeenVersion !== packageInfo.version) {
+    // Show Welcome Modal if admin logs in and hasn't seen the current version (or in demo mode)
+    if (role === 'admin' && (config.isDemoMode || config.lastSeenVersion !== packageInfo.version)) {
       const timer = setTimeout(() => setShowWelcome(true), 500);
       return () => clearTimeout(timer);
     }
-  }, [role, config.lastSeenVersion]);
+  }, [role, config.lastSeenVersion, config.isDemoMode]);
 
   const handleCloseWelcome = () => {
     setShowWelcome(false);
