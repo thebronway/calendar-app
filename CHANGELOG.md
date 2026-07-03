@@ -1,7 +1,7 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-02*  
-*Current Version: v1.0.3*
+*Current Version: v1.0.4*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
