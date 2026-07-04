@@ -67,6 +67,13 @@ app.locals.broadcastConfigUpdate = (config) => {
   });
 };
 
+app.locals.broadcastForceReload = () => {
+  const message = JSON.stringify({ type: 'FORCE_RELOAD' });
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) client.send(message);
+  });
+};
+
 // --- Middleware ---
 app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
@@ -93,6 +100,10 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // --- Start Demo Mode (If Enabled) ---
 startDemoMode();
+
+// --- Initialize Backup Scheduler ---
+const { initBackupScheduler } = require('./services/backupManager');
+initBackupScheduler();
 
 // --- Start Server ---
 server.listen(PORT, () => {

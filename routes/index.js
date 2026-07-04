@@ -4,6 +4,7 @@ const authRoutes = require('./auth');
 const accessRoutes = require('./access');
 const dataRoutes = require('./data');
 const feedRoutes = require('./feeds');
+const backupRoutes = require('./backups');
 
 const router = express.Router();
 
@@ -11,8 +12,9 @@ router.use('/config', configRoutes);
 router.use('/auth', authRoutes);
 router.use('/access', accessRoutes);
 router.use('/data', dataRoutes);
+router.use('/backups', backupRoutes);
 
-// We mount feedRoutes at both /feeds and /feed to preserve your existing URLs 
+// We mount feedRoutes at both /feeds and /feed to preserve your existing URLs
 // (The external extraction route is inside feeds.js as well)
 router.use('/feeds', feedRoutes);
 router.get('/feed/:token', (req, res, next) => {

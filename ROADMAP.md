@@ -1,46 +1,55 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-03*  
-*Current Version: v1.0.6*
+*Current Version: v1.0.7*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.0.7
-- Automated Backups
-  - **Goal:** Protect flat JSON data structures from accidental data loss, corrupted configurations, or destructive Bulk Edits.
-  - **Cron Scheduler:** Implement an automated crontab backup engine inside `server.js` using `node-cron` that executes daily at midnight.
-  - Make it a new tab in the settings modal. 
-  - **Archiving & Retention:** Automatically serialize active `YYYY_data.json`, `config.json`, and `access.json` files into timestamped archive directories under `data/backups/`, enforcing a rolling retention window that deletes files older than 7 days.
-  - **Management UI:** Create a dedicated "Data Management" tab in your settings modal listing available local backups with 1-click restoration and a manual download button that packages the data directory as a `.zip` archive.
+### Release v1.0.8: Unified Routing & Identity Framework
+- **Dedicated Route Architecture:** Introduce a formal standalone `/login` path to replace the legacy conditional inline layout components.
+- **Unified Route Interceptor:** Implement automated routing rules that cleanly forward unauthenticated visitors to the secure login route whenever Private Mode is active.
+- **Decoupled Auth Provider Framework:** Refactor the backend authentication engine to support a pluggable architecture capable of dynamically switching validation sources.
+- **Universal Local Admin Precedence:** Establish a hard hard priority filter ensuring the local master admin credentials always intercept and override external directory matches as an automatic fallback backdoor.
+- switching from private to local or to futre sso/ldap requires confirmation and admin to input their password again (to prevent accidental switching) and keep local db, but just dont use it, dont auto clear (specify that in the pop-up)
 
-### Release v1.0.8
-- Private Local vs Private SSO vs Private LDAP
-- **SSO & LDAP Authentication Infrastructure**
-  - **Goal:** Support switching between Local JSON database authentication, centralized LDAP directory lookup, or enterprise OIDC/OAuth2 single sign-on (e.g., Authentik) when Private Mode is active.
-  - **Security & Environment Architecture:** Store high-risk parameters, OIDC Client Secrets, LDAP Bind Passwords, and Identity Provider base URLs exclusively within Docker environment variables to protect the self-hosted infrastructure from clear-text configuration leaks.
-  - **OIDC Group Mapping Mechanics:** Request `groups` access scopes during the login sequence to parse the returned JWT token payload's group claim array, mapping matching group strings directly to the application's native `admin` or `view` roles.
-  - **LDAP Search & Bind Mechanics:** Bind to the directory using credentials to execute an attribute group search (`memberOf` or group `member` mapping) against user records, resolving access tiers dynamically using group strings specified in the UI settings.
-  - **Frontend Auto-Redirect:** Automatically forward unauthenticated root (`/`) visitors straight to the backend OIDC authentication handshake loop when SSO is selected as the active provider mode.
-  - **The Break-Glass Backdoor:** Restrict automatic OIDC redirection loops exclusively to the root path (`/`), allowing direct browser hits to `/login` to render the native local username and password input screen for emergency fallback during authentication provider failures.
+### Release v1.0.9: Centralized Directory Access (LDAP)
+- **Centralized Network Logins:** Implement real-time network credential validation against centralized LDAP directories (e.g., Active Directory, FreeIPA).
+- **Hybrid Configuration Architecture:** Support non-sensitive configuration parameters (Server URLs, Base DNs) directly within the UI settings while isolating sensitive bind username and passwords strictly to container environment variables.
+- **Dynamic Group Permission Mapping:** Provide text controls within the UI to map specified directory group strings directly to internal application roles (admin or view).
+- **Global Session Cleansing:** Automatically invalidate all active view credentials and sessions whenever the primary authentication provider mode is toggled.
+- Still need to add login failures/suceess to the activity log
+- local admin overides and ldap admin with the same username
+- isolate the upcoming identity modules into a its own directory, keeping routes/auth.js perfectly lean and clean.
 
-### Release v1.0.9
+### Release v1.1.0: Enterprise Single Sign-On (SSO / OIDC)
+- **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).
+- **Automated Frontend Handshake Redirection:** Implement automatic visitor forwarding straight to the configured external single sign-on screen upon landing on the root path.
+- **Bypass Redirection Backdoor:** Restrict automatic token redirection loops exclusively to the root path (`/`), allowing direct browser navigation to `/login` to bypass the loop for local master emergency access.
+
+### Release v1.1.1: Multi-Year iCal Sync Engine
+- **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
+- **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
+- **Cross-Year Event Preservation:** Prevent historical events from disappearing when categories or activities are deleted or modified in later year setups.
+- **Continuous Rolling Timeline Feeds:** Maintain multi-year calendar subscriptions without requiring manual annual URL renewals.
+
+### Release v1.1.2
 - Webhooks
   - **Goal:** Push real-time calendar modification notifications out to third-party home automation platforms (e.g., Discord, Slack, Umami, or custom web endpoints).
   - **Configuration:** Add a `webhooks` array to the core `AppConfig` type mapping unique webhook IDs, payload destination URLs, and a toggleable active state flag.
   - **Diff Engine:** Intercept `POST /api/data/:year` requests to compute a baseline structural difference, checking if a new entry or activity update occurred to avoid notification spam on simple spelling corrections.
   - **Payload Dispatcher:** Asynchronously fire out a standardized JSON POST body payload containing text templates summarizing the modification out to all active webhook endpoints.
 
-### Release v1.1.0
+### Release v1.1.3
 - API Keys & REST API
   - **Goal:** Allow external automation setups (e.g., Home Assistant, n8n, Node-RED) to programmatically log categories or activities onto the calendar without utilizing the frontend UI.
   - **Token Profiles:** Extend the database schema inside `access.json` and the `AccessControlModal.tsx` interface to support generating long-lived, cryptographically secure API tokens distinct from traditional view passwords.
   - **Ingestion Route:** Create a protected REST API endpoint under `POST /api/external/log` requiring authentication passing via standard `Authorization: Bearer <token>` header rules.
   - **Sync Synchronization:** Parse incoming JSON payloads containing mandatory parameters for target date strings (`YYYY-MM-DD`), optional `categoryId` tags, locations, and `activityIds`, merging updates straight to `YYYY_data.json` while instantly triggering frontend UI updates via the server `broadcastUpdate` WebSocket hook.
 
-### Release v1.1.1: PTO & Vacation Tracker Dashboard
+### Release v1.1.4: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**
   - Introduce a new backend data store file `data/pto_config.json` managed exclusively by the admin credential tier to store the global bank definitions.
   - Define each PTO Bank entry structure with fields: `id` (UUID string), `name` (string, e.g., "Vacation"), `startingBalance` (number in hours), `accrualRate` (number in hours), `accrualFrequency` (enum: `'none'`, `'weekly'`, `'biweekly'`, `'monthly'`, `'annually'`), and `startDate` (ISO string date template).
@@ -66,23 +75,25 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.1.2
+### Release v1.1.5
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
   - Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals. For Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v1.1.3
+### Release v1.1.6
 - Standardize and cleanup comments, remove dead code, and clean up inline styles while splitting components. 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
+- clean up files (reorangize)
+- look for tech debt
 - More Screenshots in the User guide
 - iCal syncing - how does it deal with activities which only happen in a certain year and not the next year. Should the iCals be confined to a year?
 
-### Release v1.1.4
+### Release v1.1.6
 - Establishing test suite of professional-grade foundation for long-term maintenance.
   - Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering which should prevent regressions during major refactors.
-- Package Updates
+- Package Updates - how to maintain
 
 ### Release v2.0.0
 - Offline Support (PWA)

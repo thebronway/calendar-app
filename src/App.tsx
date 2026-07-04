@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader } from 'lucide-react';
 
 // Layout
@@ -64,6 +64,7 @@ export default function App() {
   const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
   const [showWelcome, setShowWelcome] = useState(false);
+  const welcomeShownRef = useRef(false);
 
   // --- Hooks ---
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -226,7 +227,8 @@ export default function App() {
 
   useEffect(() => {
     // Show Welcome Modal if admin logs in and hasn't seen the current version (or in demo mode)
-    if (role === 'admin' && (config.isDemoMode || config.lastSeenVersion !== packageInfo.version)) {
+    if (role === 'admin' && !welcomeShownRef.current && (config.isDemoMode || config.lastSeenVersion !== packageInfo.version)) {
+      welcomeShownRef.current = true;
       const timer = setTimeout(() => setShowWelcome(true), 500);
       return () => clearTimeout(timer);
     }

@@ -22,12 +22,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install only the packages server.js needs at runtime.
-# express = HTTP server/routing, ws = WebSocket support,
-# express-rate-limit = brute-force protection on the auth endpoint.
-# All frontend code (react, vite, etc.) is already compiled into the static
-# build and does not need to be present in the production image.
-RUN npm install express@4 ws express-rate-limit cookie-parser jsonwebtoken
+# Copy the package.json to manage backend dependencies centrally
+COPY package.json .
+
+# Install only the packages server.js needs at runtime, and instantly clear the NPM cache
+# The --omit=dev flag ignores all frontend build tools (Vite, React, Tailwind, etc.)
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy the backend server, routes, utils, and services
 COPY server.js .

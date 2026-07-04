@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-03*  
-*Current Version: v1.0.6*
+*Current Version: v1.0.7*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.7
+- Added automated nightly backup engine with 7-day retention
+- Added Backup management tab to Settings modal
+- Added manual backup snapshots and one-click data restorations
+- Reduced Docker production image size significantly
 
 ### Release v1.0.6
 - Added custom app themeing for background and primary accent color

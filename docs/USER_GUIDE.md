@@ -19,7 +19,8 @@ This guide covers everything you need to know to deploy, configure, and use your
 8. [Stats, Filters, and Sharing](#8-stats-filters-and-sharing)
 9. [Keyboard Shortcuts & Tips](#9-keyboard-shortcuts--tips)
 10. [iCal Subscriptions (Syncing)](#10-ical-subscriptions-syncing)
-11. [Acknowledgments](#11-acknowledgments)
+11. [Data Management & Backups](#11-data-management--backups)
+12. [Acknowledgments](#12-acknowledgments)
 
 ---
 
@@ -278,7 +279,28 @@ If running the application behind an authentication proxy (such as Authentik), y
 
 ---
 
-## 11. Acknowledgments
+## 11. Data Management & Backups
+
+The Calendar App includes a backup engine to protect your data from accidental loss or destructive bulk edits.
+
+### Accessing Backups
+Log in as an administrator and click the **Settings (gear) icon**, then select the **Backup** tab.
+
+### Automated Nightly Backups
+* The system automatically takes a snapshot of your entire database every night at midnight (based on your configured timezone).
+* **Retention:** To prevent disk bloat, all automated backups and manual snapshots are automatically deleted after 7 days.
+
+### Manual Backups & Exports
+* **Create Backup Now:** Click this button to instantly generate a local backup snapshot. This is highly recommended before performing large Bulk Edits.
+* **Download .zip:** Click this button to download a complete copy of your raw JSON data and configuration files directly to your local device.
+
+### Restoring Data
+In the Local Backups table, click the **Restore (rewind) icon** next to any available backup. 
+* *Safety Feature:* The system will automatically take a pre-restore snapshot of your *current* state before overwriting any files, ensuring you can always undo a restoration.
+
+---
+
+## 12. Acknowledgments
 
 This project was made possible by the incredible open-source community. Special thanks to the creators and maintainers of:
 * **[React](https://react.dev/) & [Node.js](https://nodejs.org/)** for the core framework.

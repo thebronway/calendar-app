@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, X, Save, Monitor, Shield, Palette } from 'lucide-react';
+import { Settings, X, Save, Monitor, Shield, Palette, Database } from 'lucide-react';
 import { isValidTimezone } from '../utils/helpers';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { usePreventTabClose } from '../hooks/useUnsavedChanges';
@@ -10,6 +10,7 @@ import SessionSettings from './settings/SessionSettings';
 import StatsSettings from './settings/StatsSettings';
 import TrackingSettings from './settings/TrackingSettings';
 import ThemeSettings from './settings/ThemeSettings';
+import DataManagementSettings from './settings/DataManagementSettings';
 import type { AppConfig } from '../types';
 
 interface SettingsModalProps {
@@ -22,7 +23,7 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigSave }) => {
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
   const [timezoneError, setTimezoneError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'display' | 'system' | 'theme'>('display');
+  const [activeTab, setActiveTab] = useState<'display' | 'system' | 'theme' | 'data'>('display');
 
   useEffect(() => {
     if (isOpen) {
@@ -90,6 +91,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
             <Palette size={18} className="mr-2" />
             Theme
           </button>
+          <button
+            onClick={() => setActiveTab('data')}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'data' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+          >
+            <Database size={18} className="mr-2" />
+            Backup
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-100 dark:bg-gray-900/50">
@@ -131,6 +139,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
               config={localConfig} 
               onConfigChange={handleConfigChange} 
             />
+          )}
+          {activeTab === 'data' && (
+            <DataManagementSettings config={localConfig} />
           )}
         </div>
         

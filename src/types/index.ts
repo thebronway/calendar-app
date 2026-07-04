@@ -129,4 +129,8 @@ export interface ConfigUpdateMessage {
   payload: AppConfig;
 }
 
-export type WsMessage = DataUpdateMessage | ConfigUpdateMessage;
+export interface ForceReloadMessage {
+  type: 'FORCE_RELOAD';
+}
+
+export type WsMessage = DataUpdateMessage | ConfigUpdateMessage | ForceReloadMessage;

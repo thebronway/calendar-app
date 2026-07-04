@@ -120,6 +120,8 @@ export function useCalendarData({
         });
       } else if (message.type === 'CONFIG_UPDATE') {
         onConfigUpdate?.(message.payload);
+      } else if (message.type === 'FORCE_RELOAD') {
+        window.location.reload();
       }
     };
 
