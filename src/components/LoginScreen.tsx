@@ -61,7 +61,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 flex flex-col items-center justify-center p-4 font-sans">
       <div className="mb-8 flex flex-col items-center text-center">
         <div className="w-20 h-20 bg-blue-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-blue-200 dark:border-gray-700">
-          <HeaderIcon size={40} className="text-blue-600 dark:text-blue-400" />
+          <HeaderIcon size={40} className="text-theme-accent" />
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{title}</h1>
         {loginMessage && (
@@ -150,7 +150,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
           <button
             type="submit"
             disabled={isLoading || !password || !username}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-colors shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-theme-accent hover:opacity-90 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-colors shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? <Loader size={20} className="animate-spin" /> : <LogIn size={20} />}
             <span className="ml-2">{isLoading ? 'Verifying...' : 'Login'}</span>

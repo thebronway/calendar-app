@@ -306,12 +306,16 @@ export default function App() {
     showAuthModal,
     showFeedsModal,
     showHelpModal,
+    showAccessModal,
+    showWelcome,
     setActiveCell,
     setShowSettingsModal,
     setShowKeyModal,
     setShowAuthModal,
     setShowFeedsModal,
     setShowHelpModal,
+    setShowAccessModal,
+    onCloseWelcome: handleCloseWelcome,
     handlePrevNav,
     handleNextNav,
     onToggleBulkEdit: toggleBulkEdit,
@@ -409,8 +413,20 @@ export default function App() {
   }
 
   return (
-    <MainLayout
-      hasBottomNav={role === 'admin' && !isBulkEditMode && route.view !== 'guide'}
+    <>
+      <style>
+        {`
+          :root {
+            --theme-bg: ${config.themeBgLight || '#e5e7eb'};
+            --theme-accent: ${config.themeAccent || '#3b82f6'};
+          }
+          .dark {
+            --theme-bg: ${config.themeBgDark || '#111827'};
+          }
+        `}
+      </style>
+      <MainLayout
+        hasBottomNav={role === 'admin' && !isBulkEditMode && route.view !== 'guide'}
       bannerHtml={config.bannerHtml}
       header={
         <AppHeader
@@ -621,6 +637,7 @@ export default function App() {
             onCellClick={handleCellClick}
           />
         )}
-    </MainLayout>
+      </MainLayout>
+    </>
   );
 }

@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-02*  
-*Current Version: v1.0.5*
+*Last updated: 2026-07-03*  
+*Current Version: v1.0.6*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.6
+- Added custom app themeing for background and primary accent color
+- Restructured admin modals into tabbed layouts
+- Updated keyboard shortcuts
+- Bugfix: Fixed an issue where the escape key failed to close some modals
 
 ### Release v1.0.5
 - Added Demo Mode with 15-minute data resets

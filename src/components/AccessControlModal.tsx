@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, ShieldCheck } from 'lucide-react';
+import { X, ShieldCheck, Key, Clock } from 'lucide-react';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import GlobalVisibilityPanel from './access/GlobalVisibilityPanel';
@@ -16,6 +16,7 @@ interface AccessControlModalProps {
 
 const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose, config, onConfigSave }) => {
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
+  const [activeTab, setActiveTab] = useState<'access' | 'logs'>('access');
   
   // Access & Logs State
   const [accessList, setAccessList] = useState<AccessProfile[]>([]);
@@ -96,25 +97,48 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
           </button>
         </div>
 
+        <div className="flex overflow-x-auto border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6 shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <button
+            onClick={() => setActiveTab('access')}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'access' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+          >
+            <Key size={18} className="mr-2" />
+            Access Rules
+          </button>
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'logs' ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+          >
+            <Clock size={18} className="mr-2" />
+            Audit Logs
+          </button>
+        </div>
+
         <div className="flex-1 overflow-y-auto p-6 bg-gray-100 dark:bg-gray-900/50">
           <div className="space-y-8">
-            <GlobalVisibilityPanel
-              config={localConfig}
-              onConfigChange={handleConfigChange}
-              onConfigSave={onConfigSave}
-              onTogglePublic={handleTogglePublic}
-              onTogglePrivate={handleTogglePrivate}
-            />
+            {activeTab === 'access' && (
+              <>
+                <GlobalVisibilityPanel
+                  config={localConfig}
+                  onConfigChange={handleConfigChange}
+                  onConfigSave={onConfigSave}
+                  onTogglePublic={handleTogglePublic}
+                  onTogglePrivate={handleTogglePrivate}
+                />
 
-            {localConfig.viewMode === 'private' && (
-              <ViewPasswordsPanel
-                accessList={accessList}
-                onAccessAdded={(access) => setAccessList(prev => [...prev, access])}
-                onAccessRevoked={(id) => setAccessList(prev => prev.filter(a => a.id !== id))}
-              />
+                {localConfig.viewMode === 'private' && (
+                  <ViewPasswordsPanel
+                    accessList={accessList}
+                    onAccessAdded={(access) => setAccessList(prev => [...prev, access])}
+                    onAccessRevoked={(id) => setAccessList(prev => prev.filter(a => a.id !== id))}
+                  />
+                )}
+              </>
             )}
-
-            <AuditLogsPanel logs={logs} />
+            
+            {activeTab === 'logs' && (
+              <AuditLogsPanel logs={logs} />
+            )}
           </div>
         </div>
 

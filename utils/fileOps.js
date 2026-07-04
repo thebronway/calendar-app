@@ -58,6 +58,11 @@ const readConfig = () => {
     finalConfig.isDemoMode = true;
     finalConfig.demoAdminPass = process.env.DEMO_ADMIN_PASSWORD || 'admin';
     finalConfig.demoGuestPass = process.env.DEMO_GUEST_PASSWORD || 'guest';
+  } else {
+    // Explicitly wipe stale file data if env var is not true
+    finalConfig.isDemoMode = false;
+    delete finalConfig.demoAdminPass;
+    delete finalConfig.demoGuestPass;
   }
   
   return finalConfig;
@@ -66,7 +71,14 @@ const readConfig = () => {
 const writeConfig = (newConfig) => {
   ensureDataDir();
   try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), 'utf8');
+    // Strip ephemeral environment-derived properties before saving to disk
+    const configToSave = { ...newConfig };
+    delete configToSave.isDemoMode;
+    delete configToSave.demoAdminPass;
+    delete configToSave.demoGuestPass;
+    delete configToSave.bannerHtml;
+
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(configToSave, null, 2), 'utf8');
     return true;
   } catch (e) {
     logError('Config write', e);

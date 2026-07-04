@@ -235,7 +235,7 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 * **`Y`, `P`, `L`, `M` Keys:** Jump instantly to the Year (`Y`), Planner (`P`), List (`L`), or current Month (`M`) view.
 * **`H` or `U` Keys:** Open the Help Modal (`H`) or jump directly to this User Guide (`U`).
 * **`A` Key:** Prompt for Authentication (Log in).
-* **`B`, `K`, `F`, `S` Keys (Admin Only):** Toggle Bulk Edit mode (`B`), open Key configuration (`K`), manage Feeds (`F`), or open Settings (`S`).
+* **`B`, `K`, `F`, `C`, `S` Keys (Admin Only):** Toggle Bulk Edit mode (`B`), open Key configuration (`K`), manage Feeds (`F`), manage Access Control (`C`) or open Settings (`S`).
 * **Saving:** If you attempt to click away, close a window, or accidentally close the browser tab with unsaved data, a confirmation prompt will appear to prevent accidental data loss.
 * **Viewing and Editing Details:** To view or edit a day's details, simply click on it directly within any of the calendar grid or list views.
 

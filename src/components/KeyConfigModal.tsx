@@ -158,16 +158,16 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
           </div>
         </div>
 
-        <div className="flex md:hidden border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6">
+        <div className="flex overflow-x-auto border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6 shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {([{ id: 'categories', label: 'Categories', Icon: Palette, count: categories.length, max: 5 }, { id: 'activities', label: 'Activities', Icon: ListIcon, count: activities.length, max: null }] as const).map(({ id, label, Icon, count, max }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center py-4 px-6 border-b-2 font-medium transition-colors ${activeTab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+              className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === id ? 'border-purple-500 text-purple-600 dark:text-purple-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
             >
               <Icon size={18} className="mr-2" />
               {label}
-              <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === id ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
+              <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === id ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                 {count}{max ? `/${max}` : ''}
               </span>
             </button>
@@ -208,26 +208,30 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
             </div>
           )}
 
-          <div className={`${activeTab === 'categories' ? 'block' : 'hidden'} md:block`}>
-            <CategoryManager 
-              categories={categories}
-              onUpdateItem={handleUpdateItem}
-              onDeleteItem={handleDeleteItem}
-              onAddCategory={handleAddCategory}
-              onReorder={handleReorderCategories}
-            />
-          </div>
+          {activeTab === 'categories' && (
+            <div>
+              <CategoryManager 
+                categories={categories}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+                onAddCategory={handleAddCategory}
+                onReorder={handleReorderCategories}
+              />
+            </div>
+          )}
 
-          <div className={`${activeTab === 'activities' ? 'block' : 'hidden'} md:block`}>
-            <ActivityManager 
-              activities={activities}
-              onUpdateItem={handleUpdateItem}
-              onDeleteItem={handleDeleteItem}
-              onAddActivity={handleAddIconItem}
-              onEditIconClick={handleIconEditClick}
-              onReorder={handleReorderActivities}
-            />
-          </div>
+          {activeTab === 'activities' && (
+            <div>
+              <ActivityManager 
+                activities={activities}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+                onAddActivity={handleAddIconItem}
+                onEditIconClick={handleIconEditClick}
+                onReorder={handleReorderActivities}
+              />
+            </div>
+          )}
         </div>
 
         <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0 rounded-b-xl">

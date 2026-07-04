@@ -22,6 +22,9 @@ export interface AppConfig {
   loginMessage?: string;
   sessionTimeout?: number;
   statsVisibility?: 'all' | 'admin' | 'none';
+  themeBgLight?: string;
+  themeBgDark?: string;
+  themeAccent?: string;
   gaId?: string;
   umamiId?: string;
   umamiUrl?: string;

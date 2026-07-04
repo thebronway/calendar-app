@@ -68,12 +68,19 @@ const StatsSection: React.FC<StatsSectionProps> = ({
                 onClick={() => onLocationFilterToggle(loc)}
                 className={`px-3 py-1 rounded-lg flex items-center space-x-2 transition-all border ${
                   highlightFilters.locations.includes(loc)
-                    ? 'bg-blue-600 text-white border-transparent shadow-lg'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ? 'bg-theme-accent text-white border-transparent shadow-lg'
+                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
                 }`}
               >
                 <span className="font-medium dark:text-gray-200">{loc}</span>
-                <span className="ml-2 bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">
+                <span 
+                  className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold transition-colors"
+                  style={
+                    highlightFilters.locations.includes(loc) 
+                      ? { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' } 
+                      : { backgroundColor: `${config.themeAccent || '#3b82f6'}26`, color: config.themeAccent || '#3b82f6' }
+                  }
+                >
                   {count}
                 </span>
               </button>

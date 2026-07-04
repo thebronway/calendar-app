@@ -12,7 +12,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ bannerHtml, header, modals, children, hasBottomNav }) => {
   return (
-    <div className={`min-h-screen bg-gray-200 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100 ${hasBottomNav ? 'pb-24 sm:pb-28' : ''}`}>
+    <div className={`min-h-screen bg-theme-base transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100 ${hasBottomNav ? 'pb-24 sm:pb-28' : ''}`}>
       {bannerHtml && (
         <div
           className="sticky top-0 z-[70] bg-yellow-50 border-b border-yellow-300 text-yellow-800 py-2 px-4 text-center text-sm font-medium shadow-sm"

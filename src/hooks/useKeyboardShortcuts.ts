@@ -8,12 +8,16 @@ interface UseKeyboardShortcutsParams {
   showAuthModal: boolean;
   showFeedsModal: boolean;
   showHelpModal: boolean;
+  showAccessModal: boolean;
+  showWelcome: boolean;
   setActiveCell: (cell: string | null) => void;
   setShowSettingsModal: (show: boolean) => void;
   setShowKeyModal: (show: boolean) => void;
   setShowAuthModal: (show: boolean) => void;
   setShowFeedsModal: (show: boolean) => void;
   setShowHelpModal: (show: boolean) => void;
+  setShowAccessModal: (show: boolean) => void;
+  onCloseWelcome: () => void;
   handlePrevNav: () => void;
   handleNextNav: () => void;
   onToggleBulkEdit: () => void;
@@ -33,12 +37,16 @@ export function useKeyboardShortcuts({
   showAuthModal,
   showFeedsModal,
   showHelpModal,
+  showAccessModal,
+  showWelcome,
   setActiveCell,
   setShowSettingsModal,
   setShowKeyModal,
   setShowAuthModal,
   setShowFeedsModal,
   setShowHelpModal,
+  setShowAccessModal,
+  onCloseWelcome,
   handlePrevNav,
   handleNextNav,
   onToggleBulkEdit,
@@ -63,10 +71,12 @@ export function useKeyboardShortcuts({
         if (showAuthModal) { setShowAuthModal(false); return; }
         if (showFeedsModal) { setShowFeedsModal(false); return; }
         if (showHelpModal) { setShowHelpModal(false); return; }
+        if (showAccessModal) { setShowAccessModal(false); return; }
+        if (showWelcome) { onCloseWelcome(); return; }
       }
 
       // Hotkeys handle navigation only when no modal is open
-      const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal || showFeedsModal || showHelpModal;
+      const anyModalOpen = activeCell || showSettingsModal || showKeyModal || showAuthModal || showFeedsModal || showHelpModal || showAccessModal || showWelcome;
       
       if (!anyModalOpen) {
         let matched = false;
@@ -78,6 +88,7 @@ export function useKeyboardShortcuts({
         
         // Admin
         if (key === 'b' && role === 'admin') { onToggleBulkEdit(); matched = true; }
+        if (key === 'c' && role === 'admin') { setShowAccessModal(true); matched = true; }
         if (key === 'k' && role === 'admin') { setShowKeyModal(true); matched = true; }
         if (key === 'f' && role === 'admin') { setShowFeedsModal(true); matched = true; }
         if (key === 's' && role === 'admin') { setShowSettingsModal(true); matched = true; }
@@ -115,8 +126,8 @@ export function useKeyboardShortcuts({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
-    activeCell, showSettingsModal, showKeyModal, showAuthModal, showFeedsModal, showHelpModal,
-    setActiveCell, setShowSettingsModal, setShowKeyModal, setShowAuthModal, setShowFeedsModal, setShowHelpModal,
+    activeCell, showSettingsModal, showKeyModal, showAuthModal, showFeedsModal, showHelpModal, showAccessModal, showWelcome,
+    setActiveCell, setShowSettingsModal, setShowKeyModal, setShowAuthModal, setShowFeedsModal, setShowHelpModal, setShowAccessModal, onCloseWelcome,
     handlePrevNav, handleNextNav, onToggleBulkEdit, onToggleDarkMode, onViewToggle, onGoToGuide,
     routeView, year, navigate, role
   ]);

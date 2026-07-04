@@ -86,12 +86,12 @@ const MonthView: React.FC<MonthViewProps> = ({
       <td
         key={key}
         onClick={() => onCellClick(key)}
-        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-blue-500 ring-inset z-10 relative' : ''}`}
+        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
       >
         <div className={contentClass}>
           <div className="flex flex-col items-center">
             <span
-              className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}
+              className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-theme-accent text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}
             >
               {d}
             </span>

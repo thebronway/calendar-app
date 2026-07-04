@@ -23,6 +23,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
     // Add Admin-only shortcuts conditionally
     ...(isAdmin ? [
       { keys: ['B'], description: 'Toggle Bulk Edit mode' },
+      { keys: ['C'], description: 'Open Access Control' },
       { keys: ['K'], description: 'Open Key configuration' },
       { keys: ['F'], description: 'Open Feeds manager' },
       { keys: ['S'], description: 'Open Settings' },

@@ -63,7 +63,7 @@ const ActivityManager: React.FC<ActivityManagerProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 mt-8 md:mt-12">
+    <div className="max-w-4xl mx-auto space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
       <div className="flex justify-between items-center">
         <div>
           <h4 className="hidden md:block text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">Activities</h4>
@@ -101,7 +101,7 @@ const ActivityManager: React.FC<ActivityManagerProps> = ({
                 onDragEnter={() => (dragOverItem.current = originalIndex)}
                 onDragEnd={handleSort}
                 onDragOver={(e) => e.preventDefault()}
-                className="bg-white dark:bg-gray-800 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4 cursor-grab active:cursor-grabbing"
+                className="bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border dark:border-gray-700 shadow-sm flex items-center gap-4 cursor-grab active:cursor-grabbing"
               >
                 <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
                 <button 

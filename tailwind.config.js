@@ -6,7 +6,12 @@ module.exports = {
   ],
   darkMode: 'class', // Enable dark mode
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'theme-base': 'var(--theme-bg)',
+        'theme-accent': 'var(--theme-accent)',
+      }
+    },
   },
   plugins: [
     require('@tailwindcss/line-clamp'), // Add line-clamp plugin

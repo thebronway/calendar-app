@@ -68,12 +68,12 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     if (style === 'question')
       return (
         <>
-          Where is {n} in <span className="text-blue-600">{year}</span>?
+          Where is {n} in <span className="text-theme-accent">{year}</span>?
         </>
       );
     return (
       <>
-        <span className="text-blue-600 mr-2">{year}</span> Calendar
+        <span className="text-theme-accent mr-2">{year}</span> Calendar
       </>
     );
   };
@@ -88,7 +88,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
           <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center text-center sm:text-left">
             {HeaderIcon && (
-              <HeaderIcon size={36} className="mr-3 text-blue-600 hidden sm:block" />
+              <HeaderIcon size={36} className="mr-3 text-theme-accent hidden sm:block" />
             )}
             <span>{renderTitle()}</span>
           </h1>

@@ -34,7 +34,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
       <div className="flex justify-between items-center">
         <div>
           <h4 className="hidden md:block text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">Categories</h4>
@@ -63,7 +63,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
             onDragEnter={() => (dragOverItem.current = index)}
             onDragEnd={handleSort}
             onDragOver={(e) => e.preventDefault()}
-            className="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4 cursor-grab active:cursor-grabbing"
+            className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4 cursor-grab active:cursor-grabbing"
           >
             <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
             <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
