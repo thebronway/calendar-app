@@ -1,12 +1,17 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-03*  
-*Current Version: v1.0.7*
+*Last updated: 2026-07-05*  
+*Current Version: v1.0.8*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.8
+- Added /login route to handle user authentication
+- Updated keyboard shortcuts
+- Bigfix: Fixed UI bugs on login page
 
 ### Release v1.0.7
 - Added automated nightly backup engine with 7-day retention

@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-07-02*  
+*Last updated: 2026-07-05*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -235,7 +235,7 @@ If you want to share a specific itinerary with someone (e.g., just your "Work Tr
 * **`V` Key:** Rotate quickly between Year, Planner, and List views.
 * **`Y`, `P`, `L`, `M` Keys:** Jump instantly to the Year (`Y`), Planner (`P`), List (`L`), or current Month (`M`) view.
 * **`H` or `U` Keys:** Open the Help Modal (`H`) or jump directly to this User Guide (`U`).
-* **`A` Key:** Prompt for Authentication (Log in).
+* **`A` Key:** Prompt for Authentication (Log in or Log Out).
 * **`B`, `K`, `F`, `C`, `S` Keys (Admin Only):** Toggle Bulk Edit mode (`B`), open Key configuration (`K`), manage Feeds (`F`), manage Access Control (`C`) or open Settings (`S`).
 * **Saving:** If you attempt to click away, close a window, or accidentally close the browser tab with unsaved data, a confirmation prompt will appear to prevent accidental data loss.
 * **Viewing and Editing Details:** To view or edit a day's details, simply click on it directly within any of the calendar grid or list views.

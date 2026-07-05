@@ -22,6 +22,7 @@ export interface AppConfig {
   loginMessage?: string;
   sessionTimeout?: number;
   statsVisibility?: 'all' | 'admin' | 'none';
+  authProvider?: 'local' | 'ldap' | 'sso';
   themeBgLight?: string;
   themeBgDark?: string;
   themeAccent?: string;

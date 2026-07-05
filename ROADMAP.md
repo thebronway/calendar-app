@@ -1,19 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-03*  
-*Current Version: v1.0.7*
+*Last updated: 2026-07-05*  
+*Current Version: v1.0.8*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.0.8: Unified Routing & Identity Framework
-- **Dedicated Route Architecture:** Introduce a formal standalone `/login` path to replace the legacy conditional inline layout components.
-- **Unified Route Interceptor:** Implement automated routing rules that cleanly forward unauthenticated visitors to the secure login route whenever Private Mode is active.
-- **Decoupled Auth Provider Framework:** Refactor the backend authentication engine to support a pluggable architecture capable of dynamically switching validation sources.
-- **Universal Local Admin Precedence:** Establish a hard hard priority filter ensuring the local master admin credentials always intercept and override external directory matches as an automatic fallback backdoor.
-- switching from private to local or to futre sso/ldap requires confirmation and admin to input their password again (to prevent accidental switching) and keep local db, but just dont use it, dont auto clear (specify that in the pop-up)
 
 ### Release v1.0.9: Centralized Directory Access (LDAP)
 - **Centralized Network Logins:** Implement real-time network credential validation against centralized LDAP directories (e.g., Active Directory, FreeIPA).
@@ -23,6 +16,8 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Still need to add login failures/suceess to the activity log
 - local admin overides and ldap admin with the same username
 - isolate the upcoming identity modules into a its own directory, keeping routes/auth.js perfectly lean and clean.
+- What if the same user is in both the admin and the view group?
+- Fix. When clicking 'a' to logout, cookie not cleared. 
 
 ### Release v1.1.0: Enterprise Single Sign-On (SSO / OIDC)
 - **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).

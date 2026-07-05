@@ -21,6 +21,12 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
   // Access & Logs State
   const [accessList, setAccessList] = useState<AccessProfile[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  
+  // Security Verification State
+  const [pendingConfigChange, setPendingConfigChange] = useState<Partial<AppConfig> | null>(null);
+  const [verifyPassword, setVerifyPassword] = useState('');
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const fetchAccessAndLogs = useCallback(async () => {
     try {
@@ -55,31 +61,44 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
     setLocalConfig((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleTogglePublic = async () => {
+  const handleTogglePublic = () => {
     if (localConfig.viewMode === 'public') return;
-    
-    if (accessList.length > 0) {
-      if (!(await confirm({ 
-        title: 'Switch to Public Mode', 
-        message: 'Switching to Public mode will delete all existing view passwords. Are you sure?', 
-        confirmText: 'Yes, Delete Passwords' 
-      }))) return;
-      
-      for (const access of accessList) {
-        await fetch(`/api/access/${access.id}`, { method: 'DELETE' });
-      }
-      setAccessList([]);
-    }
-    const newConfig = { ...localConfig, viewMode: 'public' as const };
-    setLocalConfig(newConfig);
-    onConfigSave(newConfig);
+    setPendingConfigChange({ viewMode: 'public' });
   };
 
   const handleTogglePrivate = () => {
     if (localConfig.viewMode === 'private') return;
-    const newConfig = { ...localConfig, viewMode: 'private' as const };
-    setLocalConfig(newConfig);
-    onConfigSave(newConfig);
+    setPendingConfigChange({ viewMode: 'private' });
+  };
+
+  const handleVerifyPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsVerifying(true);
+    setVerifyError(null);
+    try {
+      const res = await fetch('/api/auth/verify-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: verifyPassword })
+      });
+      
+      if (res.ok) {
+        // Verification succeeded, execute the queued change
+        if (pendingConfigChange) {
+          const newConfig = { ...localConfig, ...pendingConfigChange };
+          setLocalConfig(newConfig);
+          onConfigSave(newConfig);
+        }
+        setPendingConfigChange(null);
+        setVerifyPassword('');
+      } else {
+        setVerifyError('Incorrect admin password.');
+      }
+    } catch (err) {
+      setVerifyError('Connection error. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -147,6 +166,47 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
             Close
           </button>
         </div>
+
+        {/* Security Verification Overlay */}
+        {pendingConfigChange && (
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm z-10 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 relative">
+              <button 
+                onClick={() => { setPendingConfigChange(null); setVerifyPassword(''); setVerifyError(null); }} 
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <X size={20} />
+              </button>
+              <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Verify Changes</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {pendingConfigChange.viewMode === 'public' 
+                  ? 'Switching to Public Mode makes the calendar visible to everyone. Your existing user passwords will be saved in the database but will remain dormant.'
+                  : 'Please enter your admin password to confirm these security changes.'}
+              </p>
+              <form onSubmit={handleVerifyPassword} className="space-y-4">
+                <div>
+                  <input
+                    type="password"
+                    autoFocus
+                    value={verifyPassword}
+                    onChange={(e) => { setVerifyPassword(e.target.value); setVerifyError(null); }}
+                    className={`w-full p-3 text-sm border rounded-lg dark:bg-gray-900 dark:text-white transition-colors ${verifyError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'}`}
+                    placeholder="Master Admin Password"
+                    disabled={isVerifying}
+                  />
+                  {verifyError && <p className="text-red-500 text-xs mt-1.5 font-bold">{verifyError}</p>}
+                </div>
+                <button
+                  type="submit"
+                  disabled={isVerifying || !verifyPassword}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center transition-colors disabled:opacity-50"
+                >
+                  {isVerifying ? 'Verifying...' : 'Confirm & Apply'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

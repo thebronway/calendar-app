@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { slugify } from '../utils/helpers';
 
-export type ViewType = 'year' | 'list' | 'guide' | string; // string allows for specific month names like 'january'
+export type ViewType = 'year' | 'list' | 'guide' | 'login' | string;
 
 export interface RouteState {
   year: number;

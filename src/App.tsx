@@ -18,7 +18,6 @@ import PlannerView from './components/PlannerView';
 import CellEditor from './components/CellEditor';
 import SettingsModal from './components/SettingsModal';
 import AccessControlModal from './components/AccessControlModal';
-import AuthModal from './components/AuthModal';
 import KeyConfigModal from './components/KeyConfigModal';
 import FeedManagerModal from './components/FeedManagerModal';
 import HelpModal from './components/HelpModal';
@@ -59,7 +58,7 @@ export default function App() {
   const [role, setRole] = useState<Role>('none');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  const { showAuthModal, setShowAuthModal, showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, showAccessModal, setShowAccessModal, activeCell, setActiveCell } = useModals();
+  const { showSettingsModal, setShowSettingsModal, showKeyModal, setShowKeyModal, showFeedsModal, setShowFeedsModal, showHelpModal, setShowHelpModal, showAccessModal, setShowAccessModal, activeCell, setActiveCell } = useModals();
   const { isBulkEditMode, selectedCells, toggleBulkEdit, clearBulkEdit, clearSelection, toggleCellSelection } = useBulkEdit();
   const { feeds, isFeedsLoading, fetchFeeds, saveFeed, deleteFeed } = useFeeds({ role });
   const [expandedMonths, setExpandedMonths] = useState<Record<number, boolean>>({});
@@ -214,6 +213,17 @@ export default function App() {
       .finally(() => setIsCheckingAuth(false));
   }, []);
 
+  // --- Unified Route Interceptor ---
+  useEffect(() => {
+    if (isCheckingAuth || isDataLoading) return;
+    
+    if (config.viewMode === 'private' && role === 'none' && route.view !== 'login') {
+      navigate('/login');
+      return;
+    } 
+
+  }, [config.viewMode, role, route.view, isCheckingAuth, isDataLoading, navigate, year]);
+
   // --- Effects ---
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
   useEffect(() => { fetchFeeds(); }, [fetchFeeds]);
@@ -305,7 +315,6 @@ export default function App() {
     activeCell,
     showSettingsModal,
     showKeyModal,
-    showAuthModal,
     showFeedsModal,
     showHelpModal,
     showAccessModal,
@@ -313,7 +322,6 @@ export default function App() {
     setActiveCell,
     setShowSettingsModal,
     setShowKeyModal,
-    setShowAuthModal,
     setShowFeedsModal,
     setShowHelpModal,
     setShowAccessModal,
@@ -343,7 +351,7 @@ export default function App() {
     }
     setRole('none');
     clearBulkEdit();
-    navigate('/');
+    navigate('/login');
   };
 
   const handleCellClick = (key: string) => {
@@ -409,9 +417,35 @@ export default function App() {
     );
   }
 
-  // Intercept the render if View Mode is Private and the user is unauthenticated
+  // Dedicated Login Route
+  if (route.view === 'login') {
+    return (
+      <>
+        <style>
+          {`
+            :root {
+              --theme-bg: ${config.themeBgLight || '#e5e7eb'};
+              --theme-accent: ${config.themeAccent || '#3b82f6'};
+            }
+            .dark {
+              --theme-bg: ${config.themeBgDark || '#111827'};
+            }
+          `}
+        </style>
+        <LoginScreen 
+          config={config} 
+          onAuthenticate={(r) => { 
+            handleAuthenticate(r); 
+            navigate(`/${year}/year`); 
+          }} 
+        />
+      </>
+    );
+  }
+
+  // Safeguard fallback to prevent flashing app content while redirecting
   if (config.viewMode === 'private' && role === 'none') {
-    return <LoginScreen config={config} onAuthenticate={handleAuthenticate} />;
+    return null; 
   }
 
   return (
@@ -449,7 +483,7 @@ export default function App() {
           onOpenFeeds={() => setShowFeedsModal(true)}
           onOpenHelp={() => setShowHelpModal(true)}
           onLogout={handleLogout}
-          onOpenAuth={() => setShowAuthModal(true)}
+          onOpenAuth={() => navigate('/login')}
           onGoToGuide={() => navigate('/guide')}
         />
       }
@@ -502,11 +536,6 @@ export default function App() {
             onSaveFeed={saveFeed}
             onDeleteFeed={deleteFeed}
             role={role}
-          />
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            onAuthenticate={handleAuthenticate}
           />
           <HelpModal
             isOpen={showHelpModal}
