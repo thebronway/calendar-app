@@ -60,6 +60,7 @@ export function useKeyboardShortcuts({
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return; // Prevent global shortcuts firing during native browser actions
 
       // ESC closes any open modal
       if (e.key === 'Escape') {

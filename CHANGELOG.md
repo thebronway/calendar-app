@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-05*  
-*Current Version: v1.0.9*
+*Current Version: v1.1.0*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.0
+- Added example docker-compose.yml to root directory
+- Updated User Guide with JWT generation and optional LDAP instructions
+- Added changelog fallback for manually tagged Docker versions
+- Bugfix: Fixed shortcuts firing during native browser actions (Ctrl/Cmd+C)
+- Bugfix: Fixed logout and 'A' key shortcut routing in Public Mode
 
 ### Release v1.0.9
 - Added centralized directory access (LDAP) support

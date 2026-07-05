@@ -1,25 +1,14 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-05*  
-*Current Version: v1.0.8*
+*Current Version: v1.1.0*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.1.0: Maintenance update
-- Bug: when tagging the version on docker vs using lastest (both are the same image), the changelog notes arent coming through to the welcome modal when manually tagging a version - Full disclosure I could've just not rebuilt it before I added the changelog notes but just in case, can you just look into it?
-- Bug: when trying to copy (like from the usergude) the control C opens up the access panel. I think C will really be the only character that we need to worry about but maybe if there is a command or control button clicked first cannot not bring up the keyboard shortcuts? If that's not possible, we'll just remove the C or cahnge it
-- Bug: when set to public mode, and when admin clicks logout or clicks a, it goes to the login page, with no way to get to the public calendar view. If public mode, logout and a should bring to root not /login
-
-- Update:  USERGUDE to add how to create a quick JWT token, and put the LDAP config optional in the docker example
-- Update:  Create a docker compose file and put it in the root for users to use as an example
-
-- Prep for 1.1.1 - identifying like elements for themeing (id only, no work being done, planning for 1.1.1)
-
 ### Release v1.1.1: Theming Updates
-
 - Update: Accent color should be seperate for dark / light mode (and new custom mode)
 - Update: Add third mode "Custom". The dark/light button should be dark/light/custom.  Use dark mode values as restore to deafult for custom
 - identify additional elements for theming - going one one type of elements with testing and verification at a time. make a list first, do so research slowly, and then give reccomendations. 

@@ -1,0 +1,24 @@
+services:
+  calendar-app:
+    image: thebronway/calendar-app:latest
+    container_name: calendar
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./calendar_data:/app/data
+    environment:
+      # REQUIRED: Set this to a secure master administrative password
+      - ADMIN_PASSWORD=your_secure_password_here
+      
+      # OPTIONAL: Persistent session signing token.
+      # Generate via command line using: openssl rand -base64 32
+      - JWT_SECRET=your_secure_jwt_secret_here
+      
+      # OPTIONAL LDAP CONFIGURATION (Uncomment and populate only if enabling LDAP):
+      # - LDAP_BIND_DN=uid=binduser,cn=users,dc=example,dc=com
+      # - LDAP_BIND_PASSWORD=your_secure_bind_password_here
+      
+      # OPTIONAL REGIONAL & SYSTEM VARIABLES:
+      - TIMEZONE=America/New_York
+      # - PAGE_BANNER_HTML=<b>Welcome!</b>

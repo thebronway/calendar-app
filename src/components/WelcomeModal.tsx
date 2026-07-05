@@ -18,8 +18,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGoToGuid
   const latestChangelog = useMemo(() => {
     const lines = changelogRaw.split('\n');
     let isCapturing = false;
-    const extracted: string[] = [];
+    let extracted: string[] = [];
 
+    // Attempt 1: Look for exact version match
     for (const line of lines) {
       if (line.startsWith(`### Release v${version}`)) {
         isCapturing = true;
@@ -32,6 +33,23 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGoToGuid
         extracted.push(line);
       }
     }
+
+    // Attempt 2 (Fallback): If manually tagged and missing, just grab the topmost release block
+    if (extracted.length === 0) {
+      isCapturing = false;
+      for (const line of lines) {
+        if (!isCapturing && line.startsWith('### Release')) {
+          isCapturing = true;
+          continue; 
+        } else if (isCapturing && line.startsWith('### Release')) {
+          break; 
+        }
+        if (isCapturing && line.trim()) {
+          extracted.push(line);
+        }
+      }
+    }
+
     return extracted.length > 0 ? extracted.join('\n') : 'No specific changelog details found for this version.';
   }, [version]);
 

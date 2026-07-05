@@ -319,7 +319,11 @@ export default function App() {
     }
     setRole('none');
     clearBulkEdit();
-    navigate('/login');
+    if (config.viewMode === 'public') {
+      navigate(`/${year}/year${window.location.search}`);
+    } else {
+      navigate('/login');
+    }
   };
 
   // Global Session Cleansing hook

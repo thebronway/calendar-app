@@ -57,14 +57,25 @@ services:
     environment:
       # REQUIRED: Set this to a secure password
       - ADMIN_PASSWORD=your_secure_password_here
-      # OPTIONAL: Custom session signing key (auto-generated if left blank)
+      # OPTIONAL: Custom session signing key (Highly recommended to provide a persistent string)
       - JWT_SECRET=your_secure_jwt_secret_here
+      # OPTIONAL LDAP VARIABLES (Required only if using LDAP authentication provider):
+      # - LDAP_BIND_DN=uid=binduser,cn=users,dc=example,dc=com
+      # - LDAP_BIND_PASSWORD=your_secure_bind_password_here
       # OPTIONAL VARIABLES:
       - TIMEZONE=America/New_York
       - PAGE_BANNER_HTML=<b>Welcome!</b>
 ```
 
 Run `docker-compose up -d` to start the application. It will be accessible at `http://localhost:8080`.
+
+### Generating a Secure JWT Secret
+To generate a cryptographically secure string for your `JWT_SECRET` environment variable, you can run one of the following commands in your terminal:
+
+* **Using OpenSSL:**
+  ```bash
+  openssl rand -base64 32
+  ```
 
 ### Environment Variables
 | Variable | Description |
