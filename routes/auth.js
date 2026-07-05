@@ -4,6 +4,7 @@ const { rateLimit } = require('express-rate-limit');
 const { logAuthAttempt, readAccess, readLogs, readConfig } = require('../utils/fileOps');
 const { ADMIN_PASSWORD, JWT_SECRET, verifyPassword, verifyAdminToken } = require('../utils/authUtils');
 const { authenticateUser } = require('../services/identity/identityManager');
+const { testLdapConnection } = require('../services/identity/ldapProvider');
 
 const router = express.Router();
 
@@ -66,6 +67,16 @@ router.post('/login', authLimiter, async (req, res) => {
   } else {
     logAuthAttempt(ip, 'failed', 'none', username);
     res.status(401).json({ error: authResult.error || 'Unauthorized' });
+  }
+});
+
+router.post('/test-ldap', verifyAdminToken, async (req, res) => {
+  const configPayload = req.body;
+  try {
+    const result = await testLdapConnection(configPayload);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message || 'LDAP connection failed.' });
   }
 });
 

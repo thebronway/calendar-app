@@ -23,6 +23,10 @@ export interface AppConfig {
   sessionTimeout?: number;
   statsVisibility?: 'all' | 'admin' | 'none';
   authProvider?: 'local' | 'ldap' | 'sso';
+  ldapServerUrl?: string;
+  ldapBaseDn?: string;
+  ldapAdminGroup?: string;
+  ldapViewGroup?: string;
   themeBgLight?: string;
   themeBgDark?: string;
   themeAccent?: string;

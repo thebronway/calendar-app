@@ -1,5 +1,6 @@
 const { ADMIN_PASSWORD } = require('../../utils/authUtils');
 const { validateLocalUser } = require('./localProvider');
+const { validateLdapUser } = require('./ldapProvider');
 
 /**
  * Unified authentication orchestrator.
@@ -12,14 +13,31 @@ const authenticateUser = async (username, password, provider = 'local') => {
   }
 
   // 2. Delegate to active provider based on configuration
-  if (provider === 'local') {
-    return validateLocalUser(username, password);
-  }
-  
-  // Future SSO/LDAP providers will hook in here seamlessly
-  // if (provider === 'ldap') { return await validateLdapUser(username, password); }
+  if (provider === 'ldap') {
+    const ldapResult = await validateLdapUser(username, password);
 
-  return { success: false, error: 'Unknown authentication provider configured.' };
+    // Priority 1: LDAP Admin
+    if (ldapResult.success && ldapResult.role === 'admin') {
+      return ldapResult;
+    }
+
+    // Priority 2: Local View Profile (Allows local guests to bypass LDAP)
+    const localResult = validateLocalUser(username, password);
+    if (localResult.success) {
+      return localResult;
+    }
+
+    // Priority 3: LDAP View
+    if (ldapResult.success && ldapResult.role === 'view') {
+      return ldapResult;
+    }
+
+    // Priority 4: Failed Auth (Either LDAP error or no match found)
+    return ldapResult;
+  }
+
+  // Default to Local Provider
+  return validateLocalUser(username, password);
 };
 
 module.exports = { authenticateUser };

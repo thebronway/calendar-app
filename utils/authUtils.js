@@ -9,8 +9,18 @@ const SECRET_FILE = path.join(DATA_DIR, '.jwt_secret');
 
 let JWT_SECRET = process.env.JWT_SECRET;
 
-// Implement persistent secure fallback if no env variable is provided
-if (!JWT_SECRET) {
+if (JWT_SECRET) {
+  // If the user explicitly provides an ENV variable, clean up any stale fallback file
+  if (fs.existsSync(SECRET_FILE)) {
+    try {
+      fs.unlinkSync(SECRET_FILE);
+      console.info('Removed stale .jwt_secret fallback file because an ENV variable was provided.');
+    } catch (err) {
+      console.error('Failed to remove stale .jwt_secret file:', err);
+    }
+  }
+} else {
+  // Implement persistent secure fallback if no env variable is provided
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }

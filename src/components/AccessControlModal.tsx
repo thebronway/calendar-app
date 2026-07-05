@@ -5,6 +5,7 @@ import { usePreventTabClose } from '../hooks/useUnsavedChanges';
 import GlobalVisibilityPanel from './access/GlobalVisibilityPanel';
 import ViewPasswordsPanel, { AccessProfile } from './access/ViewPasswordsPanel';
 import AuditLogsPanel, { AuditLog } from './access/AuditLogsPanel';
+import DirectoryAccessPanel from './access/DirectoryAccessPanel';
 import type { AppConfig } from '../types';
 
 interface AccessControlModalProps {
@@ -146,11 +147,64 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
                 />
 
                 {localConfig.viewMode === 'private' && (
-                  <ViewPasswordsPanel
-                    accessList={accessList}
-                    onAccessAdded={(access) => setAccessList(prev => [...prev, access])}
-                    onAccessRevoked={(id) => setAccessList(prev => prev.filter(a => a.id !== id))}
-                  />
+                  <>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border dark:border-gray-700">
+                        <div>
+                          <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">Primary Authentication Provider</span>
+                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md">
+                            Switching providers will instantly invalidate active guest sessions. Local view credentials will become dormant.
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 bg-white dark:bg-gray-800 p-1.5 rounded-lg border dark:border-gray-600">
+                          <button
+                            onClick={() => {
+                              if (localConfig.authProvider !== 'local' && localConfig.authProvider !== undefined) {
+                                setPendingConfigChange({ authProvider: 'local' });
+                              }
+                            }}
+                            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${localConfig.authProvider !== 'ldap' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                          >
+                            Local
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (localConfig.authProvider !== 'ldap') {
+                                setPendingConfigChange({ authProvider: 'ldap' });
+                              }
+                            }}
+                            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${localConfig.authProvider === 'ldap' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                          >
+                            LDAP
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {localConfig.authProvider !== 'ldap' ? (
+                      <ViewPasswordsPanel
+                        accessList={accessList}
+                        onAccessAdded={(access) => setAccessList(prev => [...prev, access])}
+                        onAccessRevoked={(id) => setAccessList(prev => prev.filter(a => a.id !== id))}
+                      />
+                    ) : (
+                      <DirectoryAccessPanel
+                        config={localConfig}
+                        onConfigChange={handleConfigChange}
+                        onSaveDirectorySettings={() => {
+                          const newConfig = {
+                            ...localConfig,
+                            ldapServerUrl: localConfig.ldapServerUrl,
+                            ldapBaseDn: localConfig.ldapBaseDn,
+                            ldapAdminGroup: localConfig.ldapAdminGroup,
+                            ldapViewGroup: localConfig.ldapViewGroup,
+                          };
+                          setLocalConfig(newConfig);
+                          onConfigSave(newConfig);
+                        }}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -181,6 +235,8 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {pendingConfigChange.viewMode === 'public' 
                   ? 'Switching to Public Mode makes the calendar visible to everyone. Your existing user passwords will be saved in the database but will remain dormant.'
+                  : pendingConfigChange.authProvider !== undefined
+                  ? 'Switching Authentication Providers will instantly terminate active guest sessions. Existing view-only passwords will be saved but remain dormant.'
                   : 'Please enter your admin password to confirm these security changes.'}
               </p>
               <form onSubmit={handleVerifyPassword} className="space-y-4">

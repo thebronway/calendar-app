@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { X, Search, Pencil, Check, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { X, Search, Pencil, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { ICON_MAP } from '../../utils/constants';
 import type { KeyItem, IconEntry } from '../../types';
 
@@ -16,7 +16,6 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
   const [activitySearch, setActivitySearch] = useState('');
   const [activitySort, setActivitySort] = useState<SortOrder>('key');
   const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
-  const [editingIconName, setEditingIconName] = useState<string>('');
 
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
@@ -96,21 +95,25 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                     <div className="flex items-center space-x-2 flex-1">
                       <input
                         type="text"
-                        value={editingIconName}
-                        onChange={(e) => setEditingIconName(e.target.value)}
+                        value={item.displayName || ''}
+                        onChange={(e) => {
+                          const newIcons = [...localIcons];
+                          newIcons[index] = { ...newIcons[index], displayName: e.target.value };
+                          setLocalIcons(newIcons);
+                        }}
                         placeholder={defaultLabel}
                         className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                         autoFocus
+                        onBlur={() => {
+                          const newIcons = [...localIcons];
+                          newIcons[index] = { ...newIcons[index], displayName: item.displayName?.trim() === '' ? undefined : item.displayName };
+                          setLocalIcons(newIcons);
+                          setEditingIconIndex(null);
+                        }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' || e.key === 'Escape') {
                             e.preventDefault();
-                            const newIcons = [...localIcons];
-                            newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                            setLocalIcons(newIcons);
-                            setEditingIconIndex(null);
-                          } else if (e.key === 'Escape') {
-                            e.preventDefault();
-                            setEditingIconIndex(null);
+                            e.currentTarget.blur();
                           }
                         }}
                       />
@@ -123,7 +126,6 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                       <button
                         onClick={() => {
                           setEditingIconIndex(index);
-                          setEditingIconName(item.displayName || '');
                         }}
                         className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
                       >
@@ -133,29 +135,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                   )}
                 </div>
                 <div className="flex items-center space-x-1 shrink-0">
-                  {editingIconIndex === index ? (
-                    <>
-                      <button 
-                        onClick={() => {
-                          const newIcons = [...localIcons];
-                          newIcons[index].displayName = editingIconName.trim() === '' ? undefined : editingIconName;
-                          setLocalIcons(newIcons);
-                          setEditingIconIndex(null);
-                        }}
-                        className="text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 p-1 rounded transition-colors"
-                        title="Save"
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button 
-                        onClick={() => setEditingIconIndex(null)}
-                        className="text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded transition-colors"
-                        title="Cancel"
-                      >
-                        <X size={16} />
-                      </button>
-                    </>
-                  ) : (
+                  {editingIconIndex !== index && (
                     <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded transition-colors">
                       <X size={16} />
                     </button>

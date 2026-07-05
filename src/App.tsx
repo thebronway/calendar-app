@@ -311,6 +311,28 @@ export default function App() {
     document.title = title;
   }, [year, config, hasActiveFilters, route.activityFilters, route.categoryFilters, keyItems]);
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+    setRole('none');
+    clearBulkEdit();
+    navigate('/login');
+  };
+
+  // Global Session Cleansing hook
+  const prevAuthProvider = useRef(config.authProvider);
+  useEffect(() => {
+    if (prevAuthProvider.current && prevAuthProvider.current !== config.authProvider) {
+      if (role === 'view') {
+        handleLogout(); // Automatically log out guest clients when auth provider changes
+      }
+    }
+    prevAuthProvider.current = config.authProvider;
+  }, [config.authProvider, role]);
+
   useKeyboardShortcuts({
     activeCell,
     showSettingsModal,
@@ -332,6 +354,7 @@ export default function App() {
     onToggleDarkMode: toggleDarkMode,
     onViewToggle: (view) => navigate(`/${year}/${view}${window.location.search}`),
     onGoToGuide: () => navigate('/guide'),
+    onLogout: handleLogout,
     routeView: route.view,
     year,
     navigate,
@@ -341,17 +364,6 @@ export default function App() {
   // --- Handlers ---
   const handleAuthenticate = (r: Role) => {
     setRole(r);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
-    setRole('none');
-    clearBulkEdit();
-    navigate('/login');
   };
 
   const handleCellClick = (key: string) => {

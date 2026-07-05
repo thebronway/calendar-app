@@ -71,6 +71,8 @@ Run `docker-compose up -d` to start the application. It will be accessible at `h
 | :--- | :--- |
 | **`ADMIN_PASSWORD`** | **(Required)** The password assigned to the account username "admin" to manage and edit the calendar. |
 | **`JWT_SECRET`** | (Optional) Session cookie cryptographic signature string. Automatically fallback-generated if empty. |
+| **`LDAP_BIND_DN`** | (Optional) The distinguished name of the service account used to bind to your LDAP directory (e.g., `uid=binduser,cn=users,dc=example,dc=com`). |
+| **`LDAP_BIND_PASSWORD`** | (Optional) The password for the LDAP bind account. |
 | **`DATA_DIR`** | **(Required)** Path where JSON data files are stored. Defaults to `/app/data`. |
 | **`TIMEZONE`** | (Optional) Default timezone for the calendar (e.g., `UTC`, `America/Chicago`). |
 | **`PAGE_BANNER_HTML`** | (Optional) Custom HTML banner displayed at the very top of the page. |
@@ -88,13 +90,34 @@ The calendar operates on a permission system controlled by global visibility con
 ### Access Control Panel
 When logged in as an administrator, click the **Access Control (shield check) icon** on the floating navigation bar to manage visibility restrictions, credentials, and security logs.
 
-* **View Passwords:** Admins can generate multiple read-only user credentials for external sharing. 
+#### Local Authentication
+* **View Passwords:** Admins can generate multiple read-only user credentials for external sharing.
   * *Uniqueness Constraints:* The backend prevents creation of matching names/labels or matching password strings to keep account tracking distinct users.
   * *Expirations:* You can optionally select an expiration date. If no date is selected, access is unlimited.
   * *Mode Toggling Note:* Switching the calendar from Private Mode back to Public Mode automatically deletes all generated guest credentials from the system database.
 * **Access Logging & Auditing:** The panel displays a "Recent Activity" ledger containing the last 500 authentication events. It tracks the exact timestamp, incoming connection IP address, account profile name, and success or failure status of each login attempt.
 
-*Note: Active login sessions expire automatically after 24 hours. Users can click the Logout button in the header to terminate a session immediately.*
+#### Centralized Directory Access (LDAP)
+You can connect Calendar-App to a centralized directory (like Active Directory, FreeIPA, or LLDAP) to manage access via network credentials. 
+
+**1. Configure Environment Variables:**
+To protect sensitive credentials, the service account used to bind to your directory must be configured in your `docker-compose.yml`:
+* `LDAP_BIND_DN`: The service account username/DN.
+* `LDAP_BIND_PASSWORD`: The service account password.
+* *Note: If these are omitted, the app will attempt an anonymous bind.*
+
+**2. Configure UI Settings:**
+Open the **Access Control** panel and switch the Authentication Provider to **LDAP**.
+* **Server URL:** The connection URI (e.g., `ldap://10.0.0.22:389` or `ldaps://ldap.example.com:636`).
+* **Base DN:** The root where your users and groups live (e.g., `dc=example,dc=com`).
+* **Admin Group (cn):** The name of the group whose members receive full edit access (e.g., `calendar-app_admin`).
+* **View Group (cn):** The name of the group whose members receive read-only access (e.g., `calendar-app_user`).
+
+**3. Test and Apply:**
+Click **Test Connection & Groups** to verify your settings. The system will bind to the directory and return a sample of up to 25 users found in the mapped groups. Once successful, click **Save & Apply Settings**.
+* *Safety Feature: If a user is a member of both the Admin and View groups, the system will automatically grant them the higher `admin` privilege.*
+
+*Note: Active login sessions expire automatically after the configured session timeout. Users can click the Logout button in the header to terminate a session immediately.*
 
 ### Reverse Proxy Routing
 If running the application behind an authentication proxy (such as Authentik), ensure your server configuration route matches the standard login endpoint under this section:

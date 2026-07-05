@@ -1,12 +1,20 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-05*  
-*Current Version: v1.0.8*
+*Current Version: v1.0.9*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.0.9
+- Added centralized directory access (LDAP) support
+- Added LDAP configuration and connection testing tools
+- Added session invalidation when switching authentication providers
+- Bugfix: Fixed 'A' key logout shortcut
+- Bugfix: Fixed inline activity name edits failing to save
+- Security: Clean up stale .jwt_secret fallback file when using env variables
 
 ### Release v1.0.8
 - Added /login route to handle user authentication

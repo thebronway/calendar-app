@@ -1,6 +1,6 @@
 {
   "name": "calendar-server",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A self-hosted calendar app with a React frontend and Node.js backend.",
   "main": "server.js",
   "type": "commonjs",
@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.1.5",
     "jsonwebtoken": "^9.0.2",
+    "ldapts": "^7.1.1",
     "node-cron": "^3.0.3",
     "ws": "^8.17.0"
   },
