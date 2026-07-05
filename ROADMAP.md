@@ -8,14 +8,18 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v1.1.0: Theming Updates
+### Release v1.1.0: UI and Theming Updates
 - Bug when tagging the version on docker vs using lastest (both are the same image), the changelog notes arent coming through to the welcome modal when manually tagging a version - Full disclosure I could've just not rebuilt it before I added the changelog notes but just in case, can you just look into it?
 - Bug, when trying to copy (like from the usergude) the control C opens up the access panel. I think C will really be the only character that we need to worry about but maybe if there is a command or control button clicked first cannot not bring up the keyboard shortcuts? If that's not possible, we'll just remove the C or cahnge it
 
-- Accent color should be seperate for dark / light mode (and new custom mode)
-- Add third mode "Custom". The dark/light button should be dark/light/custom.  Use dark mode values as restore to deafult for custom
-- Add text color(s) (white seems to most common, but highlited cells are black)
-- identify additional elements for theming
+- Update:  USERGUDE to add how to create a quick JWT token, and put the LDAP config optional in the docker example
+- Create:  a docker compose file and put it in the root for users to use as an example
+
+- Update: Accent color should be seperate for dark / light mode (and new custom mode)
+- Update: Add third mode "Custom". The dark/light button should be dark/light/custom.  Use dark mode values as restore to deafult for custom
+
+- identify additional elements for theming - going one one type of elements with testing and verification at a time. make a list first, do so research slowly, and then give reccomendations. 
+  - text color(s) (white seems to most common, but highlited cells are black) are there others?
   - like the month calendar and all the elements needed (group as much as you can) or the stats section (from the location bubbles to the colors of the days travelling and time travelling) but the background of the key, stats and setting panes seem to be the same
   - Go through the code and identify different areas. We will do one area at a time.
 
