@@ -1,31 +1,29 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-06*  
-*Current Version: v1.1.3*
+*Current Version: v1.1.4*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.1.4: Theming Updates
+### Release v1.1.5: Theming Updates
 - Dark and light mode must remain as is.
-- Logout button inconsistent across modes. I like the visual look of it and light mode and dark mode, but light mode no longer has a hover. In custom mode, it should match the other colored buttons backgrounds.
-- Location count bubbles are inconsistently styled between the key and the stats page. Let's use the way the stats count bubbles are, but with a slightly less opaque blue, and a more defined border. Only slightly less opaque
-- A view of a month needs a full revamp 
-  - Row with days of week needs to be darker than cells with numbers which needs to be darker than cells without numbers. And we can't lose the borders of the cells.
-  - the font is a different color between numbers with and without a category
-  - and The bubble next to the Mo name with the stats needs styling as well
-  - after the revamp, then we will apply all the custom colors. But we may need to add more types of colors in the customizations in order to account for all the different colors in one given month. (in tailwind, theme, and ui)
+- Apply custom theme elements to admin modals, view/edit day modals, help modal, welcome modal, save modals and any other modals I missed.
+  - Only one thing at a time (like one modal). We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
+  - Do we need to add panel header/footer?
+- Key modal add color picker to icon
+- Modals are inconsistent
+  - Key modal (and other admin modals) are dark on header, light on footer. where edit day is light on header and dark on footer. ideas on a scheme?
+  - Edit day modal also needs background on all labels (like a category or activity) Like Key/stats section 
+    - Location bubble on edit day should match location bubbles on stats
+- Logout button just looks off (border, dont know if I like it or not) - ideas to make it different but follow theme
 - Identify additional elements for theming (look at what is already done for custom as a start)
   - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
-### Release v1.1.5: Theming Updates
-- Modals are inconsistent
-  - Key modal (and other admin modals) are dark on header, light on footer. where edit day is light on header and dark on footer. ideas on a scheme
-  - Edit day modal also needs background on all labels (like a category or activity) Like Key/stats section 
-    - Location bubble on edit day should match location bubbles on stats
-- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md
+- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md - so that when developing new elements the dev can make sure that they are considering current design and dont hard code colors 
+
 
 ### Release v1.1.6: UI Updates
 - New flat deafult colors + Color picker for customization 

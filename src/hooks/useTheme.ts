@@ -5,6 +5,7 @@ export type ThemeMode = 'light' | 'dark' | 'custom';
 interface UseThemeReturn {
   themeMode: ThemeMode;
   cycleTheme: () => void;
+  setTheme: (mode: ThemeMode) => void;
 }
 
 /**
@@ -45,5 +46,11 @@ export function useTheme(): UseThemeReturn {
     });
   };
 
-  return { themeMode, cycleTheme };
+  const setTheme = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    updateDOM(mode);
+    localStorage.setItem('theme', mode);
+  };
+
+  return { themeMode, cycleTheme, setTheme };
 }

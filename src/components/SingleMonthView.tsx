@@ -49,15 +49,15 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
 
   return (
     <div className="mt-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+      <div className="bg-theme-panel rounded-xl shadow-sm border border-theme-item overflow-hidden mb-8">
         {/* FULL WIDTH HEADER */}
-        <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+        <div className="bg-theme-item px-6 py-3 border-b border-theme-item flex justify-between items-center">
+          <h3 className="text-lg font-bold text-theme-text">
             {monthName} {year}
           </h3>
           {showStats && (
-            <span className="text-sm font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full shadow-sm">
-              {activeDays.length} / {daysInMonth} days
+            <span className="text-sm font-bold bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-3 py-1 rounded-full shadow-sm">
+              {activeDays.length} / {daysInMonth} days ({Math.round((activeDays.length / daysInMonth) * 100) || 0}%)
             </span>
           )}
         </div>
@@ -92,7 +92,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                   : null;
                 const catClass = colorDef
                   ? `${colorDef.bg} text-white dark:text-gray-900`
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+                  : 'bg-theme-panel text-theme-text border border-theme-item';
 
                 const [y, m, d] = day.key.split('-');
                 const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
@@ -102,14 +102,14 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                   <div
                     key={day.key}
                     onClick={() => onCellClick(day.key)}
-                    className="break-inside-avoid bg-gray-50 dark:bg-gray-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+                    className="break-inside-avoid bg-theme-item rounded-xl shadow-sm border border-theme-item overflow-hidden mb-4 cursor-pointer hover:bg-theme-item-hover transition-colors"
                   >
                     <div className="flex px-4 py-3 gap-4">
-                      <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-fit shadow-sm">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase">
+                      <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-theme-panel border border-theme-item h-fit shadow-sm">
+                        <span className="text-[10px] font-bold text-theme-text-secondary uppercase">
                           {dayOfWeek}
                         </span>
-                        <span className="text-lg font-extrabold text-gray-900 dark:text-gray-100 leading-none mt-0.5">
+                        <span className="text-lg font-extrabold text-theme-text leading-none mt-0.5">
                           {day.day}
                         </span>
                       </div>
@@ -124,7 +124,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                             </span>
                           )}
                           {day.locations && (
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                            <span className="text-sm font-medium text-theme-text-secondary flex items-center">
                               📍 {day.locations}
                             </span>
                           )}
@@ -144,10 +144,10 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                               return IC ? (
                                 <div
                                   key={i}
-                                  className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-900 border dark:border-gray-600 px-2 py-1 rounded-md shadow-sm"
+                                  className="flex items-center gap-1.5 bg-theme-panel border border-theme-item px-2 py-1 rounded-md shadow-sm"
                                 >
                                   <IC size={14} className={icon.color} />
-                                  <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                                  <span className="text-xs font-medium text-theme-text">
                                     {label}
                                   </span>
                                 </div>
@@ -161,7 +161,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                 );
               })
             ) : (
-              <div className="text-gray-500 dark:text-gray-400 italic bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 text-center break-inside-avoid">
+              <div className="text-theme-text-secondary italic bg-theme-panel rounded-xl shadow-sm border border-theme-item p-6 text-center break-inside-avoid">
                 No events this month.
               </div>
             )}

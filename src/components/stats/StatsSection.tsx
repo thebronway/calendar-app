@@ -74,12 +74,11 @@ const StatsSection: React.FC<StatsSectionProps> = ({
               >
                 <span className="font-medium text-theme-text">{loc}</span>
                 <span 
-                  className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold transition-colors"
-                  style={
-                    highlightFilters.locations.includes(loc) 
-                      ? { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' } 
-                      : { backgroundColor: `${config.themeAccentLight || '#3b82f6'}26`, color: config.themeAccentLight || '#3b82f6' }
-                  }
+                  className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold transition-colors border ${
+                    highlightFilters.locations.includes(loc)
+                      ? 'bg-white/20 text-white border-white/30'
+                      : 'bg-theme-accent/10 text-theme-accent border-theme-accent/20'
+                  }`}
                 >
                   {count}
                 </span>

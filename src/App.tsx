@@ -67,7 +67,7 @@ export default function App() {
   const welcomeShownRef = useRef(false);
 
  // --- Hooks ---
-  const { themeMode, cycleTheme } = useTheme();
+  const { themeMode, cycleTheme, setTheme } = useTheme();
 
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
     role,
@@ -507,6 +507,8 @@ export default function App() {
             onClose={() => setShowSettingsModal(false)}
             config={config}
             onConfigSave={saveConfig}
+            currentTheme={themeMode}
+            setTheme={setTheme}
           />
           <AccessControlModal
             isOpen={showAccessModal}

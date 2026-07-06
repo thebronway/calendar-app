@@ -106,9 +106,9 @@ const ActivityManager: React.FC<ActivityManagerProps> = ({
                 <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
                 <button 
                   onClick={() => onEditIconClick(item.id)} 
-                  className="w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border dark:border-gray-600 hover:bg-gray-200"
+                  className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 >
-                  {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs">None</span>}
+                  {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs text-gray-500">None</span>}
                 </button>
                 <div className="flex-1 min-w-0">
                   <input

@@ -30,6 +30,11 @@ const ThemeStyleInjector: React.FC<ThemeStyleInjectorProps> = ({ config }) => {
           --theme-accent-secondary-rgb: ${hexToRgbString(config.themeAccentSecondaryLight || '#8b5cf6')};
           --theme-item-bg: #f3f4f6;
           --theme-item-hover: #e5e7eb;
+          --theme-grid-divider: #d1d5db;
+          --theme-grid-header: #e5e7eb;
+          --theme-grid-cell: #f9fafb;
+          --theme-grid-empty: #ffffff;
+          --theme-grid-text-highlighted: rgba(17, 24, 39, 0.9);
         }
         .dark {
           --theme-bg: ${config.themeBgDark || '#111827'};
@@ -40,6 +45,11 @@ const ThemeStyleInjector: React.FC<ThemeStyleInjectorProps> = ({ config }) => {
           --theme-accent-secondary-rgb: ${hexToRgbString(config.themeAccentSecondaryDark || '#8b5cf6')};
           --theme-item-bg: #2b3544;
           --theme-item-hover: #374151;
+          --theme-grid-divider: #374151;
+          --theme-grid-header: rgba(31, 41, 55, 0.6);
+          --theme-grid-cell: #1f2937;
+          --theme-grid-empty: rgba(31, 41, 55, 0.3);
+          --theme-grid-text-highlighted: rgba(17, 24, 39, 0.9);
         }
         .custom-theme {
           --theme-bg: ${config.customBg || '#111827'};
@@ -51,6 +61,11 @@ const ThemeStyleInjector: React.FC<ThemeStyleInjectorProps> = ({ config }) => {
           --theme-accent-secondary-rgb: ${hexToRgbString(config.customAccentSecondary || '#8b5cf6')};
           --theme-item-bg: ${config.customItemBg || '#374151'};
           --theme-item-hover: ${config.customItemHoverBg || '#4b5563'};
+          --theme-grid-divider: ${config.customGridDivider || '#374151'};
+          --theme-grid-header: ${config.customGridHeaderBg || '#2b3544'};
+          --theme-grid-cell: ${config.customGridCellBg || '#1f2937'};
+          --theme-grid-empty: ${config.customGridEmptyBg || '#111827'};
+          --theme-grid-text-highlighted: ${config.customGridTextHighlighted || '#111827'};
         }
       `}
     </style>

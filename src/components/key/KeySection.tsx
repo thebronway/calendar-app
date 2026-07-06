@@ -129,7 +129,7 @@ const KeySection: React.FC<KeySectionProps> = ({
                     {item.label}
                   </span>
                   {showStats && item.showCount && (
-                    <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                    <span className="ml-auto bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
                       {stats.categories[item.id] || 0}
                     </span>
                   )}
@@ -164,14 +164,14 @@ const KeySection: React.FC<KeySectionProps> = ({
                     isSelected ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
-                  <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-500 flex-shrink-0">
+                  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                     {IconC && <IconC size={20} className={dispColor} />}
                   </div>
                   <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base text-theme-text">
                     {item.label}
                   </span>
                   {item.showCount && (
-                    <span className="ml-auto bg-blue-100 text-blue-800 dark:bg-gray-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                    <span className="ml-auto bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">
                       {iconCounts[`${item.icon}-${item.iconColor}`] || 0}
                     </span>
                   )}

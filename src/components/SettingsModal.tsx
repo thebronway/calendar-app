@@ -12,15 +12,18 @@ import TrackingSettings from './settings/TrackingSettings';
 import ThemeSettings from './settings/ThemeSettings';
 import DataManagementSettings from './settings/DataManagementSettings';
 import type { AppConfig } from '../types';
+import type { ThemeMode } from '../hooks/useTheme';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: AppConfig;
   onConfigSave: (config: AppConfig) => void;
+  currentTheme: ThemeMode;
+  setTheme: (mode: ThemeMode) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigSave }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigSave, currentTheme, setTheme }) => {
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
   const [timezoneError, setTimezoneError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'display' | 'system' | 'theme' | 'data'>('display');
@@ -138,6 +141,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
             <ThemeSettings 
               config={localConfig} 
               onConfigChange={handleConfigChange} 
+              currentTheme={currentTheme}
+              setTheme={setTheme}
             />
           )}
           {activeTab === 'data' && (

@@ -17,6 +17,11 @@ module.exports = {
         'theme-item': 'var(--theme-item-bg)',
         'theme-item-hover': 'var(--theme-item-hover)',
         'theme-text-secondary': 'var(--theme-text-secondary)',
+        'theme-grid-divider': 'var(--theme-grid-divider)',
+        'theme-grid-header': 'var(--theme-grid-header)',
+        'theme-grid-cell': 'var(--theme-grid-cell)',
+        'theme-grid-empty': 'var(--theme-grid-empty)',
+        'theme-grid-text-highlighted': 'var(--theme-grid-text-highlighted)',
       }
     },
   },

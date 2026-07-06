@@ -42,6 +42,11 @@ export interface AppConfig {
   customItemBg?: string;
   customItemHoverBg?: string;
   customTextSecondary?: string;
+  customGridDivider?: string;
+  customGridHeaderBg?: string;
+  customGridCellBg?: string;
+  customGridEmptyBg?: string;
+  customGridTextHighlighted?: string;
   gaId?: string;
   umamiId?: string;
   umamiUrl?: string;

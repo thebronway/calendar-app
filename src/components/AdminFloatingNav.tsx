@@ -17,7 +17,7 @@ const AdminFloatingNav: React.FC<AdminFloatingNavProps> = ({
   onOpenAccess,
 }) => {
   return (
-    <div className="fixed bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-2 sm:p-3 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-40 flex items-center gap-2 sm:gap-3 w-[90%] sm:w-auto min-w-[280px] justify-center transition-all duration-300">
+    <div className="fixed bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 bg-theme-panel px-2 py-2 sm:p-3 rounded-2xl shadow-2xl border border-theme-item z-40 flex items-center gap-2 sm:gap-3 w-[90%] sm:w-auto min-w-[280px] justify-center transition-all duration-300">
       <button
         onClick={onToggleBulkEdit}
         className="flex-1 sm:flex-none h-10 sm:h-12 px-3 sm:px-5 flex items-center justify-center bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors font-bold text-xs sm:text-sm shadow-sm"

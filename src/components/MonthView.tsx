@@ -48,7 +48,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   for (let i = 0; i < firstDay; i++) {
     cells.push(
-      <td key={`p-${i}`} className="p-1 bg-gray-50 dark:bg-gray-800/50">
+      <td key={`p-${i}`} className="p-1 bg-theme-grid-empty">
         <div className={contentClass}></div>
       </td>
     );
@@ -68,7 +68,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
     if (day.colorId !== 'none') monthHighCount++;
 
-    let colorClass = 'bg-white dark:bg-gray-800';
+    let colorClass = 'bg-theme-grid-cell';
     if (day.colorId !== 'none') {
       const cat = keyItems.find((k) => k.id === day.colorId);
       if (cat) {
@@ -91,7 +91,7 @@ const MonthView: React.FC<MonthViewProps> = ({
         <div className={contentClass}>
           <div className="flex flex-col items-center">
             <span
-              className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-theme-accent text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-gray-900' : 'text-gray-800 dark:text-gray-100'}`}
+              className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-theme-accent text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-theme-grid-text-highlighted' : 'text-theme-text'}`}
             >
               {d}
             </span>
@@ -137,7 +137,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   while (cells.length % 7 !== 0) {
     cells.push(
-      <td key={`pe-${cells.length}`} className="p-1 bg-gray-50 dark:bg-gray-800/50">
+      <td key={`pe-${cells.length}`} className="p-1 bg-theme-grid-empty">
         <div className={contentClass}></div>
       </td>
     );
@@ -152,7 +152,7 @@ const MonthView: React.FC<MonthViewProps> = ({
     <div id={`month-${monthIndex}`} className={className || "w-full md:w-1/2 2xl:w-1/3 p-2"}>
       {!isPlanner && (
         <div className="flex justify-between items-center mb-2 mt-4 select-none">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
             {onMonthClick ? (
               <button 
                 onClick={onMonthClick} 
@@ -172,7 +172,7 @@ const MonthView: React.FC<MonthViewProps> = ({
             </span>
           </h2>
           {showStats && (
-            <span className="text-sm font-normal bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+            <span className="text-sm font-bold bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-3 py-1 rounded-full shadow-sm">
               {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
             </span>
           )}
@@ -188,17 +188,17 @@ const MonthView: React.FC<MonthViewProps> = ({
           ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 md:max-h-[2000px] md:opacity-100'}
         `}
       >
-        <table className="w-full table-fixed border-separate border-spacing-[1px] bg-gray-300 dark:bg-gray-700">
+        <table className="w-full table-fixed border-separate border-spacing-[1px] bg-theme-grid-divider">
           <thead>
-            <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+            <tr className="text-gray-600 dark:text-gray-400 text-sm uppercase tracking-wider">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((h) => (
-                <th key={h} className="p-2 bg-gray-200 dark:bg-gray-800">
+                <th key={h} className="p-2 bg-theme-grid-header">
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-gray-300 dark:bg-gray-700">{rows}</tbody>
+          <tbody className="bg-theme-grid-divider">{rows}</tbody>
         </table>
       </div>
     </div>

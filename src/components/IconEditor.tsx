@@ -63,7 +63,7 @@ const IconEditor: React.FC<IconEditorProps> = ({ isOpen, onClose, onSave, initia
           Select Icon and Color
         </h4>
         <div className="flex space-x-4 items-center">
-          <div className="w-12 h-12 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+          <div className="w-12 h-12 flex items-center justify-center">
             {IconComponent && iconType !== 'None' && (
               <IconComponent size={30} className={iconColor} />
             )}

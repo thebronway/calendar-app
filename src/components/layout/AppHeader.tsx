@@ -238,10 +238,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors shadow-sm border ${
+                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors ${
                         themeMode === 'custom'
-                          ? 'bg-theme-panel border-theme-item text-theme-text hover:bg-theme-item-hover'
-                          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'bg-theme-item text-theme-text hover:bg-theme-item-hover'
+                          : 'shadow-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                       title="Logout"
                     >
@@ -301,10 +301,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors shadow-sm border ${
+                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors ${
                         themeMode === 'custom'
-                          ? 'bg-theme-panel border-theme-item text-theme-text hover:bg-theme-item-hover'
-                          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'bg-theme-item text-theme-text hover:bg-theme-item-hover'
+                          : 'shadow-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                       title="Logout"
                     >
