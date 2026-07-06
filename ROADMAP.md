@@ -21,15 +21,15 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Logout button just looks off (border, dont know if I like it or not) - ideas to make it different but follow theme
 - Identify additional elements for theming (look at what is already done for custom as a start)
   - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
-
-- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md - so that when developing new elements the dev can make sure that they are considering current design and dont hard code colors 
+- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md - so that when developing new elements the dev can make sure that they are considering current design and dont hard code colors. Add design info to userguide
 
 
 ### Release v1.1.6: UI Updates
-- New flat deafult colors + Color picker for customization 
+- Key Modal should go under settings, users wont be udating their key often (update help modal, userguide, welcome modal)
+  - Duplicate Activity Names are allowed (bad for URL ID)
+- New flat deafult colors + Color picker for category customization 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
-  - Ideas for having up to 2 categories on one day? (Like work in the am / vacation in the pm)
-- Key Modal should go under settings, users wont be udating their key often (updat help modal, userguide, welcome modal)
+  - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
 - Add git open issue to readme, userguide and help modal
 
 ### Release v1.1.7: Multi-Year iCal Sync Engine
