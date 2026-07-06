@@ -9,7 +9,10 @@ module.exports = {
     extend: {
       colors: {
         'theme-base': 'var(--theme-bg)',
+        'theme-panel': 'var(--theme-panel-bg)',
+        'theme-text': 'var(--theme-text-primary)',
         'theme-accent': 'var(--theme-accent)',
+        'theme-accent-text': 'var(--theme-accent-text)',
       }
     },
   },

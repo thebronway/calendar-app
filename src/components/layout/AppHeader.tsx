@@ -10,6 +10,7 @@ import {
   Lock,
   LogOut,
   Moon,
+  Palette,
   Rss,
   Settings,
   Sun,
@@ -17,12 +18,13 @@ import {
 import { ICON_MAP, MONTHS } from '../../utils/constants';
 import { slugify } from '../../utils/helpers';
 import type { AppConfig, Role } from '../../types';
+import type { ThemeMode } from '../../hooks/useTheme';
 
 interface AppHeaderProps {
   year: number;
   config: AppConfig;
   role: Role;
-  isDarkMode: boolean;
+  themeMode: ThemeMode;
   isSaving: boolean;
   lastUpdatedText: string;
   hasFilters: boolean;
@@ -32,7 +34,7 @@ interface AppHeaderProps {
   onViewToggle: (view: 'year' | 'planner' | 'list') => void;
   onYearPrev: () => void;
   onYearNext: () => void;
-  onToggleDarkMode: () => void;
+  onCycleTheme: () => void;
   onOpenFeeds: () => void;
   onOpenHelp: () => void;
   onLogout: () => void;
@@ -44,7 +46,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   year,
   config,
   role,
-  isDarkMode,
+  themeMode,
   isSaving,
   lastUpdatedText,
   hasFilters,
@@ -54,7 +56,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onViewToggle,
   onYearPrev,
   onYearNext,
-  onToggleDarkMode,
+  onCycleTheme,
   onOpenFeeds,
   onOpenHelp,
   onLogout,
@@ -117,10 +119,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 <ChevronLeft size={16} className="mr-1" /> Back to Calendar
               </button>
               <button
-                onClick={onToggleDarkMode}
+                onClick={onCycleTheme}
                 className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
               </button>
             </div>
           ) : (
@@ -218,10 +220,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   )}
 
                   <button
-                    onClick={onToggleDarkMode}
+                    onClick={onCycleTheme}
                     className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
                   </button>
 
                   {hasPublicFeeds && role !== 'admin' && (
@@ -277,10 +279,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   )}
 
                   <button
-                    onClick={onToggleDarkMode}
+                    onClick={onCycleTheme}
                     className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
                   </button>
 
                   {hasPublicFeeds && role !== 'admin' && (

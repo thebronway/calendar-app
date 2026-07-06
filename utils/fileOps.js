@@ -44,6 +44,14 @@ const readConfig = () => {
   if (fs.existsSync(CONFIG_FILE)) {
     try {
       const fileConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+      
+      // MIGRATION: v1.1.1 Split Theme Accent
+      if (fileConfig.themeAccent && !fileConfig.themeAccentLight) {
+        fileConfig.themeAccentLight = fileConfig.themeAccent;
+        fileConfig.themeAccentDark = fileConfig.themeAccent;
+        delete fileConfig.themeAccent;
+      }
+      
       finalConfig = { ...finalConfig, ...fileConfig };
     } catch (e) {
       logError('Config read', e);

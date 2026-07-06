@@ -15,7 +15,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
   const shortcuts = [
     { keys: ['←', '→'], description: 'Navigate to the previous / next year or day' },
     { keys: ['Esc'], description: 'Close any open modal or viewer' },
-    { keys: ['D'], description: 'Toggle Dark / Light Mode' },
+    { keys: ['T'], description: 'Cycle Theme Modes' },
     { keys: ['V'], description: 'Rotate between Year, Planner, and List views' },
     { keys: ['Y', 'P', 'L', 'M'], description: 'Jump to Year, Planner, List, or current Month view' },
     { keys: ['A'], description: 'Authenticate (Log in)' },

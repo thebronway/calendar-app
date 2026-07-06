@@ -29,7 +29,13 @@ export interface AppConfig {
   ldapViewGroup?: string;
   themeBgLight?: string;
   themeBgDark?: string;
-  themeAccent?: string;
+  themeAccentLight?: string;
+  themeAccentDark?: string;
+  customBg?: string;
+  customPanelBg?: string;
+  customTextPrimary?: string;
+  customAccent?: string;
+  customAccentText?: string;
   gaId?: string;
   umamiId?: string;
   umamiUrl?: string;

@@ -19,7 +19,7 @@ interface UseKeyboardShortcutsParams {
   handlePrevNav: () => void;
   handleNextNav: () => void;
   onToggleBulkEdit: () => void;
-  onToggleDarkMode: () => void;
+  onCycleTheme: () => void;
   onViewToggle: (view: 'year' | 'planner' | 'list') => void;
   onGoToGuide: () => void;
   onLogout: () => void;
@@ -47,7 +47,7 @@ export function useKeyboardShortcuts({
   handlePrevNav,
   handleNextNav,
   onToggleBulkEdit,
-  onToggleDarkMode,
+  onCycleTheme,
   onViewToggle,
   onGoToGuide,
   onLogout,
@@ -102,7 +102,7 @@ export function useKeyboardShortcuts({
           matched = true; 
         }
         if (key === 'h') { setShowHelpModal(true); matched = true; }
-        if (key === 'd') { onToggleDarkMode(); matched = true; }
+        if (key === 't') { onCycleTheme(); matched = true; }
         if (key === 'y') { onViewToggle('year'); matched = true; }
         if (key === 'p') { onViewToggle('planner'); matched = true; }
         if (key === 'l') { onViewToggle('list'); matched = true; }
@@ -130,7 +130,7 @@ export function useKeyboardShortcuts({
   }, [
     activeCell, showSettingsModal, showKeyModal, showFeedsModal, showHelpModal, showAccessModal, showWelcome,
     setActiveCell, setShowSettingsModal, setShowKeyModal, setShowFeedsModal, setShowHelpModal, setShowAccessModal, onCloseWelcome,
-    handlePrevNav, handleNextNav, onToggleBulkEdit, onToggleDarkMode, onViewToggle, onGoToGuide, onLogout,
+    handlePrevNav, handleNextNav, onToggleBulkEdit, onCycleTheme, onViewToggle, onGoToGuide, onLogout,
     routeView, year, navigate, role
   ]);
 }

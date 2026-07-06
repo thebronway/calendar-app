@@ -30,7 +30,7 @@ import packageInfo from '../package.json';
 import { useCalendarData } from './hooks/useCalendarData';
 import { useCalendarStats } from './hooks/useCalendarStats';
 import { useConfig } from './hooks/useConfig';
-import { useDarkMode } from './hooks/useDarkMode';
+import { useTheme } from './hooks/useTheme';
 import { useHighlightFilters } from './hooks/useHighlightFilters';
 import { useCustomRoute } from './hooks/useCustomRoute';
 import { useFilteredData } from './hooks/useFilteredData';
@@ -65,8 +65,8 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const welcomeShownRef = useRef(false);
 
-  // --- Hooks ---
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
+ // --- Hooks ---
+  const { themeMode, cycleTheme } = useTheme();
 
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
     role,
@@ -355,7 +355,7 @@ export default function App() {
     handlePrevNav,
     handleNextNav,
     onToggleBulkEdit: toggleBulkEdit,
-    onToggleDarkMode: toggleDarkMode,
+    onCycleTheme: cycleTheme,
     onViewToggle: (view) => navigate(`/${year}/${view}${window.location.search}`),
     onGoToGuide: () => navigate('/guide'),
     onLogout: handleLogout,
@@ -439,14 +439,19 @@ export default function App() {
       <>
         <style>
           {`
-            :root {
-              --theme-bg: ${config.themeBgLight || '#e5e7eb'};
-              --theme-accent: ${config.themeAccent || '#3b82f6'};
-            }
-            .dark {
-              --theme-bg: ${config.themeBgDark || '#111827'};
-            }
-          `}
+          :root {
+            --theme-bg: ${config.themeBgLight || '#e5e7eb'};
+            --theme-accent: ${config.themeAccentLight || '#3b82f6'};
+          }
+          .dark {
+            --theme-bg: ${config.themeBgDark || '#111827'};
+            --theme-accent: ${config.themeAccentDark || '#3b82f6'};
+          }
+          .custom-theme {
+            --theme-bg: ${config.customBg || '#111827'};
+            --theme-accent: ${config.customAccent || '#3b82f6'};
+          }
+        `}
         </style>
         <LoginScreen 
           config={config} 
@@ -470,10 +475,15 @@ export default function App() {
         {`
           :root {
             --theme-bg: ${config.themeBgLight || '#e5e7eb'};
-            --theme-accent: ${config.themeAccent || '#3b82f6'};
+            --theme-accent: ${config.themeAccentLight || '#3b82f6'};
           }
           .dark {
             --theme-bg: ${config.themeBgDark || '#111827'};
+            --theme-accent: ${config.themeAccentDark || '#3b82f6'};
+          }
+          .custom-theme {
+            --theme-bg: ${config.customBg || '#111827'};
+            --theme-accent: ${config.customAccent || '#3b82f6'};
           }
         `}
       </style>
@@ -485,7 +495,7 @@ export default function App() {
           year={year}
           config={config}
           role={role}
-          isDarkMode={isDarkMode}
+          themeMode={themeMode}
           isSaving={isSaving}
           lastUpdatedText={lastUpdatedText}
           hasFilters={isCustomView}
@@ -495,7 +505,7 @@ export default function App() {
           onViewToggle={(view) => navigate(`/${year}/${view}${window.location.search}`)}
           onYearPrev={handlePrevNav}
           onYearNext={handleNextNav}
-          onToggleDarkMode={toggleDarkMode}
+          onCycleTheme={cycleTheme}
           onOpenFeeds={() => setShowFeedsModal(true)}
           onOpenHelp={() => setShowHelpModal(true)}
           onLogout={handleLogout}

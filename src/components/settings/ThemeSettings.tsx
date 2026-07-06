@@ -1,5 +1,5 @@
-import React from 'react';
-import { Palette, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Palette, RotateCcw, Sun, Moon } from 'lucide-react';
 import type { AppConfig } from '../../types';
 
 interface ThemeSettingsProps {
@@ -7,11 +7,36 @@ interface ThemeSettingsProps {
   onConfigChange: <K extends keyof AppConfig>(field: K, value: AppConfig[K]) => void;
 }
 
+const ColorInput = ({ label, description, value, field, onConfigChange }: { label: string, description: string, value: string, field: keyof AppConfig, onConfigChange: <K extends keyof AppConfig>(field: K, value: AppConfig[K]) => void }) => (
+  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex items-center justify-between">
+    <div>
+      <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">{label}</span>
+      <span className="block text-xs text-gray-500 mt-0.5">{description}</span>
+    </div>
+    <input 
+      type="color" 
+      value={value} 
+      onChange={(e) => onConfigChange(field, e.target.value)}
+      className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0"
+    />
+  </div>
+);
+
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange }) => {
+  const [activeTab, setActiveTab] = useState<'light' | 'dark' | 'custom'>('light');
+
   const handleReset = () => {
-    onConfigChange('themeBgLight', '#e5e7eb'); // gray-200
-    onConfigChange('themeBgDark', '#111827'); // gray-900
-    onConfigChange('themeAccent', '#3b82f6'); // blue-500
+    if (activeTab === 'light') {
+      onConfigChange('themeBgLight', '#e5e7eb');
+      onConfigChange('themeAccentLight', '#3b82f6');
+    } else if (activeTab === 'dark') {
+      onConfigChange('themeBgDark', '#111827');
+      onConfigChange('themeAccentDark', '#3b82f6');
+    } else if (activeTab === 'custom') {
+      // Roadmap spec: Use dark mode values as restore to default for custom
+      onConfigChange('customBg', '#111827');
+      onConfigChange('customAccent', '#3b82f6');
+    }
   };
 
   return (
@@ -24,55 +49,62 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
           onClick={handleReset}
           className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
         >
-          <RotateCcw size={14} /> Reset Defaults
+          <RotateCcw size={14} /> Reset {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Defaults
         </button>
       </div>
       
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Personalize the look of your calendar. Changes will be visible immediately upon saving.
+        Personalize the look of your calendar modes independently. Changes will be visible immediately upon saving.
       </p>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex items-center justify-between">
-            <div>
-              <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">Light Background</span>
-              <span className="block text-xs text-gray-500 mt-0.5">The main app background.</span>
-            </div>
-            <input 
-              type="color" 
-              value={config.themeBgLight || '#e5e7eb'} 
-              onChange={(e) => onConfigChange('themeBgLight', e.target.value)}
-              className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0"
-            />
-          </div>
+      {/* Tabs */}
+      <div className="flex mb-6 border-b dark:border-gray-700">
+        <button
+          onClick={() => setActiveTab('light')}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'light' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+        >
+          <Sun size={16} /> Light
+        </button>
+        <button
+          onClick={() => setActiveTab('dark')}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'dark' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+        >
+          <Moon size={16} /> Dark
+        </button>
+        <button
+          onClick={() => setActiveTab('custom')}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'custom' ? 'border-pink-500 text-pink-600 dark:text-pink-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+        >
+          <Palette size={16} /> Custom
+        </button>
+      </div>
 
-          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex items-center justify-between">
-            <div>
-              <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">Dark Background</span>
-              <span className="block text-xs text-gray-500 mt-0.5">App background in dark mode.</span>
-            </div>
-            <input 
-              type="color" 
-              value={config.themeBgDark || '#111827'} 
-              onChange={(e) => onConfigChange('themeBgDark', e.target.value)}
-              className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0"
-            />
-          </div>
-        </div>
+      <div className="space-y-4">
+        {activeTab === 'light' && (
+          <>
+            <ColorInput label="Background" description="The main app background." value={config.themeBgLight || '#e5e7eb'} field="themeBgLight" onConfigChange={onConfigChange} />
+            <ColorInput label="Accent Color" description="Used for buttons, highlights, and icons." value={config.themeAccentLight || '#3b82f6'} field="themeAccentLight" onConfigChange={onConfigChange} />
+          </>
+        )}
 
-        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex items-center justify-between">
-          <div>
-            <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">Accent Color</span>
-            <span className="block text-xs text-gray-500 mt-0.5">Used for buttons, highlights, and icons.</span>
+        {activeTab === 'dark' && (
+          <>
+            <ColorInput label="Background" description="The main app background." value={config.themeBgDark || '#111827'} field="themeBgDark" onConfigChange={onConfigChange} />
+            <ColorInput label="Accent Color" description="Used for buttons, highlights, and icons." value={config.themeAccentDark || '#3b82f6'} field="themeAccentDark" onConfigChange={onConfigChange} />
+          </>
+        )}
+
+        {activeTab === 'custom' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ColorInput label="Main Background" description="Overarching canvas." value={config.customBg || '#111827'} field="customBg" onConfigChange={onConfigChange} />
+            <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#1f2937'} field="customPanelBg" onConfigChange={onConfigChange} />
+            <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#f3f4f6'} field="customTextPrimary" onConfigChange={onConfigChange} />
+            <ColorInput label="Accent Contrast Text" description="Text sitting on top of the accent." value={config.customAccentText || '#ffffff'} field="customAccentText" onConfigChange={onConfigChange} />
+            <div className="col-span-1 sm:col-span-2">
+              <ColorInput label="Primary Accent" description="Highlight rings and buttons." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
+            </div>
           </div>
-          <input 
-            type="color" 
-            value={config.themeAccent || '#3b82f6'} 
-            onChange={(e) => onConfigChange('themeAccent', e.target.value)}
-            className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0"
-          />
-        </div>
+        )}
       </div>
     </div>
   );

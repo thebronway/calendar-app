@@ -78,7 +78,7 @@ const StatsSection: React.FC<StatsSectionProps> = ({
                   style={
                     highlightFilters.locations.includes(loc) 
                       ? { backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' } 
-                      : { backgroundColor: `${config.themeAccent || '#3b82f6'}26`, color: config.themeAccent || '#3b82f6' }
+                      : { backgroundColor: `${config.themeAccentLight || '#3b82f6'}26`, color: config.themeAccentLight || '#3b82f6' }
                   }
                 >
                   {count}
