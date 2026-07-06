@@ -23,21 +23,34 @@ const ThemeStyleInjector: React.FC<ThemeStyleInjectorProps> = ({ config }) => {
       {`
         :root {
           --theme-bg: ${config.themeBgLight || '#e5e7eb'};
+          --theme-panel-bg: #ffffff;
+          --theme-text-primary: #111827;
+          --theme-text-secondary: #6b7280;
           --theme-accent-rgb: ${hexToRgbString(config.themeAccentLight || '#3b82f6')};
           --theme-accent-secondary-rgb: ${hexToRgbString(config.themeAccentSecondaryLight || '#8b5cf6')};
+          --theme-item-bg: #f3f4f6;
+          --theme-item-hover: #e5e7eb;
         }
         .dark {
           --theme-bg: ${config.themeBgDark || '#111827'};
+          --theme-panel-bg: #1f2937;
+          --theme-text-primary: #f3f4f6;
+          --theme-text-secondary: #9ca3af;
           --theme-accent-rgb: ${hexToRgbString(config.themeAccentDark || '#3b82f6')};
           --theme-accent-secondary-rgb: ${hexToRgbString(config.themeAccentSecondaryDark || '#8b5cf6')};
+          --theme-item-bg: #2b3544;
+          --theme-item-hover: #374151;
         }
         .custom-theme {
           --theme-bg: ${config.customBg || '#111827'};
           --theme-panel-bg: ${config.customPanelBg || '#1f2937'};
           --theme-text-primary: ${config.customTextPrimary || '#f3f4f6'};
+          --theme-text-secondary: ${config.customTextSecondary || '#9ca3af'};
           --theme-accent-rgb: ${hexToRgbString(config.customAccent || '#3b82f6')};
           --theme-accent-text: ${config.customAccentText || '#ffffff'};
           --theme-accent-secondary-rgb: ${hexToRgbString(config.customAccentSecondary || '#8b5cf6')};
+          --theme-item-bg: ${config.customItemBg || '#374151'};
+          --theme-item-hover: ${config.customItemHoverBg || '#4b5563'};
         }
       `}
     </style>

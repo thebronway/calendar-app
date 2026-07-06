@@ -38,6 +38,9 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
       onConfigChange('customBg', '#111827');
       onConfigChange('customAccent', '#3b82f6');
       onConfigChange('customAccentSecondary', '#8b5cf6');
+      onConfigChange('customItemBg', '#374151');
+      onConfigChange('customItemHoverBg', '#4b5563');
+      onConfigChange('customTextSecondary', '#9ca3af');
     }
   };
 
@@ -103,9 +106,12 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
             <ColorInput label="Main Background" description="Overarching canvas." value={config.customBg || '#111827'} field="customBg" onConfigChange={onConfigChange} />
             <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#1f2937'} field="customPanelBg" onConfigChange={onConfigChange} />
             <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#f3f4f6'} field="customTextPrimary" onConfigChange={onConfigChange} />
+            <ColorInput label="Secondary Text" description="Subheadings and less prominent text." value={config.customTextSecondary || '#9ca3af'} field="customTextSecondary" onConfigChange={onConfigChange} />
             <ColorInput label="Accent Contrast Text" description="Text sitting on top of the accent." value={config.customAccentText || '#ffffff'} field="customAccentText" onConfigChange={onConfigChange} />
             <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
             <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.customAccentSecondary || '#8b5cf6'} field="customAccentSecondary" onConfigChange={onConfigChange} />
+            <ColorInput label="Item Background" description="Category and activity buttons." value={config.customItemBg || '#374151'} field="customItemBg" onConfigChange={onConfigChange} />
+            <ColorInput label="Item Hover" description="Hover state for items/buttons." value={config.customItemHoverBg || '#4b5563'} field="customItemHoverBg" onConfigChange={onConfigChange} />
           </div>
         )}
       </div>

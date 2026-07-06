@@ -39,6 +39,9 @@ export interface AppConfig {
   customAccent?: string;
   customAccentText?: string;
   customAccentSecondary?: string;
+  customItemBg?: string;
+  customItemHoverBg?: string;
+  customTextSecondary?: string;
   gaId?: string;
   umamiId?: string;
   umamiUrl?: string;

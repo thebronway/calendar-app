@@ -50,12 +50,12 @@ const KeySection: React.FC<KeySectionProps> = ({
     highlightFilters.locations.length > 0 || hasKeyFilters;
 
   return (
-    <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
+    <section className="bg-theme-panel p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
       <div
         className="flex justify-between items-center mb-4 cursor-pointer select-none"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Key</h2>
+        <h2 className="text-2xl font-bold text-theme-text">Key</h2>
         <div className="flex items-center gap-3">
           {hasActiveFilters && (
             <div className="flex items-center gap-2 sm:gap-3">
@@ -104,7 +104,7 @@ const KeySection: React.FC<KeySectionProps> = ({
       <div className={`${isExpanded ? 'block' : 'hidden'} space-y-6`}>
         {/* Categories */}
         <div>
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-bold text-theme-text-secondary uppercase tracking-wider mb-2">
             Categories
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -118,14 +118,14 @@ const KeySection: React.FC<KeySectionProps> = ({
                 <div
                   key={item.id}
                   onClick={() => onCategoryFilterToggle(item.id)}
-                  className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer bg-theme-item hover:bg-theme-item-hover ${
                     isSelected ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
                   <div
                     className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}
                   />
-                  <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">
+                  <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base text-theme-text">
                     {item.label}
                   </span>
                   {showStats && item.showCount && (
@@ -143,7 +143,7 @@ const KeySection: React.FC<KeySectionProps> = ({
 
         {/* Activities */}
         <div>
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-bold text-theme-text-secondary uppercase tracking-wider mb-2">
             Activities
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -154,20 +154,20 @@ const KeySection: React.FC<KeySectionProps> = ({
               );
               const dispColor =
                 !item.iconColor || item.iconColor === 'none'
-                  ? 'text-gray-900 dark:text-gray-100'
+                  ? 'text-theme-text'
                   : item.iconColor;
               return (
                 <div
                   key={item.id}
                   onClick={() => onIconFilterToggle(item)}
-                  className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  className={`flex items-center p-2 rounded-lg space-x-2 border dark:border-gray-600 cursor-pointer bg-theme-item hover:bg-theme-item-hover ${
                     isSelected ? 'ring-2 ring-blue-500' : ''
                   }`}
                 >
                   <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-500 flex-shrink-0">
                     {IconC && <IconC size={20} className={dispColor} />}
                   </div>
-                  <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base">
+                  <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base text-theme-text">
                     {item.label}
                   </span>
                   {item.showCount && (

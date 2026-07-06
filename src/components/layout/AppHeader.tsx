@@ -83,12 +83,12 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   const HeaderIcon = ICON_MAP[config.headerIcon || 'CalendarDays'];
 
   return (
-    <header className="mb-8 border-b dark:border-gray-700 pb-4">
+    <header className="mb-8 border-b border-gray-300 dark:border-gray-700 pb-4">
       <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start">
         
         {/* LEFT COLUMN: Title & Last Updated */}
         <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
-          <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center text-center sm:text-left">
+          <h1 className="text-2xl sm:text-4xl font-extrabold flex items-center text-center sm:text-left text-theme-text">
             {HeaderIcon && (
               <HeaderIcon size={36} className="mr-3 text-theme-accent hidden sm:block" />
             )}
@@ -96,7 +96,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           </h1>
 
           {routeView !== 'guide' && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 sm:mt-3 flex items-center justify-center sm:justify-start">
+            <p className="text-sm text-theme-text-secondary mt-2 sm:mt-3 flex items-center justify-center sm:justify-start">
               <span className="mr-2">Last updated:</span>
               <span className="font-semibold">{lastUpdatedText}</span>
               {isSaving && (
@@ -114,23 +114,23 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => onViewToggle('year')}
-                className="h-10 px-4 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-bold text-sm"
+                className="h-10 px-4 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors font-bold text-sm"
               >
                 <ChevronLeft size={16} className="mr-1" /> Back to Calendar
               </button>
               <button
                 onClick={onCycleTheme}
-                className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
               >
-                {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
+                {themeMode === 'dark' ? <Moon size={20} className="text-blue-400" /> : themeMode === 'custom' ? <Palette size={20} className="text-pink-500" /> : <Sun size={20} className="text-yellow-500" />}
               </button>
             </div>
           ) : (
             <>
               {/* LINE 1 CONTROLS */}
               <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3 sm:gap-4">
-                <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                  <button onClick={onYearPrev} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-theme-accent" title="Previous Year">
+                <div className="flex items-center space-x-2 bg-theme-item text-theme-text p-2 rounded-lg">
+                  <button onClick={onYearPrev} className="p-1 hover:bg-theme-item-hover rounded text-theme-accent" title="Previous Year">
                     <ChevronLeft size={20} />
                   </button>
                   <span className="font-semibold whitespace-nowrap">
@@ -158,30 +158,30 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       );
                     })()}
                   </span>
-                  <button onClick={onYearNext} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-theme-accent-secondary" title="Next Year">
+                  <button onClick={onYearNext} className="p-1 hover:bg-theme-item-hover rounded text-theme-accent" title="Next Year">
                     <ChevronRight size={20} />
                   </button>
                 </div>
 
                 {(!routeView || routeView === 'year' || routeView === 'planner' || routeView === 'list') && (
-                  <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg items-center shadow-inner">
+                  <div className="flex bg-theme-item p-1 rounded-lg items-center shadow-inner">
                     <button
                       onClick={() => onViewToggle('year')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
                     >
                       <span className="hidden sm:inline">Year</span>
                       <span className="sm:hidden">Yr</span>
                     </button>
                     <button
                       onClick={() => onViewToggle('planner')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
                     >
                       <span className="hidden sm:inline">Planner</span>
                       <span className="sm:hidden">Plan</span>
                     </button>
                     <button
                       onClick={() => onViewToggle('list')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'list' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'list' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
                     >
                       <span className="hidden sm:inline">List</span>
                       <span className="sm:hidden">List</span>
@@ -192,7 +192,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 {hasFilters && (
                   <button
                     onClick={onClearFilters} 
-                    className="px-3 h-10 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 rounded-lg text-sm font-bold hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors flex items-center justify-center"
+                    className="px-3 h-10 bg-theme-item hover:bg-theme-item-hover text-theme-accent rounded-lg text-sm font-bold transition-colors flex items-center justify-center"
                   >
                     <span className="hidden sm:inline">Clear Filters</span>
                     <span className="sm:hidden">Clear</span>
@@ -203,7 +203,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 <div className="hidden sm:flex items-center gap-3">
                   <button
                     onClick={onOpenHelp}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                     title="Help & Shortcuts"
                   >
                     <HelpCircle size={20} />
@@ -212,7 +212,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role === 'admin' && (
                     <button
                       onClick={onGoToGuide}
-                      className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                       title="User Guide"
                     >
                       <BookOpen size={20} />
@@ -221,9 +221,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
                   <button
                     onClick={onCycleTheme}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                   >
-                    {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
+                    {themeMode === 'dark' ? <Moon size={20} className="text-blue-400" /> : themeMode === 'custom' ? <Palette size={20} className="text-pink-500" /> : <Sun size={20} className="text-yellow-500" />}
                   </button>
 
                   {hasPublicFeeds && role !== 'admin' && (
@@ -238,7 +238,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className="h-10 w-10 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors shadow-sm border ${
+                        themeMode === 'custom'
+                          ? 'bg-theme-panel border-theme-item text-theme-text hover:bg-theme-item-hover'
+                          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
                       title="Logout"
                     >
                       <LogOut size={20} />
@@ -262,7 +266,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 <div className="flex sm:hidden items-center gap-3">
                   <button
                     onClick={onOpenHelp}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                     title="Help & Shortcuts"
                   >
                     <HelpCircle size={20} />
@@ -271,7 +275,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role === 'admin' && (
                     <button
                       onClick={onGoToGuide}
-                      className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                       title="User Guide"
                     >
                       <BookOpen size={20} />
@@ -280,9 +284,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
                   <button
                     onClick={onCycleTheme}
-                    className="h-10 w-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="h-10 w-10 flex items-center justify-center bg-theme-item text-theme-text rounded-lg hover:bg-theme-item-hover transition-colors"
                   >
-                    {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'custom' ? <Palette size={20} /> : <Sun size={20} />}
+                    {themeMode === 'dark' ? <Moon size={20} className="text-blue-400" /> : themeMode === 'custom' ? <Palette size={20} className="text-pink-500" /> : <Sun size={20} className="text-yellow-500" />}
                   </button>
 
                   {hasPublicFeeds && role !== 'admin' && (
@@ -297,7 +301,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className="h-10 w-10 flex items-center justify-center bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors shadow-sm border ${
+                        themeMode === 'custom'
+                          ? 'bg-theme-panel border-theme-item text-theme-text hover:bg-theme-item-hover'
+                          : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
                       title="Logout"
                     >
                       <LogOut size={20} />

@@ -14,6 +14,9 @@ module.exports = {
         'theme-accent': 'rgb(var(--theme-accent-rgb) / <alpha-value>)',
         'theme-accent-text': 'var(--theme-accent-text)',
         'theme-accent-secondary': 'rgb(var(--theme-accent-secondary-rgb) / <alpha-value>)',
+        'theme-item': 'var(--theme-item-bg)',
+        'theme-item-hover': 'var(--theme-item-hover)',
+        'theme-text-secondary': 'var(--theme-text-secondary)',
       }
     },
   },

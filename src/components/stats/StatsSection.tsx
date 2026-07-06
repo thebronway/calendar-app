@@ -33,9 +33,9 @@ const StatsSection: React.FC<StatsSectionProps> = ({
   }, [config.collapseStatsMobile, config.collapseStatsDesktop]);
 
   return (
-    <section className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
+    <section className="bg-theme-panel p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
       <h2
-        className="text-2xl font-bold mb-4 cursor-pointer flex justify-between select-none"
+        className="text-2xl font-bold text-theme-text mb-4 cursor-pointer flex justify-between select-none"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {year} Stats{' '}
@@ -46,20 +46,20 @@ const StatsSection: React.FC<StatsSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-4 bg-theme-accent/5 dark:bg-theme-accent/10 rounded-lg border border-theme-accent/30 dark:border-theme-accent/30">
             <p className="text-sm text-theme-accent font-semibold">Days Traveling</p>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">
+            <p className="text-3xl font-extrabold text-theme-text mt-1">
               {stats.totalHighlighted} days
             </p>
           </div>
           <div className="p-4 bg-theme-accent-secondary/5 dark:bg-theme-accent-secondary/10 rounded-lg border border-theme-accent-secondary/30 dark:border-theme-accent-secondary/30">
             <p className="text-sm text-theme-accent-secondary font-semibold">Time Traveling</p>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">
+            <p className="text-3xl font-extrabold text-theme-text mt-1">
               {stats.totalDays > 0 ? Math.round((stats.totalHighlighted / stats.totalDays) * 100) : 0}%
             </p>
           </div>
         </div>
 
         <div className="mt-6 pt-4 border-t dark:border-gray-700">
-          <h3 className="text-lg font-semibold mb-3">Location Counts</h3>
+          <h3 className="text-xs font-bold text-theme-text-secondary uppercase tracking-wider mb-3">Location Counts</h3>
           <div className="flex flex-wrap gap-2">
             {locationCounts.map(([loc, count]) => (
               <button
@@ -68,11 +68,11 @@ const StatsSection: React.FC<StatsSectionProps> = ({
                 onClick={() => onLocationFilterToggle(loc)}
                 className={`px-3 py-1 rounded-lg flex items-center space-x-2 transition-all border ${
                   highlightFilters.locations.includes(loc)
-                    ? 'bg-theme-accent text-white border-transparent shadow-lg'
-                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
+                    ? 'bg-theme-accent text-theme-accent-text border-transparent shadow-lg'
+                    : 'bg-theme-item hover:bg-theme-item-hover border-gray-200 dark:border-gray-700'
                 }`}
               >
-                <span className="font-medium dark:text-gray-200">{loc}</span>
+                <span className="font-medium text-theme-text">{loc}</span>
                 <span 
                   className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold transition-colors"
                   style={
