@@ -11,8 +11,9 @@ module.exports = {
         'theme-base': 'var(--theme-bg)',
         'theme-panel': 'var(--theme-panel-bg)',
         'theme-text': 'var(--theme-text-primary)',
-        'theme-accent': 'var(--theme-accent)',
+        'theme-accent': 'rgb(var(--theme-accent-rgb) / <alpha-value>)',
         'theme-accent-text': 'var(--theme-accent-text)',
+        'theme-accent-secondary': 'rgb(var(--theme-accent-secondary-rgb) / <alpha-value>)',
       }
     },
   },

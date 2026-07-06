@@ -130,7 +130,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               {/* LINE 1 CONTROLS */}
               <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3 sm:gap-4">
                 <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-                  <button onClick={onYearPrev} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+                  <button onClick={onYearPrev} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-theme-accent" title="Previous Year">
                     <ChevronLeft size={20} />
                   </button>
                   <span className="font-semibold whitespace-nowrap">
@@ -158,7 +158,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                       );
                     })()}
                   </span>
-                  <button onClick={onYearNext} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+                  <button onClick={onYearNext} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-theme-accent-secondary" title="Next Year">
                     <ChevronRight size={20} />
                   </button>
                 </div>
@@ -167,21 +167,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg items-center shadow-inner">
                     <button
                       onClick={() => onViewToggle('year')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
                     >
                       <span className="hidden sm:inline">Year</span>
                       <span className="sm:hidden">Yr</span>
                     </button>
                     <button
                       onClick={() => onViewToggle('planner')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
                     >
                       <span className="hidden sm:inline">Planner</span>
                       <span className="sm:hidden">Plan</span>
                     </button>
                     <button
                       onClick={() => onViewToggle('list')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'list' ? 'bg-theme-accent text-theme-accent-text shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
                     >
                       <span className="hidden sm:inline">List</span>
                       <span className="sm:hidden">List</span>

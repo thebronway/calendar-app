@@ -44,15 +44,15 @@ const StatsSection: React.FC<StatsSectionProps> = ({
 
       <div className={`${isExpanded ? 'block' : 'hidden'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-600 dark:text-blue-300 font-semibold">Days Traveling</p>
-            <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100 mt-1">
+          <div className="p-4 bg-theme-accent/5 dark:bg-theme-accent/10 rounded-lg border border-theme-accent/30 dark:border-theme-accent/30">
+            <p className="text-sm text-theme-accent font-semibold">Days Traveling</p>
+            <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">
               {stats.totalHighlighted} days
             </p>
           </div>
-          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-            <p className="text-sm text-purple-600 dark:text-purple-300 font-semibold">Time Traveling</p>
-            <p className="text-3xl font-extrabold text-purple-900 dark:text-purple-100 mt-1">
+          <div className="p-4 bg-theme-accent-secondary/5 dark:bg-theme-accent-secondary/10 rounded-lg border border-theme-accent-secondary/30 dark:border-theme-accent-secondary/30">
+            <p className="text-sm text-theme-accent-secondary font-semibold">Time Traveling</p>
+            <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mt-1">
               {stats.totalDays > 0 ? Math.round((stats.totalHighlighted / stats.totalDays) * 100) : 0}%
             </p>
           </div>

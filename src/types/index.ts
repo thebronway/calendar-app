@@ -31,11 +31,14 @@ export interface AppConfig {
   themeBgDark?: string;
   themeAccentLight?: string;
   themeAccentDark?: string;
+  themeAccentSecondaryLight?: string;
+  themeAccentSecondaryDark?: string;
   customBg?: string;
   customPanelBg?: string;
   customTextPrimary?: string;
   customAccent?: string;
   customAccentText?: string;
+  customAccentSecondary?: string;
   gaId?: string;
   umamiId?: string;
   umamiUrl?: string;

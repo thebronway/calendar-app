@@ -86,7 +86,7 @@ const MonthView: React.FC<MonthViewProps> = ({
       <td
         key={key}
         onClick={() => onCellClick(key)}
-        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-purple-500 ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
+        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-theme-accent-secondary ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
       >
         <div className={contentClass}>
           <div className="flex flex-col items-center">

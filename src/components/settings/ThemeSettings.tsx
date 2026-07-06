@@ -29,13 +29,15 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
     if (activeTab === 'light') {
       onConfigChange('themeBgLight', '#e5e7eb');
       onConfigChange('themeAccentLight', '#3b82f6');
+      onConfigChange('themeAccentSecondaryLight', '#8b5cf6');
     } else if (activeTab === 'dark') {
       onConfigChange('themeBgDark', '#111827');
       onConfigChange('themeAccentDark', '#3b82f6');
+      onConfigChange('themeAccentSecondaryDark', '#8b5cf6');
     } else if (activeTab === 'custom') {
-      // Roadmap spec: Use dark mode values as restore to default for custom
       onConfigChange('customBg', '#111827');
       onConfigChange('customAccent', '#3b82f6');
+      onConfigChange('customAccentSecondary', '#8b5cf6');
     }
   };
 
@@ -83,14 +85,16 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
         {activeTab === 'light' && (
           <>
             <ColorInput label="Background" description="The main app background." value={config.themeBgLight || '#e5e7eb'} field="themeBgLight" onConfigChange={onConfigChange} />
-            <ColorInput label="Accent Color" description="Used for buttons, highlights, and icons." value={config.themeAccentLight || '#3b82f6'} field="themeAccentLight" onConfigChange={onConfigChange} />
+            <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.themeAccentLight || '#3b82f6'} field="themeAccentLight" onConfigChange={onConfigChange} />
+            <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.themeAccentSecondaryLight || '#8b5cf6'} field="themeAccentSecondaryLight" onConfigChange={onConfigChange} />
           </>
         )}
 
         {activeTab === 'dark' && (
           <>
             <ColorInput label="Background" description="The main app background." value={config.themeBgDark || '#111827'} field="themeBgDark" onConfigChange={onConfigChange} />
-            <ColorInput label="Accent Color" description="Used for buttons, highlights, and icons." value={config.themeAccentDark || '#3b82f6'} field="themeAccentDark" onConfigChange={onConfigChange} />
+            <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.themeAccentDark || '#3b82f6'} field="themeAccentDark" onConfigChange={onConfigChange} />
+            <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.themeAccentSecondaryDark || '#8b5cf6'} field="themeAccentSecondaryDark" onConfigChange={onConfigChange} />
           </>
         )}
 
@@ -100,9 +104,8 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange })
             <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#1f2937'} field="customPanelBg" onConfigChange={onConfigChange} />
             <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#f3f4f6'} field="customTextPrimary" onConfigChange={onConfigChange} />
             <ColorInput label="Accent Contrast Text" description="Text sitting on top of the accent." value={config.customAccentText || '#ffffff'} field="customAccentText" onConfigChange={onConfigChange} />
-            <div className="col-span-1 sm:col-span-2">
-              <ColorInput label="Primary Accent" description="Highlight rings and buttons." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
-            </div>
+            <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
+            <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.customAccentSecondary || '#8b5cf6'} field="customAccentSecondary" onConfigChange={onConfigChange} />
           </div>
         )}
       </div>

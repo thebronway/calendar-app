@@ -24,6 +24,7 @@ import HelpModal from './components/HelpModal';
 import UserGuide from './components/UserGuide';
 import LoginScreen from './components/LoginScreen';
 import WelcomeModal from './components/WelcomeModal';
+import ThemeStyleInjector from './components/ThemeStyleInjector';
 import packageInfo from '../package.json';
 
 // Hooks
@@ -437,23 +438,8 @@ export default function App() {
   if (route.view === 'login') {
     return (
       <>
-        <style>
-          {`
-          :root {
-            --theme-bg: ${config.themeBgLight || '#e5e7eb'};
-            --theme-accent: ${config.themeAccentLight || '#3b82f6'};
-          }
-          .dark {
-            --theme-bg: ${config.themeBgDark || '#111827'};
-            --theme-accent: ${config.themeAccentDark || '#3b82f6'};
-          }
-          .custom-theme {
-            --theme-bg: ${config.customBg || '#111827'};
-            --theme-accent: ${config.customAccent || '#3b82f6'};
-          }
-        `}
-        </style>
-        <LoginScreen 
+        <ThemeStyleInjector config={config} />
+        <LoginScreen
           config={config} 
           onAuthenticate={(r) => { 
             handleAuthenticate(r); 
@@ -471,22 +457,7 @@ export default function App() {
 
   return (
     <>
-      <style>
-        {`
-          :root {
-            --theme-bg: ${config.themeBgLight || '#e5e7eb'};
-            --theme-accent: ${config.themeAccentLight || '#3b82f6'};
-          }
-          .dark {
-            --theme-bg: ${config.themeBgDark || '#111827'};
-            --theme-accent: ${config.themeAccentDark || '#3b82f6'};
-          }
-          .custom-theme {
-            --theme-bg: ${config.customBg || '#111827'};
-            --theme-accent: ${config.customAccent || '#3b82f6'};
-          }
-        `}
-      </style>
+      <ThemeStyleInjector config={config} />
       <MainLayout
         hasBottomNav={role === 'admin' && !isBulkEditMode && route.view !== 'guide'}
       bannerHtml={config.bannerHtml}

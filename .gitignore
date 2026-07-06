@@ -5,6 +5,7 @@ npm-debug.log*
 # Build Output
 client/build
 dist
+package-lock.json
 
 # Environment Variables
 .env

@@ -49,9 +49,9 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
 
   return (
     <div className="mt-4">
-      <div className="rounded-xl border border-gray-300 dark:border-gray-700 overflow-hidden mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
         {/* FULL WIDTH HEADER */}
-        <div className="bg-gray-100 dark:bg-gray-900 px-6 py-3 border-b border-gray-300 dark:border-gray-700 flex justify-between items-center">
+        <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
             {monthName} {year}
           </h3>
@@ -102,10 +102,10 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                   <div
                     key={day.key}
                     onClick={() => onCellClick(day.key)}
-                    className="break-inside-avoid bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden mb-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="break-inside-avoid bg-gray-50 dark:bg-gray-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
                   >
                     <div className="flex px-4 py-3 gap-4">
-                      <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-gray-50 dark:bg-gray-900 border dark:border-gray-700 h-fit">
+                      <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center p-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 h-fit shadow-sm">
                         <span className="text-[10px] font-bold text-gray-500 uppercase">
                           {dayOfWeek}
                         </span>
