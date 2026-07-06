@@ -21,9 +21,18 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
 ### Release v1.1.5: Theming Updates
+- Modals are inconsistent
+  - Key modal (and other admin modals) are dark on header, light on footer. where edit day is light on header and dark on footer. ideas on a scheme
+  - Edit day modal also needs background on all labels (like a category or activity) Like Key/stats section 
+    - Location bubble on edit day should match location bubbles on stats
+- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md
 
-### Release v1.1.6: Category Updates
-- New Flat deafult colors + Color picker for customization 
+### Release v1.1.6: UI Updates
+- New flat deafult colors + Color picker for customization 
+  - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
+  - Ideas for having up to 2 categories on one day? (Like work in the am / vacation in the pm)
+- Key Modal should go under settings, users wont be udating their key often (updat help modal, userguide, welcome modal)
+- Add git open issue to readme, userguide and help modal
 
 ### Release v1.1.7: Multi-Year iCal Sync Engine
 - **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
@@ -37,18 +46,18 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - **Diff Engine:** Intercept `POST /api/data/:year` requests to compute a baseline structural difference, checking if a new entry or activity update occurred to avoid notification spam on simple spelling corrections.
 - **Payload Dispatcher:** Asynchronously fire out a standardized JSON POST body payload containing text templates summarizing the modification out to all active webhook endpoints.
 
-### Release v1.1.9: Enterprise Single Sign-On (SSO / OIDC)
+### Release v1.2.0: Enterprise Single Sign-On (SSO / OIDC)
 - **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).
 - **Automated Frontend Handshake Redirection:** Implement automatic visitor forwarding straight to the configured external single sign-on screen upon landing on the root path.
 - **Bypass Redirection Backdoor:** Restrict automatic token redirection loops exclusively to the root path (`/`), allowing direct browser navigation to `/login` to bypass the loop for local master emergency access.
 
-### Release v1.2.0: API Keys & REST API
+### Release v1.2.1: API Keys & REST API
 - **Goal:** Allow external automation setups (e.g., Home Assistant, n8n, Node-RED) to programmatically log categories or activities onto the calendar without utilizing the frontend UI.
 - **Token Profiles:** Extend the database schema inside `access.json` and the `AccessControlModal.tsx` interface to support generating long-lived, cryptographically secure API tokens distinct from traditional view passwords.
 - **Ingestion Route:** Create a protected REST API endpoint under `POST /api/external/log` requiring authentication passing via standard `Authorization: Bearer <token>` header rules.
 - **Sync Synchronization:** Parse incoming JSON payloads containing mandatory parameters for target date strings (`YYYY-MM-DD`), optional `categoryId` tags, locations, and `activityIds`, merging updates straight to `YYYY_data.json` while instantly triggering frontend UI updates via the server `broadcastUpdate` WebSocket hook.
 
-### Release v1.2.1: PTO & Vacation Tracker Dashboard
+### Release v1.2.5: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**
   - Introduce a new backend data store file `data/pto_config.json` managed exclusively by the admin credential tier to store the global bank definitions.
   - Define each PTO Bank entry structure with fields: `id` (UUID string), `name` (string, e.g., "Vacation"), `startingBalance` (number in hours), `accrualRate` (number in hours), `accrualFrequency` (enum: `'none'`, `'weekly'`, `'biweekly'`, `'monthly'`, `'annually'`), and `startDate` (ISO string date template).
@@ -74,13 +83,13 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.2.2
+### Release v1.2.6
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
   - Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals. For Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v1.2.3
+### Release v1.2.7
 - Standardize and cleanup comments, remove dead code, and clean up inline styles while splitting components. 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
@@ -90,7 +99,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Accessibility Improvements
   - Add ARIA labels to icon-only buttons, trap focus inside modals.
 
-### Release v1.2.4
+### Release v1.2.8
 - Establishing test suite of professional-grade foundation for long-term maintenance.
   - Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering which should prevent regressions during major refactors.
 - Package Updates - how to maintain
