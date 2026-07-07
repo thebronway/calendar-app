@@ -149,9 +149,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     return (
       <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
-          <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 shrink-0">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+        <div className={`bg-theme-panel text-theme-text border border-theme-item rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
+          <div className="flex justify-between items-center p-6 border-b border-theme-item bg-theme-item shrink-0">
+            <h3 className="text-xl font-bold">
               {isBulkEdit ? (
                 `Bulk Edit (${bulkCount} Days)`
               ) : (
@@ -160,17 +160,17 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 </>
               )}
             </h3>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <button onClick={handleClose} className="text-theme-text-secondary hover:text-theme-text transition-colors">
               <X size={24} />
             </button>
           </div>
 
           {isAdmin && (
-            <div className="flex md:hidden justify-around bg-gray-100 dark:bg-gray-900 p-2 border-b dark:border-gray-700 shrink-0">
+            <div className="flex md:hidden justify-around bg-theme-base p-2 border-b border-theme-item shrink-0">
               {tabs.map((tab) => {
                 const activeClass = activeTab === tab.id 
-                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow' 
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800';
+                  ? 'bg-theme-panel text-theme-accent shadow-sm' 
+                  : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover';
 
                 return (
                   <button
@@ -196,16 +196,16 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             )}
             {!isAdmin ? (
               <div className="space-y-4">
-                <div className="text-gray-700 dark:text-gray-300 flex flex-wrap items-center gap-2">
-                  <strong>Location(s):</strong>
+                <div className="text-theme-text-secondary flex flex-wrap items-center gap-2">
+                  <strong className="text-theme-text">Location(s):</strong>
                   {localLocations && localLocations.length > 0 ? (
                     localLocations.split(',').map((loc) => loc.trim()).filter(Boolean).map((location, index) => (
-                      <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
+                      <span key={index} className="px-3 py-1 bg-theme-item border border-theme-grid-divider rounded-full text-sm font-bold text-theme-text break-words shadow-sm">
                         {location}
                       </span>
                     ))
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <span className="px-3 py-1 bg-theme-item border border-theme-grid-divider rounded-full text-sm font-bold text-theme-text shadow-sm">
                       Home
                     </span>
                   )}
@@ -218,9 +218,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                         const IconComponent = ICON_MAP[iconValue]!;
                         const keyItem = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
                         return (
-                          <div key={index} className="flex items-center space-x-3 p-2 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                          <div key={index} className="flex items-center space-x-3 p-2 border border-theme-grid-divider rounded-lg bg-theme-item shadow-sm">
                             <IconComponent size={20} className={item.color} />
-                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                            <span className="font-bold text-theme-text">
                               {item.displayName || (keyItem ? keyItem.label : iconValue)}
                             </span>
                           </div>
@@ -232,7 +232,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 )}
                 {localDetails && localDetails.replace(/<[^>]*>?/gm, '').trim() !== '' && (
                   <div
-                    className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 overflow-y-auto"
+                    className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border border-theme-grid-divider rounded-lg bg-theme-item overflow-y-auto text-theme-text"
                     style={{ maxHeight: '150px' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(localDetails) }}
                   />

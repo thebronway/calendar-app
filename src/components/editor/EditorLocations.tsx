@@ -40,8 +40,8 @@ export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations
 
   return (
     <div className="shrink-0">
-      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-3">Locations</h4>
-      <div className="flex flex-wrap gap-2 p-2 w-full border rounded-lg dark:bg-gray-900 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 bg-white transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
+      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3">Locations</h4>
+      <div className="flex flex-wrap gap-2 p-2 w-full border border-theme-item rounded-lg bg-theme-item focus-within:border-theme-accent focus-within:ring-1 focus-within:ring-theme-accent transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
         {localLocations.split(',').map(l => l.trim()).filter(Boolean).map((loc, index) => (
           <span 
             key={index} 
@@ -50,7 +50,7 @@ export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations
             onDragEnter={() => { dragOverItem.current = index; }}
             onDragEnd={handleSort}
             onDragOver={(e) => e.preventDefault()}
-            className="flex items-center gap-1 px-2.5 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-md text-sm font-bold cursor-grab active:cursor-grabbing"
+            className="flex items-center gap-1 px-2.5 py-1 bg-theme-panel border border-theme-grid-divider text-theme-text rounded-md text-sm font-bold cursor-grab active:cursor-grabbing shadow-sm"
           >
             {loc}
             <button
@@ -60,7 +60,7 @@ export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations
                 const currentLocs = localLocations.split(',').map(l => l.trim()).filter(Boolean);
                 setLocalLocations(currentLocs.filter(l => l !== loc).join(', '));
               }}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-100 p-0.5 rounded-sm hover:bg-blue-200 dark:hover:bg-blue-800"
+              className="text-theme-text-secondary hover:text-red-500 p-0.5 rounded-sm transition-colors"
             >
               <X size={14} />
             </button>
@@ -85,7 +85,7 @@ export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations
               }
             }
           }}
-          className="flex-1 min-w-[140px] bg-transparent outline-none text-sm font-bold dark:text-white placeholder-gray-400 py-1"
+          className="flex-1 min-w-[140px] bg-transparent outline-none text-sm font-bold text-theme-text placeholder-theme-text-secondary py-1"
           placeholder={localLocations.split(',').filter(Boolean).length === 0 ? "Type a location and press Enter..." : ""}
         />
       </div>

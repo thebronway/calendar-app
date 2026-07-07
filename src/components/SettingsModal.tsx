@@ -62,48 +62,48 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-xl shrink-0">
-          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-            <Settings size={24} className="mr-3 text-blue-500" /> Settings
+      <div className="bg-theme-panel text-theme-text rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-theme-item">
+        <div className="flex justify-between items-center p-6 border-b border-theme-item bg-theme-item rounded-t-xl shrink-0">
+          <h3 className="text-2xl font-bold flex items-center">
+            <Settings size={24} className="mr-3 text-theme-accent" /> Settings
           </h3>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+          <button onClick={handleClose} className="text-theme-text-secondary hover:text-theme-text transition-colors">
             <X size={24} />
           </button>
         </div>
 
-        <div className="flex overflow-x-auto border-b dark:border-gray-700 bg-white dark:bg-gray-800 px-6 shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex overflow-x-auto border-b border-theme-item bg-theme-panel px-6 shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <button
             onClick={() => setActiveTab('display')}
-            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'display' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'display' ? 'border-theme-accent text-theme-accent' : 'border-transparent text-theme-text-secondary hover:text-theme-text'}`}
           >
             <Monitor size={18} className="mr-2" />
             Display
           </button>
           <button
             onClick={() => setActiveTab('system')}
-            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-theme-accent text-theme-accent' : 'border-transparent text-theme-text-secondary hover:text-theme-text'}`}
           >
             <Shield size={18} className="mr-2" />
             System & Privacy
           </button>
           <button
             onClick={() => setActiveTab('theme')}
-            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'theme' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'theme' ? 'border-theme-accent text-theme-accent' : 'border-transparent text-theme-text-secondary hover:text-theme-text'}`}
           >
             <Palette size={18} className="mr-2" />
             Theme
           </button>
           <button
             onClick={() => setActiveTab('data')}
-            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'data' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'}`}
+            className={`flex items-center py-4 px-4 border-b-2 font-medium transition-colors whitespace-nowrap ${activeTab === 'data' ? 'border-theme-accent text-theme-accent' : 'border-transparent text-theme-text-secondary hover:text-theme-text'}`}
           >
             <Database size={18} className="mr-2" />
             Backup
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-gray-100 dark:bg-gray-900/50">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-theme-base">
           {activeTab === 'display' && (
             <>
               <AppearanceSettings 
@@ -150,11 +150,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
           )}
         </div>
         
-        <div className="p-6 border-t dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-end space-x-3 rounded-b-xl shrink-0">
-          <button onClick={handleClose} className="px-6 py-2 rounded-lg border border-gray-300 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+        <div className="p-6 border-t border-theme-item bg-theme-item flex justify-end space-x-3 rounded-b-xl shrink-0">
+          <button onClick={handleClose} className="px-6 py-2 rounded-lg border border-theme-grid-divider font-bold text-theme-text bg-theme-panel hover:bg-theme-item-hover transition-colors shadow-sm">
             Cancel
           </button>
-          <button onClick={handleSave} className="px-6 py-2 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg flex items-center">
+          <button onClick={handleSave} className="px-6 py-2 rounded-lg bg-theme-accent text-theme-accent-text font-bold hover:opacity-90 transition-colors shadow-sm flex items-center">
             <Save size={18} className="mr-2" /> Save Settings
           </button>
         </div>

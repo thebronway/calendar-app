@@ -35,7 +35,7 @@ const UserGuide: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 md:p-10 mb-8 max-w-4xl mx-auto">
+    <div className="bg-theme-panel text-theme-text rounded-xl shadow-sm border border-theme-item p-6 md:p-10 mb-8 max-w-4xl mx-auto">
       <div className="prose prose-blue dark:prose-invert max-w-none">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]} 

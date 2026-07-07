@@ -237,13 +237,16 @@ export default function App() {
   useEffect(() => { fetchData(year); }, [year, fetchData]);
 
   useEffect(() => {
+    // Wait for initial app data/auth to settle to prevent evaluating against an unloaded config
+    if (isCheckingAuth || isDataLoading) return;
+
     // Show Welcome Modal if admin logs in and hasn't seen the current version (or in demo mode)
     if (role === 'admin' && !welcomeShownRef.current && (config.isDemoMode || config.lastSeenVersion !== packageInfo.version)) {
       welcomeShownRef.current = true;
       const timer = setTimeout(() => setShowWelcome(true), 500);
       return () => clearTimeout(timer);
     }
-  }, [role, config.lastSeenVersion, config.isDemoMode]);
+  }, [role, config.lastSeenVersion, config.isDemoMode, isCheckingAuth, isDataLoading]);
 
   const handleCloseWelcome = () => {
     setShowWelcome(false);
@@ -319,6 +322,7 @@ export default function App() {
       console.error('Logout failed', err);
     }
     setRole('none');
+    welcomeShownRef.current = false; // Reset the welcome modal tracker for the next login
     clearBulkEdit();
     if (config.viewMode === 'public') {
       navigate(`/${year}/year${window.location.search}`);

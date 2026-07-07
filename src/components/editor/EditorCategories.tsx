@@ -17,7 +17,7 @@ interface EditorCategoriesProps {
 export const EditorCategories: React.FC<EditorCategoriesProps> = ({ categories, selectedId, onSelect }) => {
   return (
     <div className="shrink-0">
-      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-3">Category</h4>
+      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3">Category</h4>
       <div className="flex flex-wrap gap-2 min-h-12 items-center">
         {categories.map((color) => {
           const isSelected = selectedId === color.id;
@@ -27,11 +27,11 @@ export const EditorCategories: React.FC<EditorCategoriesProps> = ({ categories, 
               onClick={() => onSelect(color.id)}
               className={`flex items-center px-3 py-1.5 rounded-full border transition-all text-sm font-medium ${
                 isSelected
-                  ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700'
-                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
+                  ? 'bg-theme-accent/10 border-theme-accent text-theme-accent shadow-sm'
+                  : 'bg-theme-item border-theme-grid-divider text-theme-text hover:bg-theme-item-hover'
               }`}
             >
-              <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass}`} />
+              <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass} border border-black/10 dark:border-white/10`} />
               {color.label}
               {isSelected && <Check size={14} className="ml-1.5 shrink-0" />}
             </button>

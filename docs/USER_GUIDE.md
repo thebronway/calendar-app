@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-07-05*  
+*Last updated: 2026-07-06*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -145,6 +145,12 @@ Once logged in, click the **Settings (gear) icon** to customize how your calenda
 * **Header Title & Browser Tab Style:** Choose between Simple (`2026 Calendar`), Possessive (`John's Calendar`), or Question formats (`Where is John in 2026?`).
 * **Owner Name:** If using a Possessive or Question format, enter your name here.
 * **Layout Preferences:** Toggle auto-scrolling to the current month or hiding the Key/Stats panels on mobile and desktop individually.
+
+### Custom Theming
+You can personalize the visual style of your calendar by navigating to the **Theme** tab within the Settings modal.
+* **Light / Dark Mode:** Configure standard primary and secondary accent colors for both Light and Dark modes.
+* **Custom Mode:** For granular control, switch to the "Custom" tab. This allows you to explicitly define colors for backgrounds, panels, text, grid dividers, and hover states. 
+* *Note: Theme changes are previewed instantly on your screen as you select them.*
 
 ### Regional Settings
 * **Timezone:** Ensure your calendar highlights "Today" correctly based on your location. 

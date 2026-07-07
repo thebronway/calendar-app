@@ -49,22 +49,22 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
 
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-[80] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 shrink-0">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-            <HelpCircle size={22} className="mr-2 text-blue-500" /> Help & Shortcuts
+      <div className="bg-theme-panel text-theme-text border border-theme-item rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b border-theme-item bg-theme-item shrink-0 rounded-t-xl">
+          <h3 className="text-xl font-bold flex items-center">
+            <HelpCircle size={22} className="mr-2 text-theme-accent" /> Help & Shortcuts
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            className="text-theme-text-secondary hover:text-theme-text transition-colors"
           >
             <X size={24} />
           </button>
         </div>
 
-        <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="p-6 space-y-6 overflow-y-auto bg-theme-base">
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-theme-text-secondary mb-3">
               How It Works
             </h4>
             <div className="space-y-3">
@@ -72,8 +72,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
                 <div key={i} className="flex items-start gap-3">
                   <div className="mt-0.5 shrink-0">{item.icon}</div>
                   <div>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{item.label}</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.description}</p>
+                    <span className="text-sm font-bold text-theme-text">{item.label}</span>
+                    <p className="text-xs text-theme-text-secondary mt-0.5">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -81,18 +81,18 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
           </div>
 
           <div>
-            <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+            <h4 className="text-sm font-bold uppercase tracking-wider text-theme-text-secondary mb-3">
               Keyboard Shortcuts
             </h4>
             <div className="space-y-3">
               {shortcuts.map((s, i) => (
                 <div key={i} className="flex items-center justify-between gap-4">
-                  <span className="text-sm text-gray-700 dark:text-gray-300 leading-tight">{s.description}</span>
+                  <span className="text-sm text-theme-text leading-tight">{s.description}</span>
                   <div className="flex gap-1 shrink-0">
                     {s.keys.map((k) => (
                       <kbd
                         key={k}
-                        className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                        className="px-2 py-1 text-xs font-bold bg-theme-item border border-theme-grid-divider text-theme-text rounded-md shadow-sm"
                       >
                         {k}
                       </kbd>
@@ -105,8 +105,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
 
           {/* Hide the Admin Tip entirely if they are a view-only guest */}
           {isAdmin && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
-              <p className="text-xs text-blue-700 dark:text-blue-300">
+            <div className="bg-theme-accent/10 rounded-lg p-4 border border-theme-accent/20">
+              <p className="text-xs text-theme-accent">
                 <span className="font-bold">Tip:</span> Categories color the day cell; activities appear as small icons.
               </p>
             </div>
@@ -115,10 +115,10 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
         
         {/* Only show User Guide button for Admins */}
         {isAdmin && (
-          <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0 rounded-b-xl">
+          <div className="p-4 border-t border-theme-item bg-theme-item shrink-0 rounded-b-xl">
             <button
               onClick={onGoToGuide}
-              className="w-full flex justify-center items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm"
+              className="w-full flex justify-center items-center gap-2 bg-theme-panel border border-theme-grid-divider text-theme-text px-4 py-2 rounded-lg font-bold hover:bg-theme-item-hover transition-colors shadow-sm"
             >
               <BookOpen size={18} />
               Read Full User Guide

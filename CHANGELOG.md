@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
 *Last updated: 2026-07-06*  
-*Current Version: v1.1.4*
+*Current Version: v1.1.5*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.5
+- Unified modal UI design scheme across the application
+- Applied custom semantic CSS theming to all admin panels, settings, and editors
+- Standardized header action buttons
+- Added Design implementation guide for future development
 
 ### Release v1.1.4
 - Custom theming updates

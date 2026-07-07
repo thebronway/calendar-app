@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v1.1.4-blue.svg)
+![Version](https://img.shields.io/badge/version-v1.1.5-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 ### A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
@@ -18,7 +18,7 @@ This self-hosted calendar provides a simple web dashboard to share your schedule
 ## Features
 
 * **Multiple Views:** Year, Month, Planner, and List layouts. Dark mode supported.
-* **Customization:** Assign colors to categories and icons to daily activities.
+* **Customization:** Assign custom colors to the theme, categories and icons to daily activities.
 * **Data Entry:** Multi-day bulk editing, location tagging, and rich-text notes. Live WebSocket sync.
 * **Sharing & Sync:** Filter views via URL parameters. Generate custom iCal feeds for Apple/Google Calendar.
 * **Access Control:** Public read-only or private password-protected modes. Configurable session timeouts.

@@ -229,7 +229,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {hasPublicFeeds && role !== 'admin' && (
                     <button
                       onClick={onOpenFeeds}
-                      className="h-10 w-10 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center bg-theme-accent-secondary text-white rounded-lg hover:opacity-90 transition-colors shadow-sm"
                       title="Subscribe"
                     >
                       <Rss size={20} />
@@ -238,22 +238,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors ${
-                        themeMode === 'custom'
-                          ? 'bg-theme-item text-theme-text hover:bg-theme-item-hover'
-                          : 'shadow-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
+                      className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors bg-theme-panel border-2 border-theme-item text-theme-text hover:bg-theme-item-hover shadow-sm"
                       title="Logout"
                     >
-                      <LogOut size={20} />
+                      <LogOut size={18} />
                     </button>
                   ) : (
                     <button
                       onClick={onOpenAuth}
-                      className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors bg-theme-accent text-theme-accent-text hover:opacity-90 shadow-sm"
                       title="Log In"
                     >
-                      <Lock size={20} />
+                      <Lock size={18} />
                     </button>
                   )}
                 </div>
@@ -292,7 +288,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {hasPublicFeeds && role !== 'admin' && (
                     <button
                       onClick={onOpenFeeds}
-                      className="h-10 w-10 flex items-center justify-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center bg-theme-accent-secondary text-white rounded-lg hover:opacity-90 transition-colors shadow-sm"
                       title="Subscribe"
                     >
                       <Rss size={20} />
@@ -301,22 +297,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                   {role !== 'none' ? (
                     <button
                       onClick={onLogout}
-                      className={`h-10 w-10 flex items-center justify-center rounded-lg transition-colors ${
-                        themeMode === 'custom'
-                          ? 'bg-theme-item text-theme-text hover:bg-theme-item-hover'
-                          : 'shadow-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
+                      className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors bg-theme-panel border-2 border-theme-item text-theme-text hover:bg-theme-item-hover shadow-sm"
                       title="Logout"
                     >
-                      <LogOut size={20} />
+                      <LogOut size={18} />
                     </button>
                   ) : (
                     <button
                       onClick={onOpenAuth}
-                      className="h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors bg-theme-accent text-theme-accent-text hover:opacity-90 shadow-sm"
                       title="Log In"
                     >
-                      <Lock size={20} />
+                      <Lock size={18} />
                     </button>
                   )}
                 </div>

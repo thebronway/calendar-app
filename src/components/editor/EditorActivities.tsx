@@ -61,14 +61,14 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
 
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-6">
-      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-3 shrink-0">Activities</h4>
+      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3 shrink-0">Activities</h4>
       <div className="flex flex-col flex-1 min-h-0 space-y-4">
         
         {/* Selected Activities */}
         <div className="space-y-2 shrink-0">
-          <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected</h5>
+          <h5 className="text-xs font-bold text-theme-text-secondary uppercase tracking-wider mb-2">Selected</h5>
           {localIcons.length === 0 && (
-            <p className="text-sm italic text-gray-500">No activities selected.</p>
+            <p className="text-sm italic text-theme-text-secondary">No activities selected.</p>
           )}
           {localIcons.map((item, index) => {
             const iconValue = item.value || item.icon;
@@ -86,10 +86,10 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                 onDragEnter={() => (dragOverItem.current = index)}
                 onDragEnd={handleSort}
                 onDragOver={(e) => e.preventDefault()}
-                className="flex items-center justify-between p-2 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow-sm cursor-grab active:cursor-grabbing"
+                className="flex items-center justify-between p-2 border border-theme-grid-divider rounded-lg bg-theme-item text-theme-text shadow-sm cursor-grab active:cursor-grabbing hover:bg-theme-item-hover transition-colors"
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
-                  <GripVertical size={16} className="text-gray-400 shrink-0" />
+                  <GripVertical size={16} className="text-theme-text-secondary shrink-0" />
                   <IconComponent size={20} className={item.color + ' shrink-0'} />
                   {editingIconIndex === index ? (
                     <div className="flex items-center space-x-2 flex-1">
@@ -102,7 +102,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                           setLocalIcons(newIcons);
                         }}
                         placeholder={defaultLabel}
-                        className="w-full text-sm p-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                        className="w-full text-sm p-1 border rounded bg-theme-panel border-theme-accent text-theme-text outline-none"
                         autoFocus
                         onBlur={() => {
                           const newIcons = [...localIcons];
@@ -120,14 +120,14 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                     </div>
                   ) : (
                     <>
-                      <span className="text-sm font-medium dark:text-gray-200 truncate" title={displayLabel}>
+                      <span className="text-sm font-bold truncate" title={displayLabel}>
                         {displayLabel}
                       </span>
                       <button
                         onClick={() => {
                           setEditingIconIndex(index);
                         }}
-                        className="text-gray-400 hover:text-blue-500 p-1 rounded shrink-0"
+                        className="text-theme-text-secondary hover:text-theme-accent p-1 rounded shrink-0 transition-colors"
                       >
                         <Pencil size={14} />
                       </button>
@@ -136,7 +136,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                 </div>
                 <div className="flex items-center space-x-1 shrink-0">
                   {editingIconIndex !== index && (
-                    <button onClick={() => handleIconDelete(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded transition-colors">
+                    <button onClick={() => handleIconDelete(index)} className="text-theme-text-secondary hover:text-red-500 p-1 rounded transition-colors">
                       <X size={16} />
                     </button>
                   )}
@@ -148,23 +148,23 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
 
         {/* Add Activity Section */}
         {localIcons.length < 4 && (
-          <div className="flex flex-col flex-1 min-h-0 pt-4 border-t dark:border-gray-700">
-            <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 shrink-0">Available</h5>
+          <div className="flex flex-col flex-1 min-h-0 pt-4 border-t border-theme-grid-divider">
+            <h5 className="text-xs font-bold text-theme-text-secondary uppercase tracking-wider mb-2 shrink-0">Available</h5>
             <div className="flex gap-2 mb-3 shrink-0">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-theme-text-secondary" size={16} />
                 <input
                   type="text"
                   placeholder="Search activities..."
                   value={activitySearch}
                   onChange={(e) => setActivitySearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-9 pr-3 py-1.5 text-sm border border-theme-item rounded-lg bg-theme-item text-theme-text focus:outline-none focus:border-theme-accent focus:ring-1 focus:ring-theme-accent transition-colors placeholder-theme-text-secondary"
                   disabled={localIcons.length >= 4}
                 />
               </div>
               <button
                 onClick={handleSortChange}
-                className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-1.5 shrink-0"
+                className="px-3 py-1.5 text-sm border border-theme-item rounded-lg bg-theme-item text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover flex items-center gap-1.5 shrink-0 transition-colors"
                 disabled={localIcons.length >= 4}
               >
                 {activitySort === 'key' && <ArrowUp size={14} className="opacity-50" />}
@@ -182,28 +182,28 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                 <div className="grid grid-cols-2 gap-2">
                   {filteredActivities.map((keyItem) => {
                     const IconC = keyItem.icon ? ICON_MAP[keyItem.icon] : null;
-                    const displayColor = !keyItem.iconColor || keyItem.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : keyItem.iconColor;
+                    const displayColor = !keyItem.iconColor || keyItem.iconColor === 'none' ? 'text-theme-text' : keyItem.iconColor;
                     return (
                       <button
                         key={keyItem.id}
                         onClick={() => handleAddActivity(keyItem)}
                         disabled={localIcons.length >= 4}
-                        className="flex items-center p-2 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border dark:border-gray-600 text-left disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="flex items-center p-2 rounded-lg bg-theme-item hover:bg-theme-item-hover border border-theme-grid-divider text-left disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors text-theme-text"
                       >
                         {IconC && <IconC size={16} className={`${displayColor} mr-2 shrink-0`} />}
-                        <span className="text-xs font-medium truncate dark:text-gray-200">{keyItem.label}</span>
+                        <span className="text-xs font-bold truncate">{keyItem.label}</span>
                       </button>
                     );
                   })}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500 italic p-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+                <div className="text-sm text-theme-text-secondary italic p-3 border border-dashed border-theme-grid-divider rounded-lg text-center">
                   {activitySearch.trim() ? `No activities match "${activitySearch}"` : 'No activities defined in Key. Go to Configure > Activities to add some.'}
                 </div>
               )}
             </div>
             {availableActivities.length > 0 && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 text-right mt-2 shrink-0">
+              <div className="text-xs text-theme-text-secondary text-right mt-2 shrink-0">
                 {filteredActivities.length} of {availableActivities.length} activities
                 {activitySearch.trim() && ` match "${activitySearch}"`}
               </div>
@@ -211,7 +211,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
           </div>
         )}
         {localIcons.length >= 4 && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium pt-2 border-t dark:border-gray-700 shrink-0">
+          <p className="text-xs text-amber-600 dark:text-amber-400 font-bold pt-2 border-t border-theme-grid-divider shrink-0">
             Maximum of 4 activities reached. Remove one to add another.
           </p>
         )}

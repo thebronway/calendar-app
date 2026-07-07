@@ -11,16 +11,16 @@ interface ThemeSettingsProps {
 }
 
 const ColorInput = ({ label, description, value, field, onConfigChange }: { label: string, description: string, value: string, field: keyof AppConfig, onConfigChange: <K extends keyof AppConfig>(field: K, value: AppConfig[K]) => void }) => (
-  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 flex items-center justify-between">
+  <div className="bg-theme-item p-4 rounded-lg border border-theme-item flex items-center justify-between">
     <div>
-      <span className="block text-sm font-bold text-gray-800 dark:text-gray-200">{label}</span>
-      <span className="block text-xs text-gray-500 mt-0.5">{description}</span>
+      <span className="block text-sm font-bold text-theme-text">{label}</span>
+      <span className="block text-xs text-theme-text-secondary mt-0.5">{description}</span>
     </div>
     <input 
       type="color" 
       value={value} 
       onChange={(e) => onConfigChange(field, e.target.value)}
-      className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0"
+      className="w-10 h-10 p-0 border-0 rounded cursor-pointer shrink-0 bg-transparent"
     />
   </div>
 );
@@ -63,40 +63,40 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700">
+    <div className="bg-theme-panel p-6 rounded-xl shadow-sm border border-theme-item">
       <div className="flex justify-between items-center mb-4">
-        <h4 className="text-lg font-bold dark:text-white flex items-center">
+        <h4 className="text-lg font-bold text-theme-text flex items-center">
           <Palette size={20} className="mr-2 text-pink-500" /> Custom Themeing
         </h4>
         <button 
           onClick={handleReset}
-          className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-bold text-theme-text-secondary hover:text-theme-text transition-colors"
         >
           <RotateCcw size={14} /> Reset {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Defaults
         </button>
       </div>
       
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+      <p className="text-sm text-theme-text-secondary mb-6">
         Personalize the look of your calendar modes independently. Changes will be visible immediately upon saving.
       </p>
 
       {/* Tabs */}
-      <div className="flex mb-6 border-b dark:border-gray-700">
+      <div className="flex mb-6 border-b border-theme-item">
         <button
           onClick={() => handleTabChange('light')}
-          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'light' ? 'border-amber-400 text-amber-500' : 'border-transparent text-gray-400 hover:text-amber-500'}`}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'light' ? 'border-amber-400 text-amber-500' : 'border-transparent text-theme-text-secondary hover:text-amber-500'}`}
         >
           <Sun size={16} /> Light
         </button>
         <button
           onClick={() => handleTabChange('dark')}
-          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'dark' ? 'border-gray-800 text-gray-900 dark:border-gray-300 dark:text-gray-200' : 'border-transparent text-gray-400 hover:text-gray-800 dark:hover:text-gray-300'}`}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'dark' ? 'border-gray-800 text-gray-900 dark:border-gray-300 dark:text-gray-200' : 'border-transparent text-theme-text-secondary hover:text-gray-800 dark:hover:text-gray-300'}`}
         >
           <Moon size={16} /> Dark
         </button>
         <button
           onClick={() => handleTabChange('custom')}
-          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'custom' ? 'border-pink-500' : 'border-transparent text-gray-500 hover:border-pink-300'}`}
+          className={`flex-1 py-2 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${activeTab === 'custom' ? 'border-pink-500' : 'border-transparent text-theme-text-secondary hover:border-pink-300'}`}
         >
           <Palette size={16} className={activeTab === 'custom' ? 'text-pink-500' : ''} />
           <span className="flex">
@@ -139,7 +139,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
         {activeTab === 'custom' && (
           <div className="space-y-6">
             <div>
-              <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 border-b dark:border-gray-700 pb-1">Base & Panels</h5>
+              <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Base & Panels</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <ColorInput label="Main Background" description="Overarching canvas." value={config.customBg || '#111827'} field="customBg" onConfigChange={onConfigChange} />
                 <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#1f2937'} field="customPanelBg" onConfigChange={onConfigChange} />
@@ -149,7 +149,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
             </div>
 
             <div>
-              <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 border-b dark:border-gray-700 pb-1">Accents & Highlights</h5>
+              <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Accents & Highlights</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
                 <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.customAccentSecondary || '#8b5cf6'} field="customAccentSecondary" onConfigChange={onConfigChange} />
@@ -157,7 +157,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
             </div>
 
             <div>
-              <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 border-b dark:border-gray-700 pb-1">Typography</h5>
+              <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Typography</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#f3f4f6'} field="customTextPrimary" onConfigChange={onConfigChange} />
                 <ColorInput label="Secondary Text" description="Subheadings and less prominent text." value={config.customTextSecondary || '#9ca3af'} field="customTextSecondary" onConfigChange={onConfigChange} />
@@ -166,7 +166,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
             </div>
 
             <div>
-              <h5 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 border-b dark:border-gray-700 pb-1">Calendar Grid</h5>
+              <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Calendar Grid</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <ColorInput label="Grid Header" description="Days of the week row." value={config.customGridHeaderBg || '#2b3544'} field="customGridHeaderBg" onConfigChange={onConfigChange} />
                 <ColorInput label="Grid Cell" description="Numbered day background." value={config.customGridCellBg || '#1f2937'} field="customGridCellBg" onConfigChange={onConfigChange} />

@@ -1,39 +1,26 @@
 # Calendar-App Roadmap
 
 *Last updated: 2026-07-06*  
-*Current Version: v1.1.4*
+*Current Version: v1.1.5*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.1.5: Theming Updates
-- Dark and light mode must remain as is.
-- Apply custom theme elements to admin modals, view/edit day modals, help modal, welcome modal, save modals and any other modals I missed.
-  - Only one thing at a time (like one modal). We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
-  - Do we need to add panel header/footer?
-- Key modal add color picker to icon
-- Modals are inconsistent
-  - Key modal (and other admin modals) are dark on header, light on footer. where edit day is light on header and dark on footer. ideas on a scheme?
-  - Edit day modal also needs background on all labels (like a category or activity) Like Key/stats section 
-    - Location bubble on edit day should match location bubbles on stats
-- Logout button just looks off (border, dont know if I like it or not) - ideas to make it different but follow theme
-- Identify additional elements for theming (look at what is already done for custom as a start)
-  - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
-- Create desgin doc - mention how you have to put the elements in multiple files, what are all the elements, what are deafults, etc /docs/DESIGN.md - so that when developing new elements the dev can make sure that they are considering current design and dont hard code colors. Add basic how to custimize info to userguide
-
-
 ### Release v1.1.6: UI Updates
-- Key Modal should go under settings, users wont be udating their key often (update help modal, userguide, welcome modal)
-  - Duplicate Activity Names are allowed (bad for URL ID)
-- New flat deafult colors + Custom Color picker option for category customization 
+- New flat deafult colors plus Custom Color picker addtional option category customization in key 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
-- New flat deafult colors + Custom Color picker option for activity customization 
+- Add Custom Color picker addtional option activity customization in key (keep current colors as is)
 - Add git open issue to readme, userguide and help modal
+- Identify additional elements for theming that have hard coded static elements (look at what is already done for custom as a start)
+  - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
-### Release v1.1.7: Multi-Year iCal Sync Engine
+### Release v1.1.7: iCal updates
+- Key Modal Categories and Activites
+  - Duplicate Names are allowed (bad for URL ID)
+- We may need to not base the feed creation on a year of a key, maybe need to pull in all unique ones
 - **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
 - **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
 - **Cross-Year Event Preservation:** Prevent historical events from disappearing when categories or activities are deleted or modified in later year setups.
