@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Database, Globe } from 'lucide-react';
+import { Github, Database, Globe, Coffee } from 'lucide-react';
 import packageInfo from '../../package.json';
 
 const Footer: React.FC = () => {
@@ -40,6 +40,15 @@ const Footer: React.FC = () => {
             className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
           >
             <Database size={16} /> Docker Hub
+          </a>
+          <span>|</span>
+          <a
+            href="https://buymeacoffee.com/brianconway"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+          >
+            <Coffee size={16} /> Support
           </a>
         </div>
         

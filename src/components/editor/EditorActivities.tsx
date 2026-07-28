@@ -90,7 +90,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0 pr-2">
                   <GripVertical size={16} className="text-theme-text-secondary shrink-0" />
-                  <IconComponent size={20} className={item.color + ' shrink-0'} />
+                  <IconComponent size={20} className={(item.color?.startsWith('#') ? '' : item.color) + ' shrink-0'} style={{ color: item.color?.startsWith('#') ? item.color : undefined }} />
                   {editingIconIndex === index ? (
                     <div className="flex items-center space-x-2 flex-1">
                       <input
@@ -190,7 +190,7 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
                         disabled={localIcons.length >= 4}
                         className="flex items-center p-2 rounded-lg bg-theme-item hover:bg-theme-item-hover border border-theme-grid-divider text-left disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors text-theme-text"
                       >
-                        {IconC && <IconC size={16} className={`${displayColor} mr-2 shrink-0`} />}
+                        {IconC && <IconC size={16} className={`${displayColor?.startsWith('#') ? '' : displayColor} mr-2 shrink-0`} style={{ color: displayColor?.startsWith('#') ? displayColor : undefined }} />}
                         <span className="text-xs font-bold truncate">{keyItem.label}</span>
                       </button>
                     );

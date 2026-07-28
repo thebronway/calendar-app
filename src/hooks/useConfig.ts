@@ -15,6 +15,20 @@ const DEFAULT_CONFIG: AppConfig = {
   collapseStatsDesktop: false,
   sessionTimeout: 24,
   statsVisibility: 'all',
+  customBg: '#052e16',
+  customPanelBg: '#064e3b',
+  customTextPrimary: '#ecfdf5',
+  customTextSecondary: '#a7f3d0',
+  customAccent: '#10b981',
+  customAccentText: '#064e3b',
+  customAccentSecondary: '#f59e0b',
+  customItemBg: '#065f46',
+  customItemHoverBg: '#047857',
+  customGridDivider: '#065f46',
+  customGridHeaderBg: '#064e3b',
+  customGridCellBg: '#052e16',
+  customGridEmptyBg: '#022c22',
+  customGridTextHighlighted: '#022c22',
 };
 
 interface UseConfigParams {

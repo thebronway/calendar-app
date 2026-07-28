@@ -52,20 +52,20 @@ const ThemeStyleInjector: React.FC<ThemeStyleInjectorProps> = ({ config }) => {
           --theme-grid-text-highlighted: rgba(17, 24, 39, 0.9);
         }
         .custom-theme {
-          --theme-bg: ${config.customBg || '#111827'};
-          --theme-panel-bg: ${config.customPanelBg || '#1f2937'};
-          --theme-text-primary: ${config.customTextPrimary || '#f3f4f6'};
-          --theme-text-secondary: ${config.customTextSecondary || '#9ca3af'};
-          --theme-accent-rgb: ${hexToRgbString(config.customAccent || '#3b82f6')};
-          --theme-accent-text: ${config.customAccentText || '#ffffff'};
-          --theme-accent-secondary-rgb: ${hexToRgbString(config.customAccentSecondary || '#8b5cf6')};
-          --theme-item-bg: ${config.customItemBg || '#374151'};
-          --theme-item-hover: ${config.customItemHoverBg || '#4b5563'};
-          --theme-grid-divider: ${config.customGridDivider || '#374151'};
-          --theme-grid-header: ${config.customGridHeaderBg || '#2b3544'};
-          --theme-grid-cell: ${config.customGridCellBg || '#1f2937'};
-          --theme-grid-empty: ${config.customGridEmptyBg || '#111827'};
-          --theme-grid-text-highlighted: ${config.customGridTextHighlighted || '#111827'};
+          --theme-bg: ${config.customBg || '#052e16'};
+          --theme-panel-bg: ${config.customPanelBg || '#064e3b'};
+          --theme-text-primary: ${config.customTextPrimary || '#ecfdf5'};
+          --theme-text-secondary: ${config.customTextSecondary || '#a7f3d0'};
+          --theme-accent-rgb: ${hexToRgbString(config.customAccent || '#10b981')};
+          --theme-accent-text: ${config.customAccentText || '#064e3b'};
+          --theme-accent-secondary-rgb: ${hexToRgbString(config.customAccentSecondary || '#f59e0b')};
+          --theme-item-bg: ${config.customItemBg || '#065f46'};
+          --theme-item-hover: ${config.customItemHoverBg || '#047857'};
+          --theme-grid-divider: ${config.customGridDivider || '#065f46'};
+          --theme-grid-header: ${config.customGridHeaderBg || '#064e3b'};
+          --theme-grid-cell: ${config.customGridCellBg || '#052e16'};
+          --theme-grid-empty: ${config.customGridEmptyBg || '#022c22'};
+          --theme-grid-text-highlighted: ${config.customGridTextHighlighted || '#022c22'};
         }
       `}
     </style>

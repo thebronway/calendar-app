@@ -109,10 +109,11 @@ const KeySection: React.FC<KeySectionProps> = ({
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {keyCategories.map((item) => {
+              const isCustomHex = item.colorCode?.startsWith('#');
               const cDef = CATEGORY_COLORS.find((c) => c.id === item.colorCode);
               const boxClass = cDef
-                ? `${cDef.bg} text-white dark:text-gray-100`
-                : 'bg-gray-100';
+                ? `${cDef.bg} border-transparent`
+                : (isCustomHex ? 'border-transparent' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-500');
               const isSelected = highlightFilters.categories?.includes(item.id);
               return (
                 <div
@@ -123,7 +124,8 @@ const KeySection: React.FC<KeySectionProps> = ({
                   }`}
                 >
                   <div
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border dark:border-gray-500 flex-shrink-0`}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg ${boxClass} border flex-shrink-0`}
+                    style={{ backgroundColor: isCustomHex ? item.colorCode : undefined }}
                   />
                   <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base text-theme-text">
                     {item.label}
@@ -152,10 +154,11 @@ const KeySection: React.FC<KeySectionProps> = ({
               const isSelected = highlightFilters.icons.some(
                 (f) => f.icon === item.icon && f.iconColor === item.iconColor
               );
+              const isCustomHex = item.iconColor?.startsWith('#');
               const dispColor =
                 !item.iconColor || item.iconColor === 'none'
                   ? 'text-theme-text'
-                  : item.iconColor;
+                  : (isCustomHex ? '' : item.iconColor);
               return (
                 <div
                   key={item.id}
@@ -165,7 +168,7 @@ const KeySection: React.FC<KeySectionProps> = ({
                   }`}
                 >
                   <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                    {IconC && <IconC size={20} className={dispColor} />}
+                    {IconC && <IconC size={20} className={dispColor} style={{ color: isCustomHex ? item.iconColor : undefined }} />}
                   </div>
                   <span className="font-medium flex-1 break-words min-w-0 text-sm sm:text-base text-theme-text">
                     {item.label}

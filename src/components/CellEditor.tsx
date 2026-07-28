@@ -46,12 +46,14 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     const categoryOptions = useMemo((): CategoryOption[] => {
       const defaults: CategoryOption[] = [{ id: 'none', label: 'Home', class: '', bgClass: 'bg-gray-300 dark:bg-gray-600' }];
       const cats = categories.map((k) => {
+        const isCustomHex = k.colorCode?.startsWith('#');
         const colorDef = CATEGORY_COLORS.find((c) => c.id === k.colorCode) || CATEGORY_COLORS[0];
         return {
           id: k.id,
           label: k.label,
-          class: `${colorDef.bg} text-gray-900 border-2 ${colorDef.border}`,
-          bgClass: colorDef.bg,
+          class: isCustomHex ? `text-gray-900 border-2 border-transparent` : `${colorDef.bg} text-gray-900 border-2 ${colorDef.border}`,
+          bgClass: isCustomHex ? '' : colorDef.bg,
+          customHex: isCustomHex ? k.colorCode : undefined,
         };
       });
       return [...defaults, ...cats];
@@ -219,7 +221,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                         const keyItem = keyItems.find((k) => k.icon === iconValue && k.iconColor === item.color);
                         return (
                           <div key={index} className="flex items-center space-x-3 p-2 border border-theme-grid-divider rounded-lg bg-theme-item shadow-sm">
-                            <IconComponent size={20} className={item.color} />
+                            <IconComponent size={20} className={item.color?.startsWith('#') ? '' : item.color} style={{ color: item.color?.startsWith('#') ? item.color : undefined }} />
                             <span className="font-bold text-theme-text">
                               {item.displayName || (keyItem ? keyItem.label : iconValue)}
                             </span>

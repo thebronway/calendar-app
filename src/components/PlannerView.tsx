@@ -84,8 +84,9 @@ const PlannerView: React.FC<PlannerViewProps> = ({
               <div className="lg:col-span-2 columns-1 md:columns-2 gap-6">
                 {days.map((day) => {
                   const category = keyItems.find((k) => k.id === day.colorId);
+                  const isCustomHex = category?.colorCode?.startsWith('#');
                   const colorDef = category ? CATEGORY_COLORS.find((c) => c.id === category.colorCode) : null;
-                  const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900` : 'bg-theme-panel text-theme-text border border-theme-item';
+                  const catClass = colorDef ? `${colorDef.bg} text-white dark:text-gray-900 border-transparent` : (isCustomHex ? 'text-white dark:text-gray-900 border-transparent' : 'bg-theme-panel text-theme-text border border-theme-item');
 
                   const [y, m, d] = day.key.split('-');
                   const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
@@ -106,7 +107,10 @@ const PlannerView: React.FC<PlannerViewProps> = ({
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             {category && (
-                              <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}>
+                              <span 
+                                className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}
+                                style={{ backgroundColor: isCustomHex ? category.colorCode : undefined }}
+                              >
                                 {category.label}
                               </span>
                             )}
@@ -124,7 +128,7 @@ const PlannerView: React.FC<PlannerViewProps> = ({
                                 const label = icon.displayName || (keyDef ? keyDef.label : (icon.value || icon.icon));
                                 return IC ? (
                                   <div key={i} className="flex items-center gap-1.5 bg-theme-panel border border-theme-item px-2 py-1 rounded-md shadow-sm">
-                                    <IC size={14} className={icon.color} />
+                                    <IC size={14} className={icon.color?.startsWith('#') ? '' : icon.color} style={{ color: icon.color?.startsWith('#') ? icon.color : undefined }} />
                                     <span className="text-xs font-medium text-theme-text">{label}</span>
                                   </div>
                                 ) : null;

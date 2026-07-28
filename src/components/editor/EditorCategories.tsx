@@ -6,6 +6,7 @@ export interface CategoryOption {
   label: string;
   class: string;
   bgClass: string;
+  customHex?: string;
 }
 
 interface EditorCategoriesProps {
@@ -31,7 +32,10 @@ export const EditorCategories: React.FC<EditorCategoriesProps> = ({ categories, 
                   : 'bg-theme-item border-theme-grid-divider text-theme-text hover:bg-theme-item-hover'
               }`}
             >
-              <div className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass} border border-black/10 dark:border-white/10`} />
+              <div 
+                className={`w-3 h-3 rounded-full mr-2 shrink-0 ${color.bgClass} border border-black/10 dark:border-white/10`} 
+                style={{ backgroundColor: color.customHex }}
+              />
               {color.label}
               {isSelected && <Check size={14} className="ml-1.5 shrink-0" />}
             </button>

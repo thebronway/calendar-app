@@ -35,6 +35,7 @@ The application relies on a robust set of CSS variables that map directly to Tai
 1. **Avoid Hardcoded Colors:** Never use `bg-white`, `dark:bg-gray-900`, `text-gray-800`, etc., for structural layout containers. Use `bg-theme-panel` and `text-theme-text` to ensure the element respects the user's active theme.
 2. **Opacity Modifiers:** You can use Tailwind's opacity modifiers with the custom colors (e.g., `bg-theme-accent/20`) for subtle background highlights.
 3. **Borders:** Use `border-theme-item` or `border-theme-grid-divider` for subtle separation lines, avoiding hardcoded `border-gray-200`.
+4. **User-Defined Data vs. Structural UI:** Structural application components must always use the semantic `--theme-*` CSS variables. However, user-defined data colors (e.g., a custom hex color selected for a specific Category or Activity in the Key) should be applied dynamically using inline React `style={{ backgroundColor: ... }}` properties to override the standard Tailwind defaults.
 
 ## Updating Default Colors
-If you need to change the factory default colors for Light or Dark mode, update the fallback hex codes inside `src/components/ThemeStyleInjector.tsx` AND update the `DEFAULT_CONFIG` fallback states in `src/hooks/useConfig.ts` and `src/utils/fileOps.js`.
+If you need to change the factory default colors for Light, Dark, or Custom mode, update the fallback hex codes inside `src/components/ThemeStyleInjector.tsx` AND update the `DEFAULT_CONFIG` fallback states in `src/hooks/useConfig.ts` and `src/utils/fileOps.js`.

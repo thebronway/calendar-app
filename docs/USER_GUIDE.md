@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-07-06*  
+*Last updated: 2026-07-24*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -172,13 +172,13 @@ Click the **Key icon** to define the visual language of your calendar.
 
 ### Categories (Background Colors)
 * You can define up to **5** categories.
-* Assign a name and a color.
+* Assign a name and a color. You can choose from the predefined colors or click the color wheel to select any custom hex color.
 * Toggle the "Count" switch to display how many days are assigned to this category in the main Key panel.
 * Use the up/down arrows to reorder how they appear in the UI.
 
 ### Activities (Icons)
 * Search through hundreds of available icons.
-* Assign an icon color and label.
+* Assign an icon color and label. You can choose from the predefined colors or click the color wheel to select any custom hex color.
 * Toggle the "Count" switch to track how many times you do this activity throughout the year.
 
 ---
@@ -349,3 +349,7 @@ This project was made possible by the incredible open-source community. Special 
 
 **AI Assistance:**
 This project was developed with the assistance of AI tools to brainstorm, generate boilerplate, and refine code. Every line of code has been meticulously reviewed, tested, and approved by hand. For more details, please see the [AI Acknowledgment](https://github.com/thebronway/calendar-app/blob/main/AIACKNOWLEDGMENT.md).
+
+**Support & Feedback:**
+* **Issues:** Found a bug or have a feature request? [Open an issue on GitHub](https://github.com/thebronway/calendar-app/issues).
+* **Support:** Find this project useful? [Support my work (Buy me a coffee)](https://buymeacoffee.com/brianconway).

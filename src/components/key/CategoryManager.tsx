@@ -66,7 +66,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
             className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border dark:border-gray-700 shadow-sm flex flex-col md:flex-row items-center gap-4 cursor-grab active:cursor-grabbing"
           >
             <GripVertical className="text-gray-400 shrink-0 hidden md:block" />
-            <div className="flex gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <div className="flex flex-wrap gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg items-center">
               {CATEGORY_COLORS.map((c) => (
                 <button
                   key={c.id}
@@ -74,6 +74,14 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                   className={`w-8 h-8 rounded-full ${c.bg} ${cat.colorCode === c.id ? 'ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200' : 'opacity-50 hover:opacity-100'}`}
                 />
               ))}
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-500 mx-1"></div>
+              <input
+                type="color"
+                value={cat.colorCode?.startsWith('#') ? cat.colorCode : '#000000'}
+                onChange={(e) => onUpdateItem(cat.id, 'colorCode', e.target.value)}
+                className={`w-8 h-8 p-0 border-0 rounded cursor-pointer shrink-0 bg-transparent ${cat.colorCode?.startsWith('#') ? 'ring-2 ring-offset-2 ring-gray-800 dark:ring-gray-200' : 'opacity-50 hover:opacity-100'}`}
+                title="Custom Color"
+              />
             </div>
             <div className="flex-1 w-full min-w-0">
               <input

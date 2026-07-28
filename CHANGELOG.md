@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-06*  
-*Current Version: v1.1.5*
+*Last updated: 2026-07-24*  
+*Current Version: v1.1.6*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.6
+- Updated default Custom Theme values to a new "Green Theme" color scheme
+- Added custom HTML hex color picker for Categories and Activities in the Key
+- Added GitHub Issues and Support (Buy Me a Coffee) links to the Help Modal and documentation
+- Bugfix: Fixed calendar cell vertical spacing and row height inconsistencies
+- Bugfix: Fixed highlight selection rings clipping on taller calendar grid rows
 
 ### Release v1.1.5
 - Unified modal UI design scheme across the application

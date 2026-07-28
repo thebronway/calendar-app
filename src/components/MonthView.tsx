@@ -44,12 +44,12 @@ const MonthView: React.FC<MonthViewProps> = ({
   const cells: React.ReactNode[] = [];
   let monthHighCount = 0;
 
-  const contentClass = 'min-h-[7rem] h-full flex flex-col justify-between p-1';
+  const contentClass = 'min-h-[7.5rem] h-full flex flex-col justify-between p-1';
 
   for (let i = 0; i < firstDay; i++) {
     cells.push(
-      <td key={`p-${i}`} className="p-1 bg-theme-grid-empty">
-        <div className={contentClass}></div>
+      <td key={`p-${i}`} className="p-0 h-full align-top" style={{ height: '1px' }}>
+        <div className={`bg-theme-grid-empty ${contentClass}`}></div>
       </td>
     );
   }
@@ -69,11 +69,16 @@ const MonthView: React.FC<MonthViewProps> = ({
     if (day.colorId !== 'none') monthHighCount++;
 
     let colorClass = 'bg-theme-grid-cell';
+    let customStyle: React.CSSProperties | undefined = undefined;
     if (day.colorId !== 'none') {
       const cat = keyItems.find((k) => k.id === day.colorId);
       if (cat) {
-        const cDef = CATEGORY_COLORS.find((c) => c.id === cat.colorCode);
-        if (cDef) colorClass = cDef.bg;
+        if (cat.colorCode?.startsWith('#')) {
+          customStyle = { backgroundColor: cat.colorCode };
+        } else {
+          const cDef = CATEGORY_COLORS.find((c) => c.id === cat.colorCode);
+          if (cDef) colorClass = cDef.bg;
+        }
       }
     }
 
@@ -85,10 +90,14 @@ const MonthView: React.FC<MonthViewProps> = ({
     cells.push(
       <td
         key={key}
-        onClick={() => onCellClick(key)}
-        className={`w-1/7 cursor-pointer align-top transition-opacity hover:opacity-90 ${colorClass} ${isSelected ? 'ring-4 ring-theme-accent-secondary ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
+        className="w-1/7 align-top p-0 h-full"
+        style={{ height: '1px' }}
       >
-        <div className={contentClass}>
+        <div 
+          onClick={() => onCellClick(key)}
+          className={`cursor-pointer transition-opacity hover:opacity-90 ${contentClass} ${colorClass} ${isSelected ? 'ring-4 ring-theme-accent-secondary ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
+          style={customStyle}
+        >
           <div className="flex flex-col items-center">
             <span
               className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-theme-accent text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-theme-grid-text-highlighted' : 'text-theme-text'}`}
@@ -123,7 +132,8 @@ const MonthView: React.FC<MonthViewProps> = ({
               return IC ? (
                 <div key={idx} className="w-1/2 flex justify-center shrink-0 h-[18px] sm:h-6 mb-0.5">
                   <IC
-                    className={`${i.color} ${shadowClass} shrink-0 w-[18px] h-[18px] sm:w-6 sm:h-6`}
+                    className={`${i.color?.startsWith('#') ? '' : i.color} ${shadowClass} shrink-0 w-[18px] h-[18px] sm:w-6 sm:h-6`}
+                    style={{ color: i.color?.startsWith('#') ? i.color : undefined }}
                     strokeWidth={2.5}
                   />
                 </div>
@@ -137,8 +147,8 @@ const MonthView: React.FC<MonthViewProps> = ({
 
   while (cells.length % 7 !== 0) {
     cells.push(
-      <td key={`pe-${cells.length}`} className="p-1 bg-theme-grid-empty">
-        <div className={contentClass}></div>
+      <td key={`pe-${cells.length}`} className="p-0 h-full align-top" style={{ height: '1px' }}>
+        <div className={`bg-theme-grid-empty ${contentClass}`}></div>
       </td>
     );
   }

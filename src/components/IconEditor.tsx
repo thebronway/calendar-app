@@ -65,7 +65,11 @@ const IconEditor: React.FC<IconEditorProps> = ({ isOpen, onClose, onSave, initia
         <div className="flex space-x-4 items-center">
           <div className="w-12 h-12 flex items-center justify-center">
             {IconComponent && iconType !== 'None' && (
-              <IconComponent size={30} className={iconColor} />
+              <IconComponent 
+                size={30} 
+                className={iconColor.startsWith('#') ? '' : iconColor} 
+                style={{ color: iconColor.startsWith('#') ? iconColor : undefined }}
+              />
             )}
           </div>
           <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -128,14 +132,22 @@ const IconEditor: React.FC<IconEditorProps> = ({ isOpen, onClose, onSave, initia
           {iconSearch.trim() && ` match "${iconSearch}"`}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           {ICON_COLOR_OPTIONS.map((color) => (
             <button
               key={color.id}
               onClick={() => setIconColor(color.class)}
-              className={`w-8 h-8 rounded-full ${color.bg} ${iconColor === color.class ? 'ring-2 ring-offset-2 ring-gray-900' : ''}`}
+              className={`w-8 h-8 rounded-full ${color.bg} ${iconColor === color.class ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-100' : ''}`}
             />
           ))}
+          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+          <input
+            type="color"
+            value={iconColor.startsWith('#') ? iconColor : '#000000'}
+            onChange={(e) => setIconColor(e.target.value)}
+            className={`w-8 h-8 p-0 border-0 rounded cursor-pointer overflow-hidden ${iconColor.startsWith('#') ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-100' : ''}`}
+            title="Custom Color"
+          />
         </div>
         <div className="flex justify-end space-x-3 pt-4">
           <button onClick={onClose} className="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded-lg">

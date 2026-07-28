@@ -1,36 +1,59 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-06*  
-*Current Version: v1.1.5*
+*Last updated: 2026-07-24*  
+*Current Version: v1.1.6*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.1.6: UI Updates
-- Update deafult custom theme values to something cool and aesthetically pleasing (green theme?)
-- Add Custom Color picker addtional option activity and category customization in key (keep current colors as is)
-- Add git open issue (for bugs and feeature requests) to readme, userguide and help modal
-- Add BMC link somewhere? https://buymeacoffee.com/brianconway
-- Fix calendar cell day spacing
-  - need to balance glance-ability versus cramming too much into a cell
-  - keep the three row standard height - but make it consistent because right now if you have a combination of multiple locations  versus a bunch of icons, the three lines are different heights. 
-  - if a fourth row is added, that's OK. It should be exactly one line added
-  - make sure highlights (bulk edit and search results are select properly, right now its a little wonky on some cells when there are taller cells in that row)
+### Release v1.1.7: UI Updates
+- Highlight the current month <name> (only in the current year) like the days is
+- Stats (Days Traveling and Time Traveling)
+  - Days Traveling > Days
+  - Time Traveling > Time
+  - Location Counts > Locations
+  - If more than one category
+    - Split each both into 1/3 on the left 2/3rds on the on the right with a divider (not touching the top or bottom)
+    - Left side uses the current stats
+    - Right side is Broken down by category
+      - Category Bubble like on Planner/List and then total Days or Time depending on the box
+    - Stats box need to extand vertically if needed for multile categories (main day/time stat should stay vertically centered in that space, along with categoies).
+    - I want to add total unqiue location count somewhere
 
-### Release v1.2.0: Trips
+### Release v1.1.8: UX Updates
+- Bulk Edit needs a checkbox (modern), for each of the 4 sections when selecting days.
+  - Ex. So a user can just update the category for a set of days and not wipe out the Locations, Activities, notes, etc.
+  - Grey out the non selected sections
+  - If bulk editing is going to be overwiting or removing data - need a popup (dont need if adding data to blank fields)
+  - If bulk edting a set of days that all have the same category (or location or notes or whatever) then bring that into the bulk edit form.
+- If the key is updated for a year, then anything in that year needs to be upadated accoordingly in that year (like if the color is changed or the name is updated, that changes needs to propogate)
+
+### Release v1.1.9: Events (WIP)
+- Every day can have an event (max 1 per day)
+- Events span multiple days
+- Events should be on the 2 lines right below the number
+
+### Release v1.2.0: Trips (WIP)
+- Adding "Trips / Events" Functionality. Need opinion on name
+- Trips / Events will take 2 lines and the activites will take up 1 line (with a flex of a second line if 3 or 4 activities)
+- Line one will be the trip name
+- Line two will be a list of location (not in bubbles)
+- Line 1 and 2 will be one big bubble that can span multiple cells horizantally
+- If goes onto a new week like the bubble wont havea. close blubble, it will have a flat line, and the next line will start with a flat fline and end with a bubble
+- The trip/event bubble will be colored the category color, not the whole cell.
 
 ### Release v1.2.1: UI Updates
 - New flat deafult colors plus Custom Color picker addtional option category customization in key 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
-- Identify additional elements for theming that have hard coded static elements (look at what is already done for custom as a start)
-  - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
+
 
 ### Release v1.2.2: iCal updates
 - Key Modal Categories and Activites
   - Duplicate Names are allowed (bad for URL ID)
+  - Update URL IDs to have cat- or act- in front of ID.
 - We may need to not base the feed creation on a year of a key, maybe need to pull in all unique ones
 - **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
 - **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
@@ -80,13 +103,13 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.3.5
+### Release v1.3.1
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
   - Optimize the dynamic icon imports (`lucide-react`) to ensure aggressive tree-shaking, and implement lazy loading for modals. For Faster initial page loads, particularly crucial for mobile users on cellular networks.
 
-### Release v1.3.6
+### Release v1.3.7
 - Standardize and cleanup comments, remove dead code, and clean up inline styles while splitting components. 
   - Look for monolithic files.
 - Reorgainze files (put in folders if needed)
@@ -96,10 +119,14 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Accessibility Improvements
   - Add ARIA labels to icon-only buttons, trap focus inside modals.
 
-### Release v1.3.7
+### Release v1.3.8
 - Establishing test suite of professional-grade foundation for long-term maintenance.
   - Introduce Jest and React Testing Library for core utilities (date math, JSON parsing) and component rendering which should prevent regressions during major refactors.
 - Package Updates - how to maintain
+
+### Release v1.3.9
+- Identify additional elements for theming that have hard coded static elements (look at what is already done for custom as a start)
+  - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
 ### Release v1.5.0: Multi User Support
 

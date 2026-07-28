@@ -87,12 +87,13 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
             {activeDays.length > 0 ? (
               activeDays.map((day) => {
                 const category = keyItems.find((k) => k.id === day.colorId);
+                const isCustomHex = category?.colorCode?.startsWith('#');
                 const colorDef = category
                   ? CATEGORY_COLORS.find((c) => c.id === category.colorCode)
                   : null;
                 const catClass = colorDef
-                  ? `${colorDef.bg} text-white dark:text-gray-900`
-                  : 'bg-theme-panel text-theme-text border border-theme-item';
+                  ? `${colorDef.bg} text-white dark:text-gray-900 border-transparent`
+                  : (isCustomHex ? 'text-white dark:text-gray-900 border-transparent' : 'bg-theme-panel text-theme-text border border-theme-item');
 
                 const [y, m, d] = day.key.split('-');
                 const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
@@ -119,6 +120,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                           {category && (
                             <span
                               className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${catClass}`}
+                              style={{ backgroundColor: isCustomHex ? category.colorCode : undefined }}
                             >
                               {category.label}
                             </span>
@@ -146,7 +148,7 @@ const SingleMonthView: React.FC<SingleMonthViewProps> = ({
                                   key={i}
                                   className="flex items-center gap-1.5 bg-theme-panel border border-theme-item px-2 py-1 rounded-md shadow-sm"
                                 >
-                                  <IC size={14} className={icon.color} />
+                                  <IC size={14} className={icon.color?.startsWith('#') ? '' : icon.color} style={{ color: icon.color?.startsWith('#') ? icon.color : undefined }} />
                                   <span className="text-xs font-medium text-theme-text">
                                     {label}
                                   </span>

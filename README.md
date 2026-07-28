@@ -1,7 +1,7 @@
 # A Simple Self-Hosted Calendar App
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-v1.1.5-blue.svg)
+![Version](https://img.shields.io/badge/version-v1.1.6-blue.svg)
 ![Docker](https://img.shields.io/docker/pulls/thebronway/calendar-app?logo=docker)
 
 ### A self-hosted, real-time calendar and activity tracker built with React, Node.js, and Docker.
@@ -9,11 +9,12 @@
 This self-hosted calendar provides a simple web dashboard to share your schedule with friends and family. It tracks your upcoming travel plans to keep your personal network informed and displays your availability so others can plan accordingly.
 
 ## Try it yourself: [Live Demo](https://calendar-demo.conway.im/)  
-**GitHub:** [thebronway/calendar-app](https://github.com/thebronway/calendar-app)  
+**GitHub:** [thebronway/calendar-app](https://github.com/thebronway/calendar-app) | [Report a Bug or Request a Feature](https://github.com/thebronway/calendar-app/issues)  
 **Docker Hub:** [thebronway/calendar-app](https://hub.docker.com/r/thebronway/calendar-app)  
 **Documentation:** Read the [User Guide](./docs/USER_GUIDE.md) for setup, configuration, and feature details.  
 **Roadmap:** See planned features in the [Project Roadmap](./ROADMAP.md).  
-**Changelog:** Review past releases in the [Changelog](./CHANGELOG.md).
+**Changelog:** Review past releases in the [Changelog](./CHANGELOG.md).  
+**Support:** Find this useful? [Support my work (Buy me a coffee)](https://buymeacoffee.com/brianconway).
 
 ## Features
 

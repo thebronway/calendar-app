@@ -91,10 +91,11 @@ const ActivityManager: React.FC<ActivityManagerProps> = ({
             // Find its true index in the master list so drag/drop works even when filtered
             const originalIndex = activities.findIndex((i) => i.id === item.id);
             const IconC = item.icon ? ICON_MAP[item.icon] : null;
-            const displayColor = !item.iconColor || item.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : item.iconColor;
+            const isCustomHex = item.iconColor?.startsWith('#');
+            const displayColor = !item.iconColor || item.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : (isCustomHex ? '' : item.iconColor);
             
             return (
-              <div 
+              <div
                 key={item.id} 
                 draggable
                 onDragStart={() => (dragItem.current = originalIndex)}
@@ -108,7 +109,7 @@ const ActivityManager: React.FC<ActivityManagerProps> = ({
                   onClick={() => onEditIconClick(item.id)} 
                   className="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 >
-                  {IconC ? <IconC size={24} className={displayColor} /> : <span className="text-xs text-gray-500">None</span>}
+                  {IconC ? <IconC size={24} className={displayColor} style={{ color: isCustomHex ? item.iconColor : undefined }} /> : <span className="text-xs text-gray-500">None</span>}
                 </button>
                 <div className="flex-1 min-w-0">
                   <input

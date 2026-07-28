@@ -48,17 +48,20 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
       onConfigChange('themeAccentDark', '#3b82f6');
       onConfigChange('themeAccentSecondaryDark', '#8b5cf6');
     } else if (activeTab === 'custom') {
-      onConfigChange('customBg', '#111827');
-      onConfigChange('customAccent', '#3b82f6');
-      onConfigChange('customAccentSecondary', '#8b5cf6');
-      onConfigChange('customItemBg', '#374151');
-      onConfigChange('customItemHoverBg', '#4b5563');
-      onConfigChange('customTextSecondary', '#9ca3af');
-      onConfigChange('customGridDivider', '#374151');
-      onConfigChange('customGridHeaderBg', '#2b3544');
-      onConfigChange('customGridCellBg', '#1f2937');
-      onConfigChange('customGridEmptyBg', '#111827');
-      onConfigChange('customGridTextHighlighted', '#111827');
+      onConfigChange('customBg', '#052e16');
+      onConfigChange('customPanelBg', '#064e3b');
+      onConfigChange('customTextPrimary', '#ecfdf5');
+      onConfigChange('customTextSecondary', '#a7f3d0');
+      onConfigChange('customAccent', '#10b981');
+      onConfigChange('customAccentText', '#064e3b');
+      onConfigChange('customAccentSecondary', '#f59e0b');
+      onConfigChange('customItemBg', '#065f46');
+      onConfigChange('customItemHoverBg', '#047857');
+      onConfigChange('customGridDivider', '#065f46');
+      onConfigChange('customGridHeaderBg', '#064e3b');
+      onConfigChange('customGridCellBg', '#052e16');
+      onConfigChange('customGridEmptyBg', '#022c22');
+      onConfigChange('customGridTextHighlighted', '#022c22');
     }
   };
 
@@ -141,37 +144,37 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ config, onConfigChange, c
             <div>
               <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Base & Panels</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ColorInput label="Main Background" description="Overarching canvas." value={config.customBg || '#111827'} field="customBg" onConfigChange={onConfigChange} />
-                <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#1f2937'} field="customPanelBg" onConfigChange={onConfigChange} />
-                <ColorInput label="Item Background" description="Category and activity buttons." value={config.customItemBg || '#374151'} field="customItemBg" onConfigChange={onConfigChange} />
-                <ColorInput label="Item Hover" description="Hover state for items/buttons." value={config.customItemHoverBg || '#4b5563'} field="customItemHoverBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Main Background" description="Overarching canvas." value={config.customBg || '#052e16'} field="customBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Panel Background" description="Cards, modals, and grids." value={config.customPanelBg || '#064e3b'} field="customPanelBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Item Background" description="Category and activity buttons." value={config.customItemBg || '#065f46'} field="customItemBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Item Hover" description="Hover state for items/buttons." value={config.customItemHoverBg || '#047857'} field="customItemHoverBg" onConfigChange={onConfigChange} />
               </div>
             </div>
 
             <div>
               <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Accents & Highlights</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.customAccent || '#3b82f6'} field="customAccent" onConfigChange={onConfigChange} />
-                <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.customAccentSecondary || '#8b5cf6'} field="customAccentSecondary" onConfigChange={onConfigChange} />
+                <ColorInput label="Primary Accent" description="Main highlights and search filters." value={config.customAccent || '#10b981'} field="customAccent" onConfigChange={onConfigChange} />
+                <ColorInput label="Secondary Accent" description="Bulk edit selections and secondary stats." value={config.customAccentSecondary || '#f59e0b'} field="customAccentSecondary" onConfigChange={onConfigChange} />
               </div>
             </div>
 
             <div>
               <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Typography</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#f3f4f6'} field="customTextPrimary" onConfigChange={onConfigChange} />
-                <ColorInput label="Secondary Text" description="Subheadings and less prominent text." value={config.customTextSecondary || '#9ca3af'} field="customTextSecondary" onConfigChange={onConfigChange} />
-                <ColorInput label="Accent Contrast Text" description="Text sitting on top of the accent." value={config.customAccentText || '#ffffff'} field="customAccentText" onConfigChange={onConfigChange} />
+                <ColorInput label="Primary Text" description="Headings and main body." value={config.customTextPrimary || '#ecfdf5'} field="customTextPrimary" onConfigChange={onConfigChange} />
+                <ColorInput label="Secondary Text" description="Subheadings and less prominent text." value={config.customTextSecondary || '#a7f3d0'} field="customTextSecondary" onConfigChange={onConfigChange} />
+                <ColorInput label="Accent Contrast Text" description="Text sitting on top of the accent." value={config.customAccentText || '#064e3b'} field="customAccentText" onConfigChange={onConfigChange} />
               </div>
             </div>
 
             <div>
               <h5 className="text-sm font-bold text-theme-text mb-3 border-b border-theme-item pb-1">Calendar Grid</h5>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ColorInput label="Grid Header" description="Days of the week row." value={config.customGridHeaderBg || '#2b3544'} field="customGridHeaderBg" onConfigChange={onConfigChange} />
-                <ColorInput label="Grid Cell" description="Numbered day background." value={config.customGridCellBg || '#1f2937'} field="customGridCellBg" onConfigChange={onConfigChange} />
-                <ColorInput label="Grid Divider" description="Borders between cells." value={config.customGridDivider || '#374151'} field="customGridDivider" onConfigChange={onConfigChange} />
-                <ColorInput label="Grid Highlighted Text" description="Text color for days with a category." value={config.customGridTextHighlighted || '#111827'} field="customGridTextHighlighted" onConfigChange={onConfigChange} />
+                <ColorInput label="Grid Header" description="Days of the week row." value={config.customGridHeaderBg || '#064e3b'} field="customGridHeaderBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Grid Cell" description="Numbered day background." value={config.customGridCellBg || '#052e16'} field="customGridCellBg" onConfigChange={onConfigChange} />
+                <ColorInput label="Grid Divider" description="Borders between cells." value={config.customGridDivider || '#065f46'} field="customGridDivider" onConfigChange={onConfigChange} />
+                <ColorInput label="Grid Highlighted Text" description="Text color for days with a category." value={config.customGridTextHighlighted || '#022c22'} field="customGridTextHighlighted" onConfigChange={onConfigChange} />
               </div>
             </div>
           </div>

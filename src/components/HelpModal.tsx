@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, HelpCircle, MousePointer, Layers, BookOpen } from 'lucide-react';
+import { X, HelpCircle, MousePointer, Layers, BookOpen, Github, Coffee } from 'lucide-react';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -115,7 +115,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
         
         {/* Only show User Guide button for Admins */}
         {isAdmin && (
-          <div className="p-4 border-t border-theme-item bg-theme-item shrink-0 rounded-b-xl">
+          <div className="p-4 border-t border-theme-item bg-theme-item shrink-0 rounded-b-xl space-y-3">
             <button
               onClick={onGoToGuide}
               className="w-full flex justify-center items-center gap-2 bg-theme-panel border border-theme-grid-divider text-theme-text px-4 py-2 rounded-lg font-bold hover:bg-theme-item-hover transition-colors shadow-sm"
@@ -123,6 +123,26 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, onGoToGuide, isA
               <BookOpen size={18} />
               Read Full User Guide
             </button>
+            <div className="flex gap-3">
+              <a
+                href="https://github.com/thebronway/calendar-app/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex justify-center items-center gap-2 bg-theme-panel border border-theme-grid-divider text-theme-text px-4 py-2 rounded-lg font-bold hover:bg-theme-item-hover transition-colors shadow-sm text-sm"
+              >
+                <Github size={16} />
+                Report a Bug
+              </a>
+              <a
+                href="https://buymeacoffee.com/brianconway"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex justify-center items-center gap-2 bg-[#FFDD00] text-black border border-yellow-400 px-4 py-2 rounded-lg font-bold hover:bg-[#FFEA4D] transition-colors shadow-sm text-sm"
+              >
+                <Coffee size={16} />
+                Support Project
+              </a>
+            </div>
           </div>
         )}
       </div>

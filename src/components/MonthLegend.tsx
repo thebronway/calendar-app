@@ -51,11 +51,12 @@ const MonthLegend: React.FC<MonthLegendProps> = ({ month, calendarData, keyItems
           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Categories</h4>
           <div className="space-y-2.5">
             {activeKeys.activeCategories.map(cat => {
+              const isCustomHex = cat.colorCode?.startsWith('#');
               const colorDef = CATEGORY_COLORS.find(c => c.id === cat.colorCode);
-              const bgClass = colorDef ? colorDef.bg : 'bg-gray-200 dark:bg-gray-700';
+              const bgClass = colorDef ? colorDef.bg : (isCustomHex ? '' : 'bg-gray-200 dark:bg-gray-700');
               return (
                 <div key={cat.id} className="flex items-center space-x-2.5">
-                  <div className={`w-4 h-4 rounded ${bgClass} border border-black/10 dark:border-white/10`} />
+                  <div className={`w-4 h-4 rounded ${bgClass} border border-black/10 dark:border-white/10`} style={{ backgroundColor: isCustomHex ? cat.colorCode : undefined }} />
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-tight">{cat.label}</span>
                 </div>
               );
@@ -70,11 +71,12 @@ const MonthLegend: React.FC<MonthLegendProps> = ({ month, calendarData, keyItems
           <div className="space-y-2.5">
             {activeKeys.activeActivities.map(act => {
               const IconComponent = act.icon ? ICON_MAP[act.icon] : null;
-              const iconColor = !act.iconColor || act.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : act.iconColor;
+              const isCustomHex = act.iconColor?.startsWith('#');
+              const iconColor = !act.iconColor || act.iconColor === 'none' ? 'text-gray-900 dark:text-gray-100' : (isCustomHex ? '' : act.iconColor);
               return (
                 <div key={act.id} className="flex items-center space-x-2.5">
                   <div className="w-5 flex justify-center flex-shrink-0">
-                    {IconComponent && <IconComponent size={18} className={iconColor} />}
+                    {IconComponent && <IconComponent size={18} className={iconColor} style={{ color: isCustomHex ? act.iconColor : undefined }} />}
                   </div>
                   <span className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-tight">{act.label}</span>
                 </div>
