@@ -1,26 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-24*  
-*Current Version: v1.1.6*
+*Last updated: 2026-07-27*  
+*Current Version: v1.1.7*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.1.7: UI Updates
-- Highlight the current month <name> (only in the current year) like the days is
-- Stats (Days Traveling and Time Traveling)
-  - Days Traveling > Days
-  - Time Traveling > Time
-  - Location Counts > Locations
-  - If more than one category
-    - Split each both into 1/3 on the left 2/3rds on the on the right with a divider (not touching the top or bottom)
-    - Left side uses the current stats
-    - Right side is Broken down by category
-      - Category Bubble like on Planner/List and then total Days or Time depending on the box
-    - Stats box need to extand vertically if needed for multile categories (main day/time stat should stay vertically centered in that space, along with categoies).
-    - I want to add total unqiue location count somewhere
 
 ### Release v1.1.8: UX Updates
 - Bulk Edit needs a checkbox (modern), for each of the 4 sections when selecting days.

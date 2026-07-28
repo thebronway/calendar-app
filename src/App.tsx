@@ -584,6 +584,7 @@ export default function App() {
             locationCounts={locationCounts}
             highlightFilters={highlightFilters}
             onLocationFilterToggle={handleLocationFilterToggle}
+            keyItems={filteredKeyItems}
           />
         )}
 

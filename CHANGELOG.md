@@ -1,12 +1,17 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-24*  
-*Current Version: v1.1.6*
+*Last updated: 2026-07-28*  
+*Current Version: v1.1.7*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.7
+- Highlighted the current month name dynamically on the calendar grid using the theme accent
+- Redesigned the Stats section with a dynamic split-panel layout for category breakdowns
+- Simplified Stats section labels (Days, Time) and added a total unique locations counter
 
 ### Release v1.1.6
 - Updated default Custom Theme values to a new "Green Theme" color scheme

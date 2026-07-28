@@ -39,6 +39,7 @@ const MonthView: React.FC<MonthViewProps> = ({
 }) => {
   const mName = MONTHS[monthIndex];
   const isTodayYear = new Date().getFullYear() === year;
+  const isCurrentMonth = isTodayYear && new Date().getMonth() === monthIndex;
   const firstDay = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
   const cells: React.ReactNode[] = [];
@@ -162,20 +163,20 @@ const MonthView: React.FC<MonthViewProps> = ({
     <div id={`month-${monthIndex}`} className={className || "w-full md:w-1/2 2xl:w-1/3 p-2"}>
       {!isPlanner && (
         <div className="flex justify-between items-center mb-2 mt-4 select-none">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+          <h2 className="text-2xl font-bold text-theme-text flex items-center">
             {onMonthClick ? (
               <button 
                 onClick={onMonthClick} 
-                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                className={`transition-colors cursor-pointer ${isCurrentMonth ? 'ring-2 ring-inset ring-theme-accent text-theme-accent px-3 rounded-full hover:bg-theme-accent/10' : 'hover:text-theme-accent'}`}
                 title={`View only ${mName}`}
               >
                 {mName}
               </button>
             ) : (
-              <span>{mName}</span>
+              <span className={isCurrentMonth ? 'ring-2 ring-inset ring-theme-accent text-theme-accent px-3 rounded-full' : ''}>{mName}</span>
             )}
             <span 
-              className="md:hidden ml-2 text-gray-500 transition-transform duration-200 cursor-pointer p-1" 
+              className="md:hidden ml-2 text-theme-text-secondary transition-transform duration-200 cursor-pointer p-1"
               onClick={() => onToggleMonth(monthIndex)}
             >
               {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
