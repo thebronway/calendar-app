@@ -10,9 +10,12 @@ interface EditorActivitiesProps {
   setLocalIcons: React.Dispatch<React.SetStateAction<IconEntry[]>>;
   availableActivities: KeyItem[];
   keyItems: KeyItem[];
+  isBulkEdit?: boolean;
+  bulkEnabled?: boolean;
+  onBulkToggle?: () => void;
 }
 
-export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, setLocalIcons, availableActivities, keyItems }) => {
+export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, setLocalIcons, availableActivities, keyItems, isBulkEdit, bulkEnabled, onBulkToggle }) => {
   const [activitySearch, setActivitySearch] = useState('');
   const [activitySort, setActivitySort] = useState<SortOrder>('key');
   const [editingIconIndex, setEditingIconIndex] = useState<number | null>(null);
@@ -61,8 +64,18 @@ export const EditorActivities: React.FC<EditorActivitiesProps> = ({ localIcons, 
 
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-6">
-      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3 shrink-0">Activities</h4>
-      <div className="flex flex-col flex-1 min-h-0 space-y-4">
+      <div className="flex items-center mb-3 shrink-0">
+        {isBulkEdit && (
+          <input
+            type="checkbox"
+            checked={bulkEnabled}
+            onChange={onBulkToggle}
+            className="mr-2 w-4 h-4 rounded border-theme-item text-theme-accent focus:ring-theme-accent cursor-pointer"
+          />
+        )}
+        <h4 className={`text-sm font-bold text-theme-text-secondary uppercase tracking-widest ${isBulkEdit && !bulkEnabled ? 'opacity-50' : ''}`}>Activities</h4>
+      </div>
+      <div className={`flex flex-col flex-1 min-h-0 space-y-4 transition-opacity ${isBulkEdit && !bulkEnabled ? 'opacity-50 pointer-events-none select-none' : ''}`}>
         
         {/* Selected Activities */}
         <div className="space-y-2 shrink-0">

@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-28*  
-*Current Version: v1.1.7*
+*Last updated: 2026-07-29*  
+*Current Version: v1.1.8*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.8
+- Added checkboxes to the Bulk Edit tool to prevent wiping existing data
+- Implemented  data pre-filling for Bulk Edit when all selected days share identical values
+- Added verbose unsaved changes and data overwrite warnings to prevent accidental data loss
+- Implemented Key update data propagation to automatically sync  calendar activities when modified in the Key
 
 ### Release v1.1.7
 - Highlighted the current month name dynamically on the calendar grid using the theme accent

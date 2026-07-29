@@ -1,27 +1,21 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-27*  
-*Current Version: v1.1.7*
+*Last updated: 2026-07-29*  
+*Current Version: v1.1.8*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.1.8: UX Updates
-- Bulk Edit needs a checkbox (modern), for each of the 4 sections when selecting days.
-  - Ex. So a user can just update the category for a set of days and not wipe out the Locations, Activities, notes, etc.
-  - Grey out the non selected sections
-  - If bulk editing is going to be overwiting or removing data - need a popup (dont need if adding data to blank fields)
-  - If bulk edting a set of days that all have the same category (or location or notes or whatever) then bring that into the bulk edit form.
-- If the key is updated for a year, then anything in that year needs to be upadated accoordingly in that year (like if the color is changed or the name is updated, that changes needs to propogate)
+### Release v1.1.9: 
+- Admin Menu BAr
+- Month Highlight
 
-### Release v1.1.9: Events (WIP)
+### Release v1.2.0: Events (WIP)
 - Every day can have an event (max 1 per day)
 - Events span multiple days
 - Events should be on the 2 lines right below the number
-
-### Release v1.2.0: Trips (WIP)
 - Adding "Trips / Events" Functionality. Need opinion on name
 - Trips / Events will take 2 lines and the activites will take up 1 line (with a flex of a second line if 3 or 4 activities)
 - Line one will be the trip name
@@ -29,12 +23,12 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - Line 1 and 2 will be one big bubble that can span multiple cells horizantally
 - If goes onto a new week like the bubble wont havea. close blubble, it will have a flat line, and the next line will start with a flat fline and end with a bubble
 - The trip/event bubble will be colored the category color, not the whole cell.
-
-### Release v1.2.1: UI Updates
 - New flat deafult colors plus Custom Color picker addtional option category customization in key 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
 
+### Release v1.2.1: 
+-
 
 ### Release v1.2.2: iCal updates
 - Key Modal Categories and Activites
@@ -45,6 +39,12 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
 - **Cross-Year Event Preservation:** Prevent historical events from disappearing when categories or activities are deleted or modified in later year setups.
 - **Continuous Rolling Timeline Feeds:** Maintain multi-year calendar subscriptions without requiring manual annual URL renewals.
+
+### Release v1.2.3: 
+-
+
+### Release v1.2.4: 
+-
 
 ### Release v1.2.5: Enterprise Single Sign-On (SSO / OIDC)
 - **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).
@@ -62,6 +62,12 @@ This document tracks planned improvements, enhancements, and technical debt for 
 - **Configuration:** Add a `webhooks` array to the core `AppConfig` type mapping unique webhook IDs, payload destination URLs, and a toggleable active state flag.
 - **Diff Engine:** Intercept `POST /api/data/:year` requests to compute a baseline structural difference, checking if a new entry or activity update occurred to avoid notification spam on simple spelling corrections.
 - **Payload Dispatcher:** Asynchronously fire out a standardized JSON POST body payload containing text templates summarizing the modification out to all active webhook endpoints.
+
+### Release v1.2.8: 
+-
+
+### Release v1.2.9: 
+-
 
 ### Release v1.3.0: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**

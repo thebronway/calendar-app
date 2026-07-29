@@ -13,13 +13,26 @@ interface EditorCategoriesProps {
   categories: CategoryOption[];
   selectedId: string;
   onSelect: (id: string) => void;
+  isBulkEdit?: boolean;
+  bulkEnabled?: boolean;
+  onBulkToggle?: () => void;
 }
 
-export const EditorCategories: React.FC<EditorCategoriesProps> = ({ categories, selectedId, onSelect }) => {
+export const EditorCategories: React.FC<EditorCategoriesProps> = ({ categories, selectedId, onSelect, isBulkEdit, bulkEnabled, onBulkToggle }) => {
   return (
-    <div className="shrink-0">
-      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3">Category</h4>
-      <div className="flex flex-wrap gap-2 min-h-12 items-center">
+    <div className="shrink-0 flex flex-col">
+      <div className="flex items-center mb-3">
+        {isBulkEdit && (
+          <input
+            type="checkbox"
+            checked={bulkEnabled}
+            onChange={onBulkToggle}
+            className="mr-2 w-4 h-4 rounded border-theme-item text-theme-accent focus:ring-theme-accent cursor-pointer"
+          />
+        )}
+        <h4 className={`text-sm font-bold text-theme-text-secondary uppercase tracking-widest ${isBulkEdit && !bulkEnabled ? 'opacity-50' : ''}`}>Category</h4>
+      </div>
+      <div className={`flex flex-wrap gap-2 min-h-12 items-center transition-opacity ${isBulkEdit && !bulkEnabled ? 'opacity-50 pointer-events-none select-none' : ''}`}>
         {categories.map((color) => {
           const isSelected = selectedId === color.id;
           return (

@@ -3,7 +3,7 @@ import { AlertTriangle, X } from 'lucide-react';
 
 interface ConfirmOptions {
   title?: string;
-  message?: string;
+  message?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
 }

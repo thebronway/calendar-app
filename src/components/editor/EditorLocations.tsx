@@ -4,9 +4,12 @@ import { X } from 'lucide-react';
 interface EditorLocationsProps {
   localLocations: string;
   setLocalLocations: (val: string) => void;
+  isBulkEdit?: boolean;
+  bulkEnabled?: boolean;
+  onBulkToggle?: () => void;
 }
 
-export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations, setLocalLocations }) => {
+export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations, setLocalLocations, isBulkEdit, bulkEnabled, onBulkToggle }) => {
   const [locationInput, setLocationInput] = useState('');
 
   useEffect(() => {
@@ -39,9 +42,19 @@ export const EditorLocations: React.FC<EditorLocationsProps> = ({ localLocations
   };
 
   return (
-    <div className="shrink-0">
-      <h4 className="text-sm font-bold text-theme-text-secondary uppercase tracking-widest mb-3">Locations</h4>
-      <div className="flex flex-wrap gap-2 p-2 w-full border border-theme-item rounded-lg bg-theme-item focus-within:border-theme-accent focus-within:ring-1 focus-within:ring-theme-accent transition-shadow cursor-text" onClick={() => document.getElementById('location-input')?.focus()}>
+    <div className="shrink-0 flex flex-col">
+      <div className="flex items-center mb-3">
+        {isBulkEdit && (
+          <input
+            type="checkbox"
+            checked={bulkEnabled}
+            onChange={onBulkToggle}
+            className="mr-2 w-4 h-4 rounded border-theme-item text-theme-accent focus:ring-theme-accent cursor-pointer"
+          />
+        )}
+        <h4 className={`text-sm font-bold text-theme-text-secondary uppercase tracking-widest ${isBulkEdit && !bulkEnabled ? 'opacity-50' : ''}`}>Locations</h4>
+      </div>
+      <div className={`flex flex-wrap gap-2 p-2 w-full border border-theme-item rounded-lg bg-theme-item focus-within:border-theme-accent focus-within:ring-1 focus-within:ring-theme-accent transition-all cursor-text ${isBulkEdit && !bulkEnabled ? 'opacity-50 pointer-events-none select-none' : ''}`} onClick={() => { if (!isBulkEdit || bulkEnabled) document.getElementById('location-input')?.focus(); }}>
         {localLocations.split(',').map(l => l.trim()).filter(Boolean).map((loc, index) => (
           <span 
             key={index} 

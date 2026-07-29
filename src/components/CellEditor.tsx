@@ -18,17 +18,18 @@ interface CellEditorProps {
   isOpen: boolean;
   onClose: () => void;
   dayData: Partial<DayData> | null;
-  onSave: (data: Partial<DayData>, nextAction?: 'prev' | 'next' | 'close') => void;
+  onSave: (data: Partial<DayData>, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean }) => void;
   onNavigate?: (direction: 'prev' | 'next') => void;
   isAdmin: boolean;
   keyItems: KeyItem[];
   isBulkEdit: boolean;
   bulkCount: number;
   hasFilters?: boolean;
+  selectedDaysData?: Partial<DayData>[];
 }
 
 const CellEditor: React.FC<CellEditorProps> = memo(
-  ({ isOpen, onClose, dayData, onSave, onNavigate, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters }) => {
+  ({ isOpen, onClose, dayData, onSave, onNavigate, isAdmin, keyItems, isBulkEdit, bulkCount, hasFilters, selectedDaysData }) => {
     const dateStrings = useMemo(() => {
       if (!dayData || isBulkEdit) return { full: '', short: '' };
       const mIndex = MONTHS.indexOf(dayData.month || '');
@@ -65,36 +66,122 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     const [localIcons, setLocalIcons] = useState<IconEntry[]>([]);
     const [activeTab, setActiveTab] = useState<TabId>('cat_act');
 
+    const [enableCategory, setEnableCategory] = useState(false);
+    const [enableActivities, setEnableActivities] = useState(false);
+    const [enableLocations, setEnableLocations] = useState(false);
+    const [enableNotes, setEnableNotes] = useState(false);
+
     useEffect(() => {
-      if (isOpen && dayData) {
-        setLocalLocations(dayData.locations || '');
-        setLocalDetails(dayData.details || '');
-        setLocalColorId(dayData.colorId || 'none');
-        setLocalIcons((dayData.icons as IconEntry[]) || []);
-        setActiveTab('cat_act');
+      if (isOpen) {
+        if (isBulkEdit && selectedDaysData && selectedDaysData.length > 0) {
+          const first = selectedDaysData[0];
+          let sharedLoc = first.locations || '';
+          let sharedDet = first.details || '';
+          let sharedCol = first.colorId || 'none';
+          let sharedIcons = first.icons || [];
+          
+          let sameLoc = true, sameDet = true, sameCol = true, sameIcons = true;
+          
+          for (let i = 1; i < selectedDaysData.length; i++) {
+            const d = selectedDaysData[i];
+            if ((d.locations || '') !== sharedLoc) sameLoc = false;
+            if ((d.details || '') !== sharedDet) sameDet = false;
+            if ((d.colorId || 'none') !== sharedCol) sameCol = false;
+            if (JSON.stringify(d.icons || []) !== JSON.stringify(sharedIcons)) sameIcons = false;
+          }
+
+          setLocalLocations(sameLoc ? sharedLoc : '');
+          setLocalDetails(sameDet ? sharedDet : '');
+          setLocalColorId(sameCol ? sharedCol : 'none');
+          setLocalIcons(sameIcons ? sharedIcons : []);
+
+          setEnableCategory(sameCol && sharedCol !== 'none');
+          setEnableLocations(sameLoc && sharedLoc !== '');
+          setEnableNotes(sameDet && sharedDet !== '');
+          setEnableActivities(sameIcons && sharedIcons.length > 0);
+          
+          setActiveTab('cat_act');
+        } else if (dayData && !isBulkEdit) {
+          setLocalLocations(dayData.locations || '');
+          setLocalDetails(dayData.details || '');
+          setLocalColorId(dayData.colorId || 'none');
+          setLocalIcons((dayData.icons as IconEntry[]) || []);
+          setActiveTab('cat_act');
+          
+          setEnableCategory(false);
+          setEnableActivities(false);
+          setEnableLocations(false);
+          setEnableNotes(false);
+        }
       }
-    }, [isOpen, dayData]);
+    }, [isOpen, dayData, isBulkEdit, selectedDaysData]);
 
-    const isDirty = useMemo(() => {
-      if (!isAdmin || !dayData) return false;
+    const dirtyState = useMemo(() => {
+      if (!isAdmin || !dayData) return { isDirty: false, changedFields: [] as string[] };
       
-      // Quill rich text editor defaults empty content to "<p><br></p>"
-      const normalizedLocalDetails = localDetails === '<p><br></p>' ? '' : localDetails;
-      const normalizedDayDetails = dayData.details === '<p><br></p>' ? '' : (dayData.details || '');
+      if (isBulkEdit) {
+        const fields = [];
+        if (enableCategory) fields.push('Category');
+        if (enableActivities) fields.push('Activities');
+        if (enableLocations) fields.push('Locations');
+        if (enableNotes) fields.push('Notes');
+        return { isDirty: fields.length > 0, changedFields: fields };
+      }
 
-      return (
-        localLocations !== (dayData.locations || '') ||
-        normalizedLocalDetails !== normalizedDayDetails ||
-        localColorId !== (dayData.colorId || 'none') ||
-        JSON.stringify(localIcons) !== JSON.stringify((dayData.icons as IconEntry[]) || [])
-      );
-    }, [isAdmin, dayData, localLocations, localDetails, localColorId, localIcons]);
+      const changedFields: string[] = [];
+
+      const safeLocs = (dayData.locations || '').trim();
+      const localLocs = localLocations.trim();
+      if (safeLocs !== localLocs) changedFields.push('Locations');
+
+      if (localColorId !== (dayData.colorId || 'none')) changedFields.push('Category');
+
+      // Safe icons check (ignoring strict object stringification order)
+      const safeIcons = dayData.icons || [];
+      let iconsChanged = localIcons.length !== safeIcons.length;
+      if (!iconsChanged) {
+        for (let i = 0; i < localIcons.length; i++) {
+          const l = localIcons[i];
+          const d = safeIcons[i];
+          if ((l.value || l.icon) !== (d.value || d.icon) || l.color !== d.color || l.displayName !== d.displayName) {
+            iconsChanged = true;
+            break;
+          }
+        }
+      }
+      if (iconsChanged) changedFields.push('Activities');
+
+      // Safe details check (Quill is notoriously noisy on mount with HTML structure)
+      const dDet = dayData.details === '<p><br></p>' || !dayData.details ? '' : dayData.details;
+      const lDet = localDetails === '<p><br></p>' || !localDetails ? '' : localDetails;
+      
+      if (lDet !== dDet) {
+        // If strict equality fails, do a relaxed check. 
+        const strip = (s: string) => s.replace(/<[^>]*>?/gm, '').replace(/\s+/g, '');
+        if (strip(lDet) !== strip(dDet)) {
+          changedFields.push('Notes');
+        }
+      }
+
+      return { isDirty: changedFields.length > 0, changedFields };
+    }, [isAdmin, dayData, localLocations, localDetails, localColorId, localIcons, isBulkEdit, enableCategory, enableActivities, enableLocations, enableNotes]);
 
     const { confirm } = useConfirm();
-    usePreventTabClose(isDirty);
+    usePreventTabClose(dirtyState.isDirty);
 
     const handleClose = async () => {
-      if (isDirty && !(await confirm())) return;
+      if (dirtyState.isDirty && !(await confirm({
+        title: 'Unsaved Changes',
+        message: (
+          <div>
+            <p className="mb-2">You have unsaved changes in the following fields:</p>
+            <ul className="list-disc pl-5 mb-3 font-semibold text-amber-600 dark:text-amber-500">
+              {dirtyState.changedFields.map(f => <li key={f}>{f}</li>)}
+            </ul>
+            <p>Are you sure you want to discard them?</p>
+          </div>
+        )
+      }))) return;
       onClose();
     };
 
@@ -111,8 +198,19 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           e.preventDefault();
           const direction = e.key === 'ArrowLeft' ? 'prev' : 'next';
           
-          if (isDirty) {
-            if (await confirm({ message: 'You have unsaved changes. Discard them and move?' })) {
+          if (dirtyState.isDirty) {
+            if (await confirm({ 
+              title: 'Unsaved Changes',
+              message: (
+                <div>
+                  <p className="mb-2">You have unsaved changes in the following fields:</p>
+                  <ul className="list-disc pl-5 mb-3 font-semibold text-amber-600 dark:text-amber-500">
+                    {dirtyState.changedFields.map(f => <li key={f}>{f}</li>)}
+                  </ul>
+                  <p>Discard them and move?</p>
+                </div>
+              )
+            })) {
               onNavigate?.(direction);
             }
           } else {
@@ -123,10 +221,51 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, dayData, isBulkEdit, isDirty, onNavigate]);
+    }, [isOpen, dayData, isBulkEdit, dirtyState, onNavigate]);
 
-    const handleSave = (nextAction?: 'prev' | 'next' | 'close') => {
-      onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons }, nextAction);
+    const handleSave = async (nextAction?: 'prev' | 'next' | 'close') => {
+      if (isBulkEdit) {
+        // Interception check for overwriting existing non-blank data
+        const overwrittenFields = new Set<string>();
+        if (selectedDaysData) {
+          for (const day of selectedDaysData) {
+            if (enableCategory && day.colorId && day.colorId !== 'none' && day.colorId !== localColorId) overwrittenFields.add('Category');
+            if (enableActivities && day.icons && day.icons.length > 0 && JSON.stringify(day.icons) !== JSON.stringify(localIcons)) overwrittenFields.add('Activities');
+            if (enableLocations && day.locations && day.locations !== localLocations) overwrittenFields.add('Locations');
+            
+            const normDayDet = day.details === '<p><br></p>' ? '' : (day.details || '');
+            const normLocDet = localDetails === '<p><br></p>' ? '' : localDetails;
+            if (enableNotes && normDayDet && normDayDet !== normLocDet) overwrittenFields.add('Notes');
+          }
+        }
+
+        if (overwrittenFields.size > 0) {
+          const fieldsList = Array.from(overwrittenFields);
+          if (!(await confirm({
+            title: 'Overwrite Existing Data?',
+            message: (
+              <div>
+                <p className="mb-2">You are about to overwrite existing data in the following fields across your selected days:</p>
+                <ul className="list-disc pl-5 mb-3 font-semibold text-red-600 dark:text-red-400">
+                  {fieldsList.map(f => <li key={f}>{f}</li>)}
+                </ul>
+                <p>Are you sure you want to proceed?</p>
+              </div>
+            ),
+            confirmText: 'Overwrite',
+          }))) {
+            return;
+          }
+        }
+
+        onSave(
+          { ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons },
+          nextAction,
+          { category: enableCategory, activities: enableActivities, locations: enableLocations, notes: enableNotes }
+        );
+      } else {
+        onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons }, nextAction);
+      }
     };
 
     const handleClearAll = async () => {
@@ -248,22 +387,34 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                     categories={categoryOptions} 
                     selectedId={localColorId} 
                     onSelect={setLocalColorId} 
+                    isBulkEdit={isBulkEdit}
+                    bulkEnabled={enableCategory}
+                    onBulkToggle={() => setEnableCategory(!enableCategory)}
                   />
                   <EditorActivities 
                     localIcons={localIcons} 
                     setLocalIcons={setLocalIcons} 
                     availableActivities={availableActivities} 
                     keyItems={keyItems} 
+                    isBulkEdit={isBulkEdit}
+                    bulkEnabled={enableActivities}
+                    onBulkToggle={() => setEnableActivities(!enableActivities)}
                   />
                 </div>
                 <div className={`${activeTab === 'loc_notes' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 h-full min-h-0`}>
                   <EditorLocations 
                     localLocations={localLocations} 
                     setLocalLocations={setLocalLocations} 
+                    isBulkEdit={isBulkEdit}
+                    bulkEnabled={enableLocations}
+                    onBulkToggle={() => setEnableLocations(!enableLocations)}
                   />
                   <EditorNotes 
                     localDetails={localDetails} 
                     setLocalDetails={setLocalDetails} 
+                    isBulkEdit={isBulkEdit}
+                    bulkEnabled={enableNotes}
+                    onBulkToggle={() => setEnableNotes(!enableNotes)}
                   />
                 </div>
               </div>

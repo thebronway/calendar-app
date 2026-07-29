@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Loader } from 'lucide-react';
 
 // Layout
@@ -383,21 +383,29 @@ export default function App() {
     }
   };
 
-  const handleDayUpdate = (updatedDayData: any, nextAction?: 'prev' | 'next' | 'close') => {
+  const handleDayUpdate = (updatedDayData: any, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean }) => {
     const ts = new Date().toLocaleDateString();
     const newDayData: CalendarDataset = { ...(calendarData ?? {}) };
 
     if (activeCell === 'bulk') {
       selectedCells.forEach((dayKey) => {
         const [y, m, d] = dayKey.split('-');
-        newDayData[dayKey] = {
+        const existingDay = newDayData[dayKey] || {
           day: parseInt(d, 10),
           month: MONTHS[parseInt(m, 10) - 1],
           year: parseInt(y, 10),
-          colorId: updatedDayData.colorId,
-          icons: updatedDayData.icons,
-          locations: updatedDayData.locations,
-          details: updatedDayData.details,
+          colorId: 'none',
+          icons: [],
+          locations: '',
+          details: '',
+        };
+
+        newDayData[dayKey] = {
+          ...existingDay,
+          colorId: bulkMask?.category ? updatedDayData.colorId : existingDay.colorId,
+          icons: bulkMask?.activities ? updatedDayData.icons : existingDay.icons,
+          locations: bulkMask?.locations ? updatedDayData.locations : existingDay.locations,
+          details: bulkMask?.notes ? updatedDayData.details : existingDay.details,
         };
       });
       clearBulkEdit();
@@ -424,11 +432,61 @@ export default function App() {
   };
 
   const handleKeyUpdate = (newKeyItems: KeyItem[]) => {
+    let hasDataChanges = false;
+    const newDayData: CalendarDataset = { ...(calendarData ?? {}) };
+
+    // Diff activities to propagate icon/color changes to historical data
+    const oldActivities = keyItems.filter(k => !k.isColorKey);
+    const newActivities = newKeyItems.filter(k => !k.isColorKey);
+
+    const activityChanges = oldActivities.map(old => {
+      const match = newActivities.find(n => n.id === old.id);
+      return { old, new: match };
+    }).filter(change => change.new && (change.old.icon !== change.new.icon || change.old.iconColor !== change.new.iconColor));
+
+    if (activityChanges.length > 0 && calendarData) {
+      Object.entries(calendarData).forEach(([key, day]) => {
+        if (day.icons && day.icons.length > 0) {
+          let dayChanged = false;
+          const updatedIcons = day.icons.map(iconEntry => {
+            const val = iconEntry.value || iconEntry.icon;
+            const change = activityChanges.find(c => c.old.icon === val && c.old.iconColor === iconEntry.color);
+            if (change && change.new) {
+              dayChanged = true;
+              return {
+                ...iconEntry,
+                value: change.new.icon,
+                icon: change.new.icon,
+                color: change.new.iconColor || ''
+              };
+            }
+            return iconEntry;
+          });
+          
+          if (dayChanged) {
+            hasDataChanges = true;
+            newDayData[key] = { ...day, icons: updatedIcons };
+          }
+        }
+      });
+    }
+
     setKeyItems(newKeyItems);
+    if (hasDataChanges) {
+      setCalendarData(newDayData);
+    }
+
     const ts = new Date().toLocaleDateString();
     setLastUpdatedText(ts);
-    saveData({ dayData: calendarData ?? {}, keyItems: newKeyItems, lastUpdatedText: ts });
+    saveData({ dayData: newDayData, keyItems: newKeyItems, lastUpdatedText: ts });
   };
+
+  const bulkDayDataMock = useMemo(() => ({ month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } as any), []);
+  const selectedDaysDataMemo = useMemo(() => {
+    return activeCell === 'bulk' 
+      ? selectedCells.map(k => calendarData?.[k] || { colorId: 'none', icons: [], locations: '', details: '' }) 
+      : undefined;
+  }, [activeCell, selectedCells, calendarData]);
 
   if (isDataLoading) {
     return (
@@ -496,7 +554,7 @@ export default function App() {
             onNavigate={handleNavigateDay}
             dayData={
               activeCell === 'bulk'
-                ? ({ month: 'Multiple', day: 'Days', colorId: 'none', icons: [], locations: '', details: '' } as any)
+                ? bulkDayDataMock
                 : activeCell && calendarData ? calendarData[activeCell] : null
             }
             onSave={handleDayUpdate}
@@ -505,6 +563,7 @@ export default function App() {
             isBulkEdit={activeCell === 'bulk'}
             bulkCount={selectedCells.length}
             hasFilters={hasActiveFilters}
+            selectedDaysData={selectedDaysDataMemo}
           />
           <SettingsModal
             isOpen={showSettingsModal}
