@@ -9,7 +9,7 @@ import AppHeader from './components/layout/AppHeader';
 import KeySection from './components/key/KeySection';
 import StatsSection from './components/stats/StatsSection';
 import BulkEditBar from './components/calendar/BulkEditBar';
-import AdminFloatingNav from './components/AdminFloatingNav';
+import FloatingMenuBar from './components/FloatingMenuBar';
 // Modals & Components
 import MonthView from './components/MonthView';
 import SingleMonthView from './components/SingleMonthView';
@@ -40,6 +40,7 @@ import { useModals } from './hooks/useModals';
 import { useBulkEdit } from './hooks/useBulkEdit';
 import { useFeeds } from './hooks/useFeeds';
 import { useAnalytics } from './hooks/useAnalytics';
+import { useConfirm } from './contexts/ConfirmContext';
 
 import { slugify, getAdjacentDateKey } from './utils/helpers';
 import { MONTHS } from './utils/constants';
@@ -67,6 +68,20 @@ export default function App() {
   const welcomeShownRef = useRef(false);
 
  // --- Hooks ---
+  const { confirm } = useConfirm();
+  const [isAnyModalDirty, setIsAnyModalDirty] = useState(false);
+
+  const handleTabSwitch = async (target: 'key' | 'feeds' | 'settings' | 'access' | 'close'): Promise<boolean> => {
+    if (isAnyModalDirty) {
+      if (!(await confirm())) return false;
+    }
+    setIsAnyModalDirty(false);
+    setShowKeyModal(target === 'key');
+    setShowFeedsModal(target === 'feeds');
+    setShowSettingsModal(target === 'settings');
+    setShowAccessModal(target === 'access');
+    return true;
+  };
   const { themeMode, cycleTheme, setTheme } = useTheme();
 
   const { config, setConfig, fetchConfig, saveConfig } = useConfig({
@@ -531,10 +546,8 @@ export default function App() {
           themeMode={themeMode}
           isSaving={isSaving}
           lastUpdatedText={lastUpdatedText}
-          hasFilters={isCustomView}
           routeView={route.view}
           hasPublicFeeds={feeds.some(f => f.isPublic)}
-          onClearFilters={handleClearFilters}
           onViewToggle={(view) => navigate(`/${year}/${view}${window.location.search}`)}
           onYearPrev={handlePrevNav}
           onYearNext={handleNextNav}
@@ -656,13 +669,23 @@ export default function App() {
           />
         )}
 
-        {role === 'admin' && !isBulkEditMode && route.view !== 'guide' && (
-          <AdminFloatingNav
+        {!isBulkEditMode && route.view !== 'guide' && (
+          <FloatingMenuBar
+            role={role}
+            routeView={route.view}
+            hasFilters={isCustomView}
+            onViewToggle={(view) => navigate(`/${year}/${view}${window.location.search}`)}
+            onClearFilters={handleClearFilters}
             onToggleBulkEdit={toggleBulkEdit}
-            onOpenKeyModal={() => setShowKeyModal(true)}
-            onOpenFeeds={() => setShowFeedsModal(true)}
-            onOpenSettings={() => setShowSettingsModal(true)}
-            onOpenAccess={() => setShowAccessModal(true)}
+            onOpenKeyModal={() => handleTabSwitch('key')}
+            onOpenFeeds={() => handleTabSwitch('feeds')}
+            onOpenSettings={() => handleTabSwitch('settings')}
+            onOpenAccess={() => handleTabSwitch('access')}
+            onCloseAllModals={() => handleTabSwitch('close')}
+            showKeyModal={showKeyModal}
+            showFeedsModal={showFeedsModal}
+            showSettingsModal={showSettingsModal}
+            showAccessModal={showAccessModal}
           />
         )}
 

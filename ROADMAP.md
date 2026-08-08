@@ -8,13 +8,26 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v1.1.9: 
-- Admin Menu BAr
-- Month Highlight
+### Release v1.1.9: UI Updates
+- Admin Menu Bar
+  - Bulk edit | View Selector | Configure
+    - View Selector is the Year/Planner/List Clear Filters (redo ui)
+    - Configure will contain Key / Feeds / Access / Settings
+    - Configure Bar will be static on bottom and whatever menu is open will be highlighted / others will be dim
+    - Remove View selector from top bar
+    - Mobile considerations
+- Non Admin Menu Bar
+  - View Selector
+- Month Highlight to mimic day highlight (keep size and position, just fill background blue and make text white)
+  - When you hover over a month, can it get the blue outline like the selected month (no backround) - to show that its clickable or something else
+- Down arrow, make it a button (give it a border and background), not a floating carrot espeically on mobile
+- Back to 20xx above jan / and forward to 20xx below dec
+- New Key activity icons (Bus, etc - really think about this)
 
 ### Release v1.2.0: Events (WIP)
-- Every day can have an event (max 1 per day)
+- Every day can have an event (max 1 per day or maybe 2?)
 - Events span multiple days
+- If an two days have the same event listed, then it should be one event
 - Events should be on the 2 lines right below the number
 - Adding "Trips / Events" Functionality. Need opinion on name
 - Trips / Events will take 2 lines and the activites will take up 1 line (with a flex of a second line if 3 or 4 activities)
@@ -27,8 +40,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
 
-### Release v1.2.1: 
--
+### Release v1.2.1: Stats
+- Stats page should open up dedicated stats page /stats
+- Show cool stats yoy or just for the that year
+- Generate end of year snapshots and lifelime snapshots
 
 ### Release v1.2.2: iCal updates
 - Key Modal Categories and Activites

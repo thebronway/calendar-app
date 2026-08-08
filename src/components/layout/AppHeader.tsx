@@ -27,10 +27,8 @@ interface AppHeaderProps {
   themeMode: ThemeMode;
   isSaving: boolean;
   lastUpdatedText: string;
-  hasFilters: boolean;
   routeView?: string;
   hasPublicFeeds: boolean;
-  onClearFilters: () => void;
   onViewToggle: (view: 'year' | 'planner' | 'list') => void;
   onYearPrev: () => void;
   onYearNext: () => void;
@@ -49,10 +47,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   themeMode,
   isSaving,
   lastUpdatedText,
-  hasFilters,
   routeView,
   hasPublicFeeds,
-  onClearFilters,
   onViewToggle,
   onYearPrev,
   onYearNext,
@@ -162,42 +158,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                     <ChevronRight size={20} />
                   </button>
                 </div>
-
-                {(!routeView || routeView === 'year' || routeView === 'planner' || routeView === 'list') && (
-                  <div className="flex bg-theme-item p-1 rounded-lg items-center shadow-inner">
-                    <button
-                      onClick={() => onViewToggle('year')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${(!routeView || routeView === 'year') ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
-                    >
-                      <span className="hidden sm:inline">Year</span>
-                      <span className="sm:hidden">Yr</span>
-                    </button>
-                    <button
-                      onClick={() => onViewToggle('planner')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'planner' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
-                    >
-                      <span className="hidden sm:inline">Planner</span>
-                      <span className="sm:hidden">Plan</span>
-                    </button>
-                    <button
-                      onClick={() => onViewToggle('list')}
-                      className={`px-3 py-1.5 text-sm font-bold rounded-md transition-all ${routeView === 'list' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
-                    >
-                      <span className="hidden sm:inline">List</span>
-                      <span className="sm:hidden">List</span>
-                    </button>
-                  </div>
-                )}
-
-                {hasFilters && (
-                  <button
-                    onClick={onClearFilters} 
-                    className="px-3 h-10 bg-theme-item hover:bg-theme-item-hover text-theme-accent rounded-lg text-sm font-bold transition-colors flex items-center justify-center"
-                  >
-                    <span className="hidden sm:inline">Clear Filters</span>
-                    <span className="sm:hidden">Clear</span>
-                  </button>
-                )}
 
                 {/* ICONS ON LINE 1 (Desktop Only) */}
                 <div className="hidden sm:flex items-center gap-3">

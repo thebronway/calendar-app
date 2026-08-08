@@ -17,13 +17,14 @@ import type { ThemeMode } from '../hooks/useTheme';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   config: AppConfig;
   onConfigSave: (config: AppConfig) => void;
   currentTheme: ThemeMode;
   setTheme: (mode: ThemeMode) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, onConfigSave, currentTheme, setTheme }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onDirtyChange, config, onConfigSave, currentTheme, setTheme }) => {
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
   const [timezoneError, setTimezoneError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'display' | 'system' | 'theme' | 'data'>('display');
@@ -38,6 +39,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
   const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
+
+  useEffect(() => {
+    if (isOpen) {
+      onDirtyChange?.(isDirty);
+    } else {
+      onDirtyChange?.(false);
+    }
+  }, [isDirty, isOpen, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;
@@ -61,7 +70,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, config, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 pb-28 sm:pb-32">
       <div className="bg-theme-panel text-theme-text rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col border border-theme-item">
         <div className="flex justify-between items-center p-6 border-b border-theme-item bg-theme-item rounded-t-xl shrink-0">
           <h3 className="text-2xl font-bold flex items-center">

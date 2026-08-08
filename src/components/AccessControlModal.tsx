@@ -11,11 +11,12 @@ import type { AppConfig } from '../types';
 interface AccessControlModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   config: AppConfig;
   onConfigSave: (config: AppConfig) => void;
 }
 
-const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose, config, onConfigSave }) => {
+const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose, onDirtyChange, config, onConfigSave }) => {
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
   const [activeTab, setActiveTab] = useState<'access' | 'logs'>('access');
   
@@ -52,6 +53,11 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
   const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+    return () => onDirtyChange?.(false);
+  }, [isDirty, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;
@@ -105,7 +111,7 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 pb-28 sm:pb-32">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
         
         <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">

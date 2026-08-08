@@ -11,6 +11,7 @@ import type { KeyItem } from '../types';
 interface KeyConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   keyItems: KeyItem[];
   onKeyItemsSave: (items: KeyItem[]) => void;
   year: number;
@@ -23,6 +24,7 @@ type ImportStatus = 'idle' | 'loading' | 'success' | 'not-found' | 'error';
 const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   isOpen,
   onClose,
+  onDirtyChange,
   keyItems,
   onKeyItemsSave,
   year,
@@ -45,6 +47,14 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   const isDirty = JSON.stringify(localKeyItems) !== JSON.stringify(keyItems);
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
+
+  useEffect(() => {
+    if (isOpen) {
+      onDirtyChange?.(isDirty);
+    } else {
+      onDirtyChange?.(false);
+    }
+  }, [isDirty, isOpen, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;
@@ -136,7 +146,7 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 pb-28 sm:pb-32">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden relative">
         <div className="flex flex-col sm:flex-row justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-4 shrink-0 rounded-t-xl">
           <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center">

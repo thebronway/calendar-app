@@ -10,6 +10,7 @@ import type { KeyItem, DayData, Role } from '../types';
 interface FeedManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   feeds: FeedProfile[];
   isFeedsLoading: boolean;
   keyItems: KeyItem[];
@@ -23,6 +24,7 @@ interface FeedManagerModalProps {
 const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
   isOpen,
   onClose,
+  onDirtyChange,
   feeds,
   isFeedsLoading,
   keyItems,
@@ -40,6 +42,14 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
 
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
+
+  useEffect(() => {
+    if (isOpen) {
+      onDirtyChange?.(isDirty);
+    } else {
+      onDirtyChange?.(false);
+    }
+  }, [isDirty, isOpen, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;
@@ -114,7 +124,7 @@ const FeedManagerModal: React.FC<FeedManagerModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 pb-28 sm:pb-32">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
