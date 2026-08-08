@@ -1,12 +1,20 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-07-29*  
-*Current Version: v1.1.8*
+*Last updated: 2026-08-08*  
+*Current Version: v1.1.9*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+
+### Release v1.1.9
+- UI: Restyled the Floating Menu Bar
+- UI: Enhanced the Month View headers
+- UI: Upgraded  collapse/expand chevrons
+- UI: Added dedicated "Back to [Year]" and "Forward to [Year]" pill
+- Icons: Added 12 new activities to the Key (Bus, Luggage, Ship, Caravan, Compass, etc.).
+- Tech Debt: Removed deprecated `AdminFloatingNav` component.
 
 ### Release v1.1.8
 - Added checkboxes to the Bulk Edit tool to prevent wiping existing data

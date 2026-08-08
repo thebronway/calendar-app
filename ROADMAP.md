@@ -1,28 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-07-29*  
-*Current Version: v1.1.8*
+*Last updated: 2026-08-08*  
+*Current Version: v1.1.9*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.1.9: UI Updates
-- Admin Menu Bar
-  - Bulk edit | View Selector | Configure
-    - View Selector is the Year/Planner/List Clear Filters (redo ui)
-    - Configure will contain Key / Feeds / Access / Settings
-    - Configure Bar will be static on bottom and whatever menu is open will be highlighted / others will be dim
-    - Remove View selector from top bar
-    - Mobile considerations
-- Non Admin Menu Bar
-  - View Selector
-- Month Highlight to mimic day highlight (keep size and position, just fill background blue and make text white)
-  - When you hover over a month, can it get the blue outline like the selected month (no backround) - to show that its clickable or something else
-- Down arrow, make it a button (give it a border and background), not a floating carrot espeically on mobile
-- Back to 20xx above jan / and forward to 20xx below dec
-- New Key activity icons (Bus, etc - really think about this)
 
 ### Release v1.2.0: Events (WIP)
 - Every day can have an event (max 1 per day or maybe 2?)

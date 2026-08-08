@@ -167,26 +167,29 @@ const MonthView: React.FC<MonthViewProps> = ({
             {onMonthClick ? (
               <button 
                 onClick={onMonthClick} 
-                className={`transition-colors cursor-pointer ${isCurrentMonth ? 'ring-2 ring-inset ring-theme-accent text-theme-accent px-3 rounded-full hover:bg-theme-accent/10' : 'hover:text-theme-accent'}`}
+                className={`transition-all duration-200 cursor-pointer py-0.5 rounded-full ${isCurrentMonth ? 'bg-theme-accent text-theme-accent-text ring-2 ring-inset ring-theme-accent px-3' : 'px-0 hover:px-3 hover:ring-2 hover:ring-inset hover:ring-theme-accent hover:text-theme-accent'}`}
                 title={`View only ${mName}`}
               >
                 {mName}
               </button>
             ) : (
-              <span className={isCurrentMonth ? 'ring-2 ring-inset ring-theme-accent text-theme-accent px-3 rounded-full' : ''}>{mName}</span>
+              <span className={`py-0.5 rounded-full ${isCurrentMonth ? 'bg-theme-accent text-theme-accent-text ring-2 ring-inset ring-theme-accent px-3' : 'px-0'}`}>{mName}</span>
             )}
-            <span 
-              className="md:hidden ml-2 text-theme-text-secondary transition-transform duration-200 cursor-pointer p-1"
+          </h2>
+          <div className="flex items-center gap-3">
+            {showStats && (
+              <span className="text-sm font-bold bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-3 py-1 rounded-full shadow-sm">
+                {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
+              </span>
+            )}
+            <button 
+              className="md:hidden bg-theme-item border border-theme-grid-divider text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover rounded-lg p-2 transition-all shadow-sm"
               onClick={() => onToggleMonth(monthIndex)}
+              title={isExpanded ? "Collapse month" : "Expand month"}
             >
               {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </span>
-          </h2>
-          {showStats && (
-            <span className="text-sm font-bold bg-theme-accent/10 text-theme-accent border border-theme-accent/20 px-3 py-1 rounded-full shadow-sm">
-              {monthHighCount} / {daysInMonth} days ({Math.round((monthHighCount / daysInMonth) * 100) || 0}%)
-            </span>
-          )}
+            </button>
+          </div>
         </div>
       )}
 

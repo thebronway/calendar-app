@@ -35,6 +35,9 @@ const IconEditor: React.FC<IconEditorProps> = ({ isOpen, onClose, onSave, initia
       filtered = filtered.filter((key) => key.toLowerCase().includes(query));
     }
     return [...filtered].sort((a, b) => {
+      if (a === 'None') return -1;
+      if (b === 'None') return 1;
+      
       if (iconSort === 'a-z') return a.localeCompare(b);
       if (iconSort === 'z-a') return b.localeCompare(a);
       return 0;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Loader } from 'lucide-react';
+import { Loader, ArrowLeft, ArrowRight } from 'lucide-react';
 
 // Layout
 import MainLayout from './components/layout/MainLayout';
@@ -581,6 +581,7 @@ export default function App() {
           <SettingsModal
             isOpen={showSettingsModal}
             onClose={() => setShowSettingsModal(false)}
+            onDirtyChange={setIsAnyModalDirty}
             config={config}
             onConfigSave={saveConfig}
             currentTheme={themeMode}
@@ -589,12 +590,14 @@ export default function App() {
           <AccessControlModal
             isOpen={showAccessModal}
             onClose={() => setShowAccessModal(false)}
+            onDirtyChange={setIsAnyModalDirty}
             config={config}
             onConfigSave={saveConfig}
           />
           <KeyConfigModal
             isOpen={showKeyModal}
             onClose={() => setShowKeyModal(false)}
+            onDirtyChange={setIsAnyModalDirty}
             keyItems={keyItems}
             onKeyItemsSave={handleKeyUpdate}
             year={year}
@@ -603,6 +606,7 @@ export default function App() {
           <FeedManagerModal
             isOpen={showFeedsModal}
             onClose={() => setShowFeedsModal(false)}
+            onDirtyChange={setIsAnyModalDirty}
             feeds={feeds}
             isFeedsLoading={isFeedsLoading}
             keyItems={keyItems}
@@ -710,6 +714,11 @@ export default function App() {
           />
         ) : route.view === 'year' ? (
           <div className="flex flex-wrap -m-2 relative z-0">
+            <div className="w-full px-2 pt-2 pb-0 flex justify-start">
+               <button onClick={handlePrevNav} className="text-sm font-bold text-theme-text-secondary hover:text-theme-text bg-theme-item border border-theme-grid-divider hover:bg-theme-item-hover px-4 py-2 rounded-full shadow-sm flex items-center transition-all hover:-translate-x-1">
+                 <ArrowLeft size={16} className="mr-1.5" /> {year - 1}
+               </button>
+            </div>
             {MONTHS.map((_, i) => {
               if (hasActiveFilters) {
                 const hasEventsInMonth = filteredCalendarData && Object.values(filteredCalendarData).some(
@@ -738,6 +747,11 @@ export default function App() {
                 />
               );
             })}
+            <div className="w-full px-2 pt-4 pb-4 flex justify-end">
+               <button onClick={handleNextNav} className="text-sm font-bold text-theme-text-secondary hover:text-theme-text bg-theme-item border border-theme-grid-divider hover:bg-theme-item-hover px-4 py-2 rounded-full shadow-sm flex items-center transition-all hover:translate-x-1">
+                 {year + 1} <ArrowRight size={16} className="ml-1.5" />
+               </button>
+            </div>
           </div>
         ) : (
           <SingleMonthView

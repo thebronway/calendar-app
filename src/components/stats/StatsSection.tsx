@@ -58,13 +58,18 @@ const StatsSection: React.FC<StatsSectionProps> = ({
 
   return (
     <section className="bg-theme-panel p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
-      <h2
-        className="text-2xl font-bold text-theme-text mb-4 cursor-pointer flex justify-between select-none"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {year} Stats{' '}
-        <span>{isExpanded ? <ChevronUp /> : <ChevronDown />}</span>
-      </h2>
+      <div className="flex justify-between items-center mb-4 select-none">
+        <h2 className="text-2xl font-bold text-theme-text">
+          {year} Stats
+        </h2>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="bg-theme-item border border-theme-grid-divider text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover rounded-lg p-2 transition-all shadow-sm"
+          title={isExpanded ? "Collapse stats" : "Expand stats"}
+        >
+          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
+      </div>
 
       <div className={`${isExpanded ? 'block' : 'hidden'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

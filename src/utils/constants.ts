@@ -1,5 +1,5 @@
 import {
-  Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, Beer, Bike, BookOpen, Briefcase, Calendar, CalendarCheck, CalendarClock, CalendarDays, CalendarHeart, CalendarMinus, CalendarOff, CalendarPlus, CalendarRange, CalendarSearch, CalendarX, Camera, Car, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Database, Dumbbell, Edit, Fish, Flag, Footprints, Gamepad2, Gift, Github, Globe, Headphones, Heart, Home, Hotel, Image as ImageIcon, Key, Layout, List, Loader, Lock, LogIn, LogOut, Map, MapPin, Moon, Mountain, Music, Palette, Palmtree, PartyPopper, Pizza, Plane, Plus, Sailboat, Save, Settings, ShoppingBag, Sofa, Sun, Tag, Tent, Ticket, Train, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X,
+  Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, BaggageClaim, Beer, Bike, BookOpen, Briefcase, Bus, Calendar, CalendarCheck, CalendarClock, CalendarDays, CalendarHeart, CalendarMinus, CalendarOff, CalendarPlus, CalendarRange, CalendarSearch, CalendarX, Camera, Car, Caravan, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Compass, Database, Dumbbell, Edit, Fish, Flag, Footprints, Gamepad2, Gift, Github, Globe, Headphones, Heart, Home, Hotel, Image as ImageIcon, Key, Layout, List, Loader, Lock, LogIn, LogOut, Luggage, Map, MapPin, MapPinned, Moon, Mountain, Music, Navigation, Palette, Palmtree, PartyPopper, Pizza, Plane, PlaneLanding, PlaneTakeoff, Plus, Sailboat, Save, Settings, Ship, ShoppingBag, Sofa, Sun, Sunset, Tag, Tent, Ticket, Train, TreePine, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X,
 } from 'lucide-react';
 import type { CategoryColor, IconColorOption, IconMap, KeyItem } from '../types';
 
@@ -23,10 +23,10 @@ export const ICON_COLOR_OPTIONS: IconColorOption[] = [
 ];
 
 export const ICON_MAP: IconMap = {
-  Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, Beer, Bike, BookOpen, Briefcase, Calendar, CalendarCheck, CalendarClock, CalendarDays, CalendarHeart, CalendarMinus, CalendarOff, CalendarPlus, CalendarRange, CalendarSearch, CalendarX, Camera, Car, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Database, Dumbbell, Edit, Fish, Flag, Footprints, Gamepad: Gamepad2, Gift, Github, Globe, Headphones, Heart, Home, Hotel, ImageIcon, Key, Layout, List, Loader, Lock, LogIn, LogOut, Map, MapPin, Moon, Mountain, Music, None: null, Palette, Palmtree, PartyPopper, Pizza, Plane, Plus, Sailboat, Save, Settings, ShoppingBag, Sofa, Sun, Tag, Tent, Ticket, Train, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X,
+  Activity, AlertTriangle, Anchor, Armchair, ArrowDown, ArrowUp, BaggageClaim, Beer, Bike, BookOpen, Briefcase, Bus, Calendar, CalendarCheck, CalendarClock, CalendarDays, CalendarHeart, CalendarMinus, CalendarOff, CalendarPlus, CalendarRange, CalendarSearch, CalendarX, Camera, Car, Caravan, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CloudOff, Coffee, Compass, Database, Dumbbell, Edit, Fish, Flag, Footprints, Gamepad: Gamepad2, Gift, Github, Globe, Headphones, Heart, Home, Hotel, ImageIcon, Key, Layout, List, Loader, Lock, LogIn, LogOut, Luggage, Map, MapPin, MapPinned, Moon, Mountain, Music, Navigation, None: null, Palette, Palmtree, PartyPopper, Pizza, Plane, PlaneLanding, PlaneTakeoff, Plus, Sailboat, Save, Settings, Ship, ShoppingBag, Sofa, Sun, Sunset, Tag, Tent, Ticket, Train, TreePine, Truck, Umbrella, User, Users, Utensils, Waves, Wine, X,
 };
 
-export const ICON_KEYS: string[] = Object.keys(ICON_MAP);
+export const ICON_KEYS: string[] = ['None', ...Object.keys(ICON_MAP).filter(k => k !== 'None')];
 
 export const MONTHS: string[] = [
   'January', 'February', 'March', 'April', 'May', 'June',

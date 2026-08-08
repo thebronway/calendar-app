@@ -50,7 +50,7 @@ const FloatingMenuBar: React.FC<FloatingMenuBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 bg-theme-panel p-2 sm:p-3 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.3)] border-2 border-theme-accent z-[60] flex items-center justify-center transition-all duration-300 w-[90%] sm:w-auto min-w-[280px]">
+    <div className="fixed bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 bg-theme-panel/80 backdrop-blur-md p-2 sm:p-3 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25)] border border-white/20 dark:border-white/10 z-[60] flex items-center justify-center transition-all duration-300 w-[90%] sm:w-auto min-w-[280px]">
       
       {menuState === 'main' ? (
         <div className="flex items-center gap-2 sm:gap-3 animate-in fade-in zoom-in duration-300 w-full justify-center">
@@ -65,10 +65,10 @@ const FloatingMenuBar: React.FC<FloatingMenuBarProps> = ({
             </button>
           )}
 
-          <div className="flex bg-theme-item p-1 rounded-full items-center shadow-inner h-10 sm:h-12">
+          <div className="flex bg-gray-700 dark:bg-gray-800 p-1 rounded-full items-center shadow-inner h-10 sm:h-12 border border-gray-800 dark:border-gray-900">
             <button
               onClick={() => onViewToggle('year')}
-              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${(!routeView || routeView === 'year') ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
+              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${(!routeView || routeView === 'year') ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
               title="Year View"
             >
               <CalendarDays size={16} className="sm:mr-1.5" />
@@ -76,7 +76,7 @@ const FloatingMenuBar: React.FC<FloatingMenuBarProps> = ({
             </button>
             <button
               onClick={() => onViewToggle('planner')}
-              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'planner' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
+              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'planner' ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
               title="Planner View"
             >
               <Layout size={16} className="sm:mr-1.5" />
@@ -84,7 +84,7 @@ const FloatingMenuBar: React.FC<FloatingMenuBarProps> = ({
             </button>
             <button
               onClick={() => onViewToggle('list')}
-              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'list' ? 'bg-theme-panel text-theme-accent shadow-sm' : 'text-theme-text-secondary hover:text-theme-text'}`}
+              className={`h-full px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'list' ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
               title="List View"
             >
               <List size={16} className="sm:mr-1.5" />
