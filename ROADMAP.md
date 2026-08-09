@@ -8,7 +8,38 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v1.2.0: Events (WIP)
+### Release v1.2.0: UI, UX and bug fixes
+- Getting Unsaved Chnages warning when clicking on key, settings, for the first time
+- Even after the container is rebuilt, welcome modal is grabbing previus release notes
+- Clear to Reset View (reset should take place of (year/planner/list) slider)
+- Border of the year/planner/list reset view button, border - I dont like black line, give me options
+- On mobile, view only mode the floating bar takes up the whole page but the planner slider only takes up a third of the page. The floating bar should fit around whatever content is there - maybe make it bigger when it just the slider.
+- On mobile, Admin mode when you go to edit a date the floating bar is now in the way the floating bar shouldn’t be there on edit mode
+- The x should have a label on mobile
+
+### Release v1.2.1: UX Updates
+- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content
+- When bulk editing multiple days, there should be a clear all data button (with appropite warnings)
+
+### Release v1.2.2: Stats
+- Stats page should open up dedicated stats page /stats
+- Show cool stats all time, yoy or just for the that year
+- Generate end of year snapshots and lifelime snapshots
+
+### Release v1.2.3: iCal updates
+- Key Modal Categories and Activites
+  - Duplicate Names are allowed (bad for URL ID)
+  - Update URL IDs to have cat- or act- in front of ID.
+- We may need to not base the feed creation on a year of a key, maybe need to pull in all unique ones
+- **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
+- **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
+- **Cross-Year Event Preservation:** Prevent historical events from disappearing when categories or activities are deleted or modified in later year setups.
+- **Continuous Rolling Timeline Feeds:** Maintain multi-year calendar subscriptions without requiring manual annual URL renewals.
+
+### Release v1.2.4: 
+- Events prep
+
+### Release v1.2.5: Events (WIP)
 - Every day can have an event (max 1 per day or maybe 2?)
 - Events span multiple days
 - If an two days have the same event listed, then it should be one event
@@ -24,43 +55,11 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
 
-### Release v1.2.1: Stats
-- Stats page should open up dedicated stats page /stats
-- Show cool stats yoy or just for the that year
-- Generate end of year snapshots and lifelime snapshots
+### Release v1.2.6: Move
+- Move contents
 
-### Release v1.2.2: iCal updates
-- Key Modal Categories and Activites
-  - Duplicate Names are allowed (bad for URL ID)
-  - Update URL IDs to have cat- or act- in front of ID.
-- We may need to not base the feed creation on a year of a key, maybe need to pull in all unique ones
-- **Historically Aware Key Parsing:** Load and map key item definitions on a per-year basis during feed generation.
-- **Structural Fallback Mapping:** Implement matching rules using raw icon strings and color properties if unique configuration identifiers change across year boundaries.
-- **Cross-Year Event Preservation:** Prevent historical events from disappearing when categories or activities are deleted or modified in later year setups.
-- **Continuous Rolling Timeline Feeds:** Maintain multi-year calendar subscriptions without requiring manual annual URL renewals.
-
-### Release v1.2.3: 
+### Release v1.2.7: 
 -
-
-### Release v1.2.4: 
--
-
-### Release v1.2.5: Enterprise Single Sign-On (SSO / OIDC)
-- **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).
-- **Automated Frontend Handshake Redirection:** Implement automatic visitor forwarding straight to the configured external single sign-on screen upon landing on the root path.
-- **Bypass Redirection Backdoor:** Restrict automatic token redirection loops exclusively to the root path (`/`), allowing direct browser navigation to `/login` to bypass the loop for local master emergency access.
-
-### Release v1.2.6: API Keys & REST API
-- **Goal:** Allow external automation setups (e.g., Home Assistant, n8n, Node-RED) to programmatically log categories or activities onto the calendar without utilizing the frontend UI.
-- **Token Profiles:** Extend the database schema inside `access.json` and the `AccessControlModal.tsx` interface to support generating long-lived, cryptographically secure API tokens distinct from traditional view passwords.
-- **Ingestion Route:** Create a protected REST API endpoint under `POST /api/external/log` requiring authentication passing via standard `Authorization: Bearer <token>` header rules.
-- **Sync Synchronization:** Parse incoming JSON payloads containing mandatory parameters for target date strings (`YYYY-MM-DD`), optional `categoryId` tags, locations, and `activityIds`, merging updates straight to `YYYY_data.json` while instantly triggering frontend UI updates via the server `broadcastUpdate` WebSocket hook.
-
-### Release v1.2.7: Webhooks
-- **Goal:** Push real-time calendar modification notifications out to third-party home automation platforms (e.g., Discord, Slack, Umami, SMTP, or custom web endpoints).
-- **Configuration:** Add a `webhooks` array to the core `AppConfig` type mapping unique webhook IDs, payload destination URLs, and a toggleable active state flag.
-- **Diff Engine:** Intercept `POST /api/data/:year` requests to compute a baseline structural difference, checking if a new entry or activity update occurred to avoid notification spam on simple spelling corrections.
-- **Payload Dispatcher:** Asynchronously fire out a standardized JSON POST body payload containing text templates summarizing the modification out to all active webhook endpoints.
 
 ### Release v1.2.8: 
 -
@@ -68,7 +67,30 @@ This document tracks planned improvements, enhancements, and technical debt for 
 ### Release v1.2.9: 
 -
 
-### Release v1.3.0: PTO & Vacation Tracker Dashboard
+### Release v1.3.0: Enterprise Single Sign-On (SSO / OIDC)
+- **Federated Authentication Handshake:** Integrate standard OpenID Connect protocol options to offload identity verification to modern identity providers (e.g., Authentik, Keycloak).
+- **Automated Frontend Handshake Redirection:** Implement automatic visitor forwarding straight to the configured external single sign-on screen upon landing on the root path.
+- **Bypass Redirection Backdoor:** Restrict automatic token redirection loops exclusively to the root path (`/`), allowing direct browser navigation to `/login` to bypass the loop for local master emergency access.
+
+### Release v1.3.1: API Keys & REST API
+- **Goal:** Allow external automation setups (e.g., Home Assistant, n8n, Node-RED) to programmatically log categories or activities onto the calendar without utilizing the frontend UI.
+- **Token Profiles:** Extend the database schema inside `access.json` and the `AccessControlModal.tsx` interface to support generating long-lived, cryptographically secure API tokens distinct from traditional view passwords.
+- **Ingestion Route:** Create a protected REST API endpoint under `POST /api/external/log` requiring authentication passing via standard `Authorization: Bearer <token>` header rules.
+- **Sync Synchronization:** Parse incoming JSON payloads containing mandatory parameters for target date strings (`YYYY-MM-DD`), optional `categoryId` tags, locations, and `activityIds`, merging updates straight to `YYYY_data.json` while instantly triggering frontend UI updates via the server `broadcastUpdate` WebSocket hook.
+
+### Release v1.3.2: Webhooks
+- **Goal:** Push real-time calendar modification notifications out to third-party home automation platforms (e.g., Discord, Slack, Umami, SMTP, or custom web endpoints).
+- **Configuration:** Add a `webhooks` array to the core `AppConfig` type mapping unique webhook IDs, payload destination URLs, and a toggleable active state flag.
+- **Diff Engine:** Intercept `POST /api/data/:year` requests to compute a baseline structural difference, checking if a new entry or activity update occurred to avoid notification spam on simple spelling corrections.
+- **Payload Dispatcher:** Asynchronously fire out a standardized JSON POST body payload containing text templates summarizing the modification out to all active webhook endpoints.
+
+### Release v1.3.3: 
+-
+
+### Release v1.3.4: 
+-
+
+### Release v1.3.5: PTO & Vacation Tracker Dashboard
 - **Data Modeling & Storage Mechanics**
   - Introduce a new backend data store file `data/pto_config.json` managed exclusively by the admin credential tier to store the global bank definitions.
   - Define each PTO Bank entry structure with fields: `id` (UUID string), `name` (string, e.g., "Vacation"), `startingBalance` (number in hours), `accrualRate` (number in hours), `accrualFrequency` (enum: `'none'`, `'weekly'`, `'biweekly'`, `'monthly'`, `'annually'`), and `startDate` (ISO string date template).
@@ -94,7 +116,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - Design clean horizontal allocation balance progress bars or high-visibility card metrics representing each individual bank pool.
   - Highlight the primary real-time remaining balance integer pool as a dominant text anchor (e.g., `42.5 hrs available`), followed closely by secondary explicit string math descriptions in smaller layout font sizes to maintain clarity (e.g., `80h Earned — 37.5h Used`).
 
-### Release v1.3.1
+### Release v1.3.6
 - Security Hardening
   - Implement API rate-limiting (especially on the login route), input sanitization, and CSRF protection.
 - Bundle Optimization**
@@ -120,6 +142,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
 ### Release v1.5.0: Multi User Support
+- DB?
 
 ### Release v2.0.0: PWA
 - Offline Support (PWA)
