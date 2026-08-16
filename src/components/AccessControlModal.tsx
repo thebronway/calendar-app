@@ -50,13 +50,13 @@ const AccessControlModal: React.FC<AccessControlModalProps> = ({ isOpen, onClose
     }
   }, [isOpen, config, fetchAccessAndLogs]);
 
-  const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
+  const isDirty = isOpen ? JSON.stringify(localConfig) !== JSON.stringify(config) : false;
+
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
-    return () => onDirtyChange?.(false);
   }, [isDirty, onDirtyChange]);
 
   const handleClose = async () => {

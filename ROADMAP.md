@@ -1,26 +1,23 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-08-08*  
-*Current Version: v1.1.9*
+*Last updated: 2026-08-16*  
+*Current Version: v1.2.0*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.2.0: Bug fixes
-- Getting Unsaved Chnages warning when clicking on key, settings, for the first time
-- Even after the container is rebuilt (and new release notes have been added), welcome modal is grabbing previus release notes
-- On mobile, view only mode the floating bar takes up the whole page but the planner slider only takes up a third of the page. The floating bar should fit around whatever content is there - maybe make it bigger when it just the slider.
-- On mobile, Admin mode when you go to edit a date the floating bar is now in the way and you can edit the content. Edit day should be on top of floating nav or floating nav shouldnt be there at all
-- If current year is 2026, but I go to 2027 and click refresh the auto scroll will scroll to the current month (even if the wrong year is showing)
-
-### Release v1.2.1: UX  and UI Updates
-- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content - all or nothing. 
+### Release v1.2.1: UX and UI Updates
+- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content - all or nothing. > Question is a data file migration needed?
 - When bulk editing multiple days, there should be a clear all data button (with appropite warnings), like on single days
-- Clear to Reset View (reset should take place of (year/planner/list) slider)
-- Border of the year/planner/list reset view button, border - I dont like black line, give me options
-- The x should have a label on mobile for clear
+- Year Planner List Slider
+  - Clear to Reset View (reset should take place of (year/planner/list) slider)
+  - Border of the year/planner/list reset view button, border - I dont like black line, give me options
+  - Also background of the slider is darkmode regardless if light or custom. I want slider to be theme dependent. 
+  - The x should have a label on mobile for clear
+- Update Welcome Modal and Userguide and readme (currently mentions old UI elements)
+- Bug: Welcome Modal is still grabbing the previous release note. I have to rebuild the container twice for the release notes to stick. After first rebuild, it grabs the old ones, but if I rebuild it again, not changing any files it grabs the new ones. There is something cashing. When I rebuild the container, I rebuild it with --no-cache.
 
 ### Release v1.2.2: Stats
 - Stats page should open up dedicated stats page /stats
@@ -56,11 +53,11 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - #e67e22, #2980b9, #27ae60, #8e44ad, #e74c3c are my ideas but open to suggestions
   - Ideas for having up to 2 categories on one day? (Like for work in the am / vacation in the pm)
 
-### Release v1.2.6: Move
-- Move contents
+### Release v1.2.6: 
+- Clean up components Folder
 
 ### Release v1.2.7: 
--
+- Add Compose FIle
 
 ### Release v1.2.8: 
 -

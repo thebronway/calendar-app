@@ -36,17 +36,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onDirtyC
     }
   }, [isOpen, config]);
 
-  const isDirty = JSON.stringify(localConfig) !== JSON.stringify(config);
+  const isDirty = isOpen ? JSON.stringify(localConfig) !== JSON.stringify(config) : false;
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
 
   useEffect(() => {
-    if (isOpen) {
-      onDirtyChange?.(isDirty);
-    } else {
-      onDirtyChange?.(false);
-    }
-  }, [isDirty, isOpen, onDirtyChange]);
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;

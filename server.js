@@ -85,6 +85,9 @@ app.use('/api', apiRoutes);
 // --- Serve React App ---
 // Catch-all route to serve the React app for client-side routing
 app.get('/*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(CLIENT_BUILD_PATH, 'index.html'));
 });
 

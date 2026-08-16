@@ -278,13 +278,15 @@ export default function App() {
   useEffect(() => {
     // Prevent scrolling logic from firing if the login screen is currently active
     if (config.viewMode === 'private' && role === 'none') return;
-
     let now: Date;
     try {
       now = new Date(new Date().toLocaleString('en-US', { timeZone: config.timezone }));
     } catch {
       now = new Date();
     }
+
+    if (year !== now.getFullYear()) return;
+
     const idx = now.getMonth();
     setExpandedMonths({ [idx]: true });
     
@@ -308,7 +310,7 @@ export default function App() {
     return () => {
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
-  }, [config.timezone, config.autoScrollMobile, config.autoScrollDesktop, config.viewMode, role]);
+  }, [config.timezone, config.autoScrollMobile, config.autoScrollDesktop, config.viewMode, role, year]);
 
   useEffect(() => {
     const n = config.ownerName || 'Name';
@@ -505,9 +507,12 @@ export default function App() {
 
   if (isDataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-200 dark:bg-gray-900">
-        <Loader className="animate-spin" size={48} />
-      </div>
+      <>
+        <ThemeStyleInjector config={config} />
+        <div className="min-h-screen flex items-center justify-center bg-theme-base text-theme-text">
+          <Loader className="animate-spin" size={48} />
+        </div>
+      </>
     );
   }
 

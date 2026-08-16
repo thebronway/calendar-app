@@ -58,14 +58,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
   };
 
   return (
-    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 flex flex-col items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-theme-base text-theme-text flex flex-col items-center justify-center p-4 font-sans transition-colors duration-300">
       <div className="mb-8 flex flex-col items-center text-center">
-        <div className="w-20 h-20 bg-blue-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-blue-200 dark:border-gray-700">
+        <div className="w-20 h-20 bg-theme-item rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-theme-grid-divider">
           <HeaderIcon size={40} className="text-theme-accent" />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{title}</h1>
+        <h1 className="text-3xl font-extrabold text-theme-text">{title}</h1>
         {loginMessage && (
-          <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">{loginMessage}</p>
+          <p className="text-theme-text-secondary mt-2 font-medium">{loginMessage}</p>
         )}
         
         {config.isDemoMode && (
@@ -100,7 +100,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
         )}
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-8 border dark:border-gray-700">
+      <div className="bg-theme-panel rounded-2xl shadow-xl w-full max-w-md p-8 border border-theme-item">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <div className="relative">
@@ -117,7 +117,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
                   setUsername(e.target.value);
                   setLocalError(null);
                 }}
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
+                className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-theme-item text-theme-text transition-colors focus:ring-2 outline-none ${localError ? 'border-red-500 focus:ring-red-500' : 'border-theme-grid-divider focus:border-theme-accent focus:ring-theme-accent'}`}
                 placeholder="Username"
                 disabled={isLoading}
                 ref={usernameRef}
@@ -139,7 +139,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ config, onAuthenticate }) => 
                   setPassword(e.target.value);
                   setLocalError(null);
                 }}
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white transition-colors ${localError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
+                className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-theme-item text-theme-text transition-colors focus:ring-2 outline-none ${localError ? 'border-red-500 focus:ring-red-500' : 'border-theme-grid-divider focus:border-theme-accent focus:ring-theme-accent'}`}
                 placeholder="Password"
                 disabled={isLoading}
               />

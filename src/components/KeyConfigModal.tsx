@@ -44,17 +44,14 @@ const KeyConfigModal: React.FC<KeyConfigModalProps> = ({
     }
   }, [isOpen, keyItems]);
 
-  const isDirty = JSON.stringify(localKeyItems) !== JSON.stringify(keyItems);
+  const isDirty = isOpen ? JSON.stringify(localKeyItems) !== JSON.stringify(keyItems) : false;
+
   const { confirm } = useConfirm();
   usePreventTabClose(isDirty);
 
   useEffect(() => {
-    if (isOpen) {
-      onDirtyChange?.(isDirty);
-    } else {
-      onDirtyChange?.(false);
-    }
-  }, [isDirty, isOpen, onDirtyChange]);
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const handleClose = async () => {
     if (isDirty && !(await confirm())) return;

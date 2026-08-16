@@ -1,12 +1,19 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-08-08*  
-*Current Version: v1.1.9*
+*Last updated: 2026-08-16*  
+*Current Version: v1.2.0*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+### Release v1.2.0
+- Bugfix: Prevented "Unsaved Changes" warning from triggering erroneously on first modal open.
+- Bugfix: Welcome modal now grabs the latest release notes, ignoring cached or mismatched version tags.
+- Bugfix: Fixed mobile view floating bar width and adjusted z-index so it no longer obstructs the cell editor.
+- Bugfix: Prevented auto-scroll when refreshing the page on a non-current calendar year.
+- Bugfix: Eliminated color bleeding and flickering on the floating menu bar when toggling between admin states.
+- Bugfix: Resolved theme flashing/blinking to light mode on the loading and login screens during logout.
 
 ### Release v1.1.9
 - UI: Restyled the Floating Menu Bar
