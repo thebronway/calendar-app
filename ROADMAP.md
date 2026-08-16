@@ -8,18 +8,19 @@ This document tracks planned improvements, enhancements, and technical debt for 
 
 ## Release Roadmap
 
-### Release v1.2.0: UI, UX and bug fixes
+### Release v1.2.0: Bug fixes
 - Getting Unsaved Chnages warning when clicking on key, settings, for the first time
-- Even after the container is rebuilt, welcome modal is grabbing previus release notes
+- Even after the container is rebuilt (and new release notes have been added), welcome modal is grabbing previus release notes
+- On mobile, view only mode the floating bar takes up the whole page but the planner slider only takes up a third of the page. The floating bar should fit around whatever content is there - maybe make it bigger when it just the slider.
+- On mobile, Admin mode when you go to edit a date the floating bar is now in the way and you can edit the content. Edit day should be on top of floating nav or floating nav shouldnt be there at all
+- If current year is 2026, but I go to 2027 and click refresh the auto scroll will scroll to the current month (even if the wrong year is showing)
+
+### Release v1.2.1: UX  and UI Updates
+- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content - all or nothing. 
+- When bulk editing multiple days, there should be a clear all data button (with appropite warnings), like on single days
 - Clear to Reset View (reset should take place of (year/planner/list) slider)
 - Border of the year/planner/list reset view button, border - I dont like black line, give me options
-- On mobile, view only mode the floating bar takes up the whole page but the planner slider only takes up a third of the page. The floating bar should fit around whatever content is there - maybe make it bigger when it just the slider.
-- On mobile, Admin mode when you go to edit a date the floating bar is now in the way the floating bar shouldn’t be there on edit mode
-- The x should have a label on mobile
-
-### Release v1.2.1: UX Updates
-- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content
-- When bulk editing multiple days, there should be a clear all data button (with appropite warnings)
+- The x should have a label on mobile for clear
 
 ### Release v1.2.2: Stats
 - Stats page should open up dedicated stats page /stats
