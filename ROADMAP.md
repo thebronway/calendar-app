@@ -1,28 +1,15 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-08-16*  
-*Current Version: v1.2.0*
+*Last updated: 2026-08-17*  
+*Current Version: v1.2.1*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
 
-### Release v1.2.1: UX and UI Updates
-- Draft mode. For itineraries in progress, admin can set the day to draft and if draft is set, only admin sees content, others just see a day with no content - all or nothing. > Question is a data file migration needed?
-- When bulk editing multiple days, there should be a clear all data button (with appropite warnings), like on single days
-- Year Planner List Slider
-  - Clear to Reset View (reset should take place of (year/planner/list) slider)
-  - Border of the year/planner/list reset view button, border - I dont like black line, give me options
-  - Also background of the slider is darkmode regardless if light or custom. I want slider to be theme dependent. 
-  - The x should have a label on mobile for clear
-- Update Welcome Modal and Userguide and readme (currently mentions old UI elements)
-- Bug: Welcome Modal is still grabbing the previous release note. I have to rebuild the container twice for the release notes to stick. After first rebuild, it grabs the old ones, but if I rebuild it again, not changing any files it grabs the new ones. There is something cashing. When I rebuild the container, I rebuild it with --no-cache.
-
-### Release v1.2.2: Stats
-- Stats page should open up dedicated stats page /stats
-- Show cool stats all time, yoy or just for the that year
-- Generate end of year snapshots and lifelime snapshots
+### Release v1.2.2: Bugfixes
+- welcome modal not consistently opening. Had an issue with caching the previous bug notes and now it just doesn't open at all sometimes. I had to click refresh like 10 times to do it sometimes other times I can't get it.
 
 ### Release v1.2.3: iCal updates
 - Key Modal Categories and Activites
@@ -59,8 +46,10 @@ This document tracks planned improvements, enhancements, and technical debt for 
 ### Release v1.2.7: 
 - Add Compose FIle
 
-### Release v1.2.8: 
--
+### Release v1.2.8: Stats
+- Stats page should open up dedicated stats page /stats
+- Show cool stats all time, yoy or just for the that year
+- Generate end of year snapshots and lifelime snapshots
 
 ### Release v1.2.9: 
 -
@@ -140,7 +129,7 @@ This document tracks planned improvements, enhancements, and technical debt for 
   - once we id what areas need custom theming, we will wire them up one by one. and test. and make sure dark mode/ light mode are affected. Only one thing at a time. We will test it. We'll see how it looks and then we'll validate or revert. One element at a time. Slow and steady here. Micro incremental tests. 
 
 ### Release v1.5.0: Multi User Support
-- DB?
+- every user has an API key and they can set it up so that it will share the calendar with the person they will be owned by that person and then you can tag that person in certain events
 
 ### Release v2.0.0: PWA
 - Offline Support (PWA)

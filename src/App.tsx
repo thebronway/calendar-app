@@ -400,7 +400,7 @@ export default function App() {
     }
   };
 
-  const handleDayUpdate = (updatedDayData: any, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean }) => {
+  const handleDayUpdate = (updatedDayData: any, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean; isDraft: boolean }) => {
     const ts = new Date().toLocaleDateString();
     const newDayData: CalendarDataset = { ...(calendarData ?? {}) };
 
@@ -423,6 +423,7 @@ export default function App() {
           icons: bulkMask?.activities ? updatedDayData.icons : existingDay.icons,
           locations: bulkMask?.locations ? updatedDayData.locations : existingDay.locations,
           details: bulkMask?.notes ? updatedDayData.details : existingDay.details,
+          isDraft: bulkMask?.isDraft ? updatedDayData.isDraft : existingDay.isDraft,
         };
       });
       clearBulkEdit();

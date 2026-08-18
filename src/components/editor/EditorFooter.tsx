@@ -13,13 +13,28 @@ interface EditorFooterProps {
 export const EditorFooter: React.FC<EditorFooterProps> = ({ isAdmin, isBulkEdit, onSave, onClose, onNavigate, onClearAll }) => {
   if (isBulkEdit) {
     return (
-      <div className="p-4 bg-theme-item border-t border-theme-item flex justify-end space-x-3 shrink-0 rounded-b-xl">
-        <button onClick={onClose} className="bg-theme-panel hover:bg-theme-item-hover text-theme-text py-2 px-4 rounded-lg font-bold transition-colors border border-theme-grid-divider">
-          Cancel
-        </button>
-        <button onClick={() => onSave('close')} className="bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold py-2 px-4 rounded-lg flex items-center shadow-sm transition-colors">
-          <Save size={18} className="mr-2" /> Save All
-        </button>
+      <div className="p-4 bg-theme-item border-t border-theme-item flex items-stretch justify-between shrink-0 rounded-b-xl gap-2">
+        {onClearAll ? (
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 py-2 px-2 sm:px-4 rounded-lg font-bold flex items-center justify-center transition-colors text-sm shadow-sm flex-1 sm:flex-none"
+            title="Clear all fields for selected days"
+          >
+            <Trash2 size={16} className="sm:mr-1.5" />
+            <span className="hidden sm:inline">Clear Days</span>
+          </button>
+        ) : (
+          <div></div>
+        )}
+        <div className="flex gap-2 sm:gap-3 flex-1 sm:flex-none justify-end">
+          <button onClick={onClose} className="bg-theme-panel hover:bg-theme-item-hover text-theme-text py-2 px-4 rounded-lg font-bold transition-colors border border-theme-grid-divider flex-1 sm:flex-none shadow-sm">
+            Cancel
+          </button>
+          <button onClick={() => onSave('close')} className="bg-theme-accent hover:opacity-90 text-theme-accent-text font-bold py-2 px-4 rounded-lg flex items-center justify-center shadow-sm transition-colors flex-1 sm:flex-none">
+            <Save size={18} className="mr-2" /> <span className="whitespace-nowrap">Save All</span>
+          </button>
+        </div>
       </div>
     );
   }

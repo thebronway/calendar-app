@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react';
 import { X, Tag, MapPin } from 'lucide-react';
 import { CATEGORY_COLORS, ICON_MAP, MONTHS } from '../utils/constants';
 import { sanitizeHtml } from '../utils/helpers';
@@ -11,6 +11,7 @@ import { EditorActivities } from './editor/EditorActivities';
 import { EditorLocations } from './editor/EditorLocations';
 import { EditorNotes } from './editor/EditorNotes';
 import { EditorFooter } from './editor/EditorFooter';
+import ToggleSwitch from './ToggleSwitch';
 
 type TabId = 'cat_act' | 'loc_notes';
 
@@ -18,7 +19,7 @@ interface CellEditorProps {
   isOpen: boolean;
   onClose: () => void;
   dayData: Partial<DayData> | null;
-  onSave: (data: Partial<DayData>, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean }) => void;
+  onSave: (data: Partial<DayData>, nextAction?: 'prev' | 'next' | 'close', bulkMask?: { category: boolean; activities: boolean; locations: boolean; notes: boolean; isDraft: boolean }) => void;
   onNavigate?: (direction: 'prev' | 'next') => void;
   isAdmin: boolean;
   keyItems: KeyItem[];
@@ -64,12 +65,16 @@ const CellEditor: React.FC<CellEditorProps> = memo(
     const [localDetails, setLocalDetails] = useState('');
     const [localColorId, setLocalColorId] = useState('none');
     const [localIcons, setLocalIcons] = useState<IconEntry[]>([]);
+    const [localIsDraft, setLocalIsDraft] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('cat_act');
 
     const [enableCategory, setEnableCategory] = useState(false);
     const [enableActivities, setEnableActivities] = useState(false);
     const [enableLocations, setEnableLocations] = useState(false);
     const [enableNotes, setEnableNotes] = useState(false);
+    const [enableDraft, setEnableDraft] = useState(false);
+
+    const initialSharedRef = useRef<any>(null);
 
     useEffect(() => {
       if (isOpen) {
@@ -79,8 +84,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           let sharedDet = first.details || '';
           let sharedCol = first.colorId || 'none';
           let sharedIcons = first.icons || [];
+          let sharedDraft = first.isDraft || false;
           
-          let sameLoc = true, sameDet = true, sameCol = true, sameIcons = true;
+          let sameLoc = true, sameDet = true, sameCol = true, sameIcons = true, sameDraft = true;
           
           for (let i = 1; i < selectedDaysData.length; i++) {
             const d = selectedDaysData[i];
@@ -88,17 +94,33 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             if ((d.details || '') !== sharedDet) sameDet = false;
             if ((d.colorId || 'none') !== sharedCol) sameCol = false;
             if (JSON.stringify(d.icons || []) !== JSON.stringify(sharedIcons)) sameIcons = false;
+            if ((d.isDraft || false) !== sharedDraft) sameDraft = false;
           }
 
           setLocalLocations(sameLoc ? sharedLoc : '');
           setLocalDetails(sameDet ? sharedDet : '');
           setLocalColorId(sameCol ? sharedCol : 'none');
           setLocalIcons(sameIcons ? sharedIcons : []);
+          setLocalIsDraft(sameDraft ? sharedDraft : false);
 
           setEnableCategory(sameCol && sharedCol !== 'none');
           setEnableLocations(sameLoc && sharedLoc !== '');
           setEnableNotes(sameDet && sharedDet !== '');
           setEnableActivities(sameIcons && sharedIcons.length > 0);
+          setEnableDraft(sameDraft);
+
+          initialSharedRef.current = {
+            enableCategory: sameCol && sharedCol !== 'none',
+            enableLocations: sameLoc && sharedLoc !== '',
+            enableNotes: sameDet && sharedDet !== '',
+            enableActivities: sameIcons && sharedIcons.length > 0,
+            enableDraft: sameDraft,
+            colorId: sameCol ? sharedCol : 'none',
+            locations: sameLoc ? sharedLoc : '',
+            details: sameDet ? sharedDet : '',
+            icons: sameIcons ? sharedIcons : [],
+            isDraft: sameDraft ? sharedDraft : false,
+          };
           
           setActiveTab('cat_act');
         } else if (dayData && !isBulkEdit) {
@@ -106,6 +128,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           setLocalDetails(dayData.details || '');
           setLocalColorId(dayData.colorId || 'none');
           setLocalIcons((dayData.icons as IconEntry[]) || []);
+          setLocalIsDraft(dayData.isDraft || false);
           setActiveTab('cat_act');
           
           setEnableCategory(false);
@@ -120,11 +143,19 @@ const CellEditor: React.FC<CellEditorProps> = memo(
       if (!isAdmin || !dayData) return { isDirty: false, changedFields: [] as string[] };
       
       if (isBulkEdit) {
+        const init = initialSharedRef.current || {};
         const fields = [];
-        if (enableCategory) fields.push('Category');
-        if (enableActivities) fields.push('Activities');
-        if (enableLocations) fields.push('Locations');
-        if (enableNotes) fields.push('Notes');
+        
+        if (enableCategory !== init.enableCategory || (enableCategory && localColorId !== init.colorId)) fields.push('Category');
+        if (enableActivities !== init.enableActivities || (enableActivities && JSON.stringify(localIcons) !== JSON.stringify(init.icons))) fields.push('Activities');
+        if (enableLocations !== init.enableLocations || (enableLocations && localLocations !== init.locations)) fields.push('Locations');
+        
+        const normLocDet = localDetails === '<p><br></p>' ? '' : localDetails;
+        const initDet = init.details === '<p><br></p>' ? '' : (init.details || '');
+        if (enableNotes !== init.enableNotes || (enableNotes && normLocDet !== initDet)) fields.push('Notes');
+        
+        if (enableDraft !== init.enableDraft || (enableDraft && localIsDraft !== init.isDraft)) fields.push('Draft Status');
+
         return { isDirty: fields.length > 0, changedFields: fields };
       }
 
@@ -163,8 +194,10 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         }
       }
 
+      if (localIsDraft !== (dayData.isDraft || false)) changedFields.push('Draft Status');
+
       return { isDirty: changedFields.length > 0, changedFields };
-    }, [isAdmin, dayData, localLocations, localDetails, localColorId, localIcons, isBulkEdit, enableCategory, enableActivities, enableLocations, enableNotes]);
+    }, [isAdmin, dayData, localLocations, localDetails, localColorId, localIcons, localIsDraft, isBulkEdit, enableCategory, enableActivities, enableLocations, enableNotes]);
 
     const { confirm } = useConfirm();
     usePreventTabClose(dirtyState.isDirty);
@@ -236,6 +269,8 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             const normDayDet = day.details === '<p><br></p>' ? '' : (day.details || '');
             const normLocDet = localDetails === '<p><br></p>' ? '' : localDetails;
             if (enableNotes && normDayDet && normDayDet !== normLocDet) overwrittenFields.add('Notes');
+            
+            if (enableDraft && day.isDraft !== undefined && day.isDraft !== localIsDraft) overwrittenFields.add('Draft Status');
           }
         }
 
@@ -259,25 +294,39 @@ const CellEditor: React.FC<CellEditorProps> = memo(
         }
 
         onSave(
-          { ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons },
+          { ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons, isDraft: localIsDraft },
           nextAction,
-          { category: enableCategory, activities: enableActivities, locations: enableLocations, notes: enableNotes }
+          { category: enableCategory, activities: enableActivities, locations: enableLocations, notes: enableNotes, isDraft: enableDraft }
         );
       } else {
-        onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons }, nextAction);
+        onSave({ ...dayData, locations: localLocations, details: localDetails, colorId: localColorId, icons: localIcons, isDraft: localIsDraft }, nextAction);
       }
     };
 
     const handleClearAll = async () => {
+      const isBulk = isBulkEdit;
+      const msg = isBulk 
+        ? `Are you sure you want to clear all data for these ${bulkCount} days?` 
+        : 'Are you sure you want to clear all data for this day?';
+      
       if (await confirm({ 
-        title: 'Clear Day', 
-        message: 'Are you sure you want to clear all data for this day?', 
+        title: isBulk ? 'Clear Days' : 'Clear Day', 
+        message: msg, 
         confirmText: 'Clear Data' 
       })) {
         setLocalColorId('none');
         setLocalIcons([]);
         setLocalLocations('');
         setLocalDetails('');
+        setLocalIsDraft(false);
+
+        if (isBulk) {
+          setEnableCategory(true);
+          setEnableActivities(true);
+          setEnableLocations(true);
+          setEnableNotes(true);
+          setEnableDraft(true);
+        }
       }
     };
 
@@ -324,6 +373,28 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="bg-theme-item border-b border-theme-item px-6 py-3 flex justify-between items-center shrink-0">
+              <div className="flex items-center">
+                {isBulkEdit && (
+                  <input
+                    type="checkbox"
+                    checked={enableDraft}
+                    onChange={() => setEnableDraft(!enableDraft)}
+                    className="mr-3 w-4 h-4 rounded border-theme-item text-theme-accent focus:ring-theme-accent cursor-pointer"
+                  />
+                )}
+                <div className={isBulkEdit && !enableDraft ? 'opacity-50' : ''}>
+                  <span className="text-sm font-bold text-theme-text">Draft Mode</span>
+                  <p className="text-xs text-theme-text-secondary">Hide this day's content from all non-admins.</p>
+                </div>
+              </div>
+              <div className={isBulkEdit && !enableDraft ? 'opacity-50 pointer-events-none' : ''}>
+                <ToggleSwitch checked={localIsDraft} onChange={() => setLocalIsDraft(!localIsDraft)} />
+              </div>
             </div>
           )}
 
@@ -427,7 +498,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
             onSave={handleSave} 
             onClose={handleClose} 
             onNavigate={onNavigate}
-            onClearAll={isBulkEdit ? undefined : handleClearAll}
+            onClearAll={handleClearAll}
           />
         </div>
       </div>

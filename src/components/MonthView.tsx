@@ -96,10 +96,13 @@ const MonthView: React.FC<MonthViewProps> = ({
       >
         <div 
           onClick={() => onCellClick(key)}
-          className={`cursor-pointer transition-opacity hover:opacity-90 ${contentClass} ${colorClass} ${isSelected ? 'ring-4 ring-theme-accent-secondary ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : ''}`}
+          className={`cursor-pointer transition-opacity hover:opacity-90 ${contentClass} ${colorClass} ${isSelected ? 'ring-4 ring-theme-accent-secondary ring-inset z-20 relative' : isHigh ? 'ring-4 ring-theme-accent ring-inset z-10 relative' : 'relative'}`}
           style={customStyle}
         >
-          <div className="flex flex-col items-center">
+          {day.isDraft && (
+            <div className="absolute inset-0 z-10 pointer-events-none bg-[repeating-linear-gradient(45deg,transparent,transparent_8px,rgba(236,72,153,0.2)_8px,rgba(236,72,153,0.2)_16px)] border-[3px] border-dashed border-pink-500/80 dark:border-pink-400/80 opacity-80" />
+          )}
+          <div className="flex flex-col items-center relative z-20">
             <span
               className={`text-xl font-bold ${todayKey === key && isTodayYear ? 'bg-theme-accent text-white rounded-full w-8 h-8 flex items-center justify-center' : day.colorId !== 'none' ? 'text-theme-grid-text-highlighted' : 'text-theme-text'}`}
             >
@@ -123,7 +126,7 @@ const MonthView: React.FC<MonthViewProps> = ({
               </div>
             )}
           </div>
-          <div className="flex flex-wrap justify-center items-end mt-1">
+          <div className="flex flex-wrap justify-center items-end mt-1 relative z-20">
             {icons.map((i, idx) => {
               const IC = ICON_MAP[i.value || i.icon || ''];
               const isYellow = i.color === 'text-yellow-500';

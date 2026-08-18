@@ -1,6 +1,7 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { readData, writeData } = require('../utils/fileOps');
-const { verifyAdminToken } = require('../utils/authUtils');
+const { verifyAdminToken, JWT_SECRET } = require('../utils/authUtils');
 const { logError } = require('../utils/logger');
 
 const router = express.Router();
@@ -16,8 +17,33 @@ router.get('/:year', (req, res) => {
   const { year } = req.params;
   const yearNum = validateYear(year);
   if (!yearNum) return res.status(400).json({ error: 'Invalid year' });
-  const data = readData(yearNum);
-  res.json(data || {});
+  
+  const data = readData(yearNum) || {};
+  
+  if (data.dayData) {
+    let isAdmin = false;
+    const token = req.cookies?.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role === 'admin') isAdmin = true;
+      } catch (err) {}
+    }
+
+    if (!isAdmin) {
+      Object.keys(data.dayData).forEach(key => {
+        if (data.dayData[key].isDraft) {
+          data.dayData[key].colorId = 'none';
+          data.dayData[key].icons = [];
+          data.dayData[key].locations = '';
+          data.dayData[key].details = '';
+          delete data.dayData[key].isDraft;
+        }
+      });
+    }
+  }
+
+  res.json(data);
 });
 
 router.post('/:year', verifyAdminToken, async (req, res) => {

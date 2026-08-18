@@ -1,6 +1,6 @@
 # Calendar-App User Guide
 
-*Last updated: 2026-07-24*  
+*Last updated: 2026-08-17*  
 
 Calendar-App is a self-hosted, year-at-a-glance dashboard designed to help you track travel, availability, and daily activities, and share them easily with friends and family.
 
@@ -199,6 +199,7 @@ Click any day on the calendar to open the Cell Editor.
     * Add rich-text notes (bold, lists, links) to record flight numbers, hotel details, or journaling.
 
 **Editor Actions:**
+* **Draft Mode:** A toggle at the top of the editor allows you to hide the day's content from all non-admin viewers while it is a work-in-progress. Draft days display a distinct striped background pattern for admins.
 * **Clear Day:** Resets the day's data (clears activities, locations, notes, and resets color).
 * **Save & Close:** Saves your data and returns to the calendar.
 * **Save & Previous / Save & Next:** Saves and opens the adjacent day.
@@ -207,8 +208,9 @@ Click any day on the calendar to open the Cell Editor.
 To quickly log long trips:
 1. Click **Bulk Edit** in the bottom admin navigation bar.
 2. Click multiple days on the calendar (they will highlight with a purple ring).
-3. A floating bar will appear at the bottom. Click **Edit** to apply changes, or **Cancel** to exit Bulk Edit mode.
-4. Any Category, Activity, or Location you apply will be saved to *all* selected days at once.
+3. A floating bar will appear at the bottom. Click **Edit** to apply changes, **Clear** to unselect, or **Cancel** to exit Bulk Edit mode.
+4. Any Category, Activity, Location, or Draft status you apply will be saved to *all* selected days at once.
+5. You can also use the **Clear Days** button within the bulk editor to instantly wipe all data from the selected days.
 
 ---
 

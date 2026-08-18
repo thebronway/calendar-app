@@ -5,7 +5,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const { logError } = require('./utils/logger');
 const apiRoutes = require('./routes/index');
-const { ADMIN_PASSWORD } = require('./utils/authUtils');
+const jwt = require('jsonwebtoken');
+const { ADMIN_PASSWORD, JWT_SECRET } = require('./utils/authUtils');
 const { startDemoMode } = require('./utils/demoManager');
 
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,25 @@ function heartbeat() {
 
 wss.on('connection', (ws, req) => {
   ws.isAlive = true;
+  ws.role = 'none';
+
+  // Parse JWT from cookie to secure WebSocket payloads
+  if (req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').reduce((res, c) => {
+      const parts = c.trim().split('=');
+      const key = decodeURIComponent(parts.shift());
+      const val = decodeURIComponent(parts.join('=')); // Safely re-join base64 padding
+      return Object.assign(res, { [key]: val });
+    }, {});
+    
+    if (cookies.token) {
+      try {
+        const decoded = jwt.verify(cookies.token, JWT_SECRET);
+        ws.role = decoded.role;
+      } catch (e) {}
+    }
+  }
+
   ws.on('pong', heartbeat);
   ws.on('error', (err) => logError('WebSocket client', err));
 });
@@ -54,9 +74,34 @@ wss.on('close', function close() {
 
 // --- Attach WebSocket Broadcasters to Express Locals ---
 app.locals.broadcastUpdate = (year, data) => {
-  const message = JSON.stringify({ type: 'DATA_UPDATE', payload: { year, data } });
+  const adminPayload = { type: 'DATA_UPDATE', payload: { year, data } };
+  
+  // Scrub draft data for non-admins
+  const scrubbedData = JSON.parse(JSON.stringify(data));
+  if (scrubbedData.dayData) {
+    Object.keys(scrubbedData.dayData).forEach(key => {
+      if (scrubbedData.dayData[key].isDraft) {
+        scrubbedData.dayData[key].colorId = 'none';
+        scrubbedData.dayData[key].icons = [];
+        scrubbedData.dayData[key].locations = '';
+        scrubbedData.dayData[key].details = '';
+        delete scrubbedData.dayData[key].isDraft;
+      }
+    });
+  }
+  const viewPayload = { type: 'DATA_UPDATE', payload: { year, data: scrubbedData } };
+
+  const adminMessage = JSON.stringify(adminPayload);
+  const viewMessage = JSON.stringify(viewPayload);
+
   wss.clients.forEach((client) => {
-    if (client.readyState === 1) client.send(message);
+    if (client.readyState === 1) {
+      if (client.role === 'admin') {
+        client.send(adminMessage);
+      } else {
+        client.send(viewMessage);
+      }
+    }
   });
 };
 

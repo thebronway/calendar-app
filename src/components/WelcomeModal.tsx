@@ -75,11 +75,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGoToGuid
             <ul className="space-y-2 text-sm text-theme-text mb-4 ml-1">
               <li className="flex items-start">
                 <span className="text-theme-accent mr-2 font-bold">•</span>
-                <span>Click the <strong>Key icon</strong> in the bottom bar to define your custom Categories (colors) and Activities (icons).</span>
+                <span>Click <strong>Configure</strong> in the bottom menu bar to access the <strong>Key</strong> (colors and icons) and <strong>Settings</strong>.</span>
               </li>
               <li className="flex items-start">
                 <span className="text-theme-accent mr-2 font-bold">•</span>
-                <span>Click the <strong>Settings icon</strong> to customize your app layout, timezone, and privacy features.</span>
+                <span>Use the new <strong>Draft Mode</strong> toggle in the day editor to hide work-in-progress itineraries from guests!</span>
               </li>
             </ul>
             <button 

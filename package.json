@@ -1,12 +1,12 @@
 {
   "name": "calendar-server",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A self-hosted calendar app with a React frontend and Node.js backend.",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "build": "tsc --noEmit && vite build",
+    "build": "rm -rf node_modules/.vite && tsc --noEmit && vite build",
     "client": "serve -s dist -l 80",
     "lint": "eslint src/ server.js --config eslint.config.js",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" \"server.js\"",

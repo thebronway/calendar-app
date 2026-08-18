@@ -73,6 +73,7 @@ export interface DayData {
   icons: IconEntry[];
   locations: string;
   details: string;
+  isDraft?: boolean;
 }
 
 export type CalendarDataset = Record<string, DayData>;

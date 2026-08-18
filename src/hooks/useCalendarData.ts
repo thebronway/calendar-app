@@ -65,7 +65,7 @@ export function useCalendarData({
     } finally {
       setIsDataLoading(false);
     }
-  }, []);
+  }, [role]);
 
   const saveData = useCallback(
     async (dataToSave: SavePayload) => {
@@ -128,10 +128,13 @@ export function useCalendarData({
     wsRef.current.onclose = () => {
       setTimeout(connectWebSocket, 3000);
     };
-  }, [year, onConfigUpdate]);
+  }, [year, onConfigUpdate, role]);
 
   const disconnectWebSocket = useCallback(() => {
-    wsRef.current?.close();
+    if (wsRef.current) {
+      wsRef.current.onclose = null; // Prevent auto-reconnect loop on intentional disconnect
+      wsRef.current.close();
+    }
   }, []);
 
   return {

@@ -65,42 +65,42 @@ const FloatingMenuBar: React.FC<FloatingMenuBarProps> = ({
             </button>
           )}
 
-          <div className="flex bg-gray-700 dark:bg-gray-800 p-1 rounded-full items-center shadow-inner h-10 sm:h-12 border border-gray-800 dark:border-gray-900">
-            <button
-              onClick={() => onViewToggle('year')}
-              className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${(!routeView || routeView === 'year') ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
-              title="Year View"
-            >
-              <CalendarDays size={16} className="sm:mr-1.5" />
-              <span className="hidden sm:inline">Year</span>
-            </button>
-            <button
-              onClick={() => onViewToggle('planner')}
-              className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'planner' ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
-              title="Planner View"
-            >
-              <Layout size={16} className="sm:mr-1.5" />
-              <span className="hidden sm:inline">Planner</span>
-            </button>
-            <button
-              onClick={() => onViewToggle('list')}
-              className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'list' ? 'bg-theme-accent text-white shadow-md' : 'text-gray-300 hover:text-white'}`}
-              title="List View"
-            >
-              <List size={16} className="sm:mr-1.5" />
-              <span className="hidden sm:inline">List</span>
-            </button>
-          </div>
-
-          {hasFilters && (
+          {hasFilters ? (
             <button
               onClick={onClearFilters} 
-              className="flex-1 sm:flex-none h-10 sm:h-12 px-3 sm:px-5 bg-theme-item hover:bg-theme-item-hover text-theme-accent rounded-full text-xs sm:text-sm font-bold transition-colors flex items-center justify-center"
+              className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 bg-theme-item hover:bg-theme-item-hover text-theme-text rounded-full text-xs sm:text-sm font-bold transition-colors flex items-center justify-center border border-theme-grid-divider shadow-sm"
               title="Clear Filters"
             >
-              <X size={16} className="sm:mr-1.5" />
-              <span className="hidden sm:inline">Clear</span>
+              <X size={18} className="mr-1.5 text-theme-accent" />
+              <span>Clear Filters</span>
             </button>
+          ) : (
+            <div className="flex bg-theme-panel p-1 rounded-full items-center shadow-inner h-10 sm:h-12 border border-theme-item">
+              <button
+                onClick={() => onViewToggle('year')}
+                className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${(!routeView || routeView === 'year') ? 'bg-theme-accent text-theme-accent-text shadow-md' : 'text-theme-text-secondary hover:text-theme-text'}`}
+                title="Year View"
+              >
+                <CalendarDays size={16} className="sm:mr-1.5" />
+                <span className="hidden sm:inline">Year</span>
+              </button>
+              <button
+                onClick={() => onViewToggle('planner')}
+                className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'planner' ? 'bg-theme-accent text-theme-accent-text shadow-md' : 'text-theme-text-secondary hover:text-theme-text'}`}
+                title="Planner View"
+              >
+                <Layout size={16} className="sm:mr-1.5" />
+                <span className="hidden sm:inline">Planner</span>
+              </button>
+              <button
+                onClick={() => onViewToggle('list')}
+                className={`h-full px-4 sm:px-5 text-xs sm:text-sm font-bold rounded-full transition-all flex items-center justify-center ${routeView === 'list' ? 'bg-theme-accent text-theme-accent-text shadow-md' : 'text-theme-text-secondary hover:text-theme-text'}`}
+                title="List View"
+              >
+                <List size={16} className="sm:mr-1.5" />
+                <span className="hidden sm:inline">List</span>
+              </button>
+            </div>
           )}
 
           {isAdmin && (

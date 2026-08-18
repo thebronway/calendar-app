@@ -1,12 +1,20 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-08-16*  
-*Current Version: v1.2.0*
+*Last updated: 2026-08-17*  
+*Current Version: v1.2.1*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+### Release v1.2.1
+- Feature: Added Draft Mode to hide work-in-progress days from non-admins.
+- Feature: Added a "Clear Days" button to the Bulk Edit tool.
+- UI: Redesigned the Year/Planner/List view slider to use theme-aware styling.
+- UI: Replaced the view slider with a dedicated "Clear Filters" button when filters are active.
+- Bugfix: Prevented the Welcome Modal from aggressively caching old release notes.
+- Bugfix: Fixed erroneous "Unsaved Changes" warning when opening and closing Bulk Edit without making changes.
+
 ### Release v1.2.0
 - Bugfix: Prevented "Unsaved Changes" warning from triggering erroneously on first modal open.
 - Bugfix: Welcome modal now grabs the latest release notes, ignoring cached or mismatched version tags.
