@@ -19,23 +19,43 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onGoToGuid
     const lines = changelogRaw.split('\n');
     let isCapturing = false;
     let extracted: string[] = [];
+    
+    const targetHeader = `### Release v${version}`;
+    let hasFoundTarget = false;
 
-    // Grab the topmost release block. This ensures we always show the latest 
-    // release notes even if the package.json version string doesn't perfectly match 
-    // or if it was forgotten during a version bump.
+    // First pass: Try to find the exact version match
     for (const line of lines) {
-      if (!isCapturing && line.startsWith('### Release')) {
+      if (!isCapturing && line.startsWith(targetHeader)) {
         isCapturing = true;
-        continue; 
+        hasFoundTarget = true;
+        continue;
       } else if (isCapturing && line.startsWith('### Release')) {
-        break; // Stop when we hit the second release block
+        break; // Stop when we hit the next release block
       }
       if (isCapturing && line.trim()) {
         extracted.push(line);
       }
     }
+
+    // Fallback pass: If exact version wasn't found, grab the topmost release block
+    if (!hasFoundTarget) {
+      isCapturing = false;
+      extracted = [];
+      for (const line of lines) {
+        if (!isCapturing && line.startsWith('### Release')) {
+          isCapturing = true;
+          continue; 
+        } else if (isCapturing && line.startsWith('### Release')) {
+          break; 
+        }
+        if (isCapturing && line.trim()) {
+          extracted.push(line);
+        }
+      }
+    }
+
     return extracted.length > 0 ? extracted.join('\n') : 'No specific changelog details found for this version.';
-  }, []);
+  }, [version]);
 
   if (!isOpen) return null;
 

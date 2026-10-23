@@ -339,9 +339,9 @@ const CellEditor: React.FC<CellEditorProps> = memo(
 
     return (
       <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-        <div className={`bg-theme-panel text-theme-text border border-theme-item rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-lg max-h-[90vh]'}`}>
-          <div className="flex justify-between items-center p-6 border-b border-theme-item bg-theme-item shrink-0">
-            <h3 className="text-xl font-bold">
+        <div className={`bg-theme-panel text-theme-text border border-theme-item rounded-xl shadow-2xl w-full flex flex-col overflow-hidden ${isAdmin ? 'max-w-[95vw] sm:max-w-lg md:max-w-5xl max-h-[90vh] md:max-h-[85vh]' : 'max-w-[95vw] sm:max-w-lg max-h-[90vh]'}`}>
+          <div className="flex justify-between items-center p-4 sm:p-6 border-b border-theme-item bg-theme-item shrink-0 gap-4">
+            <h3 className="text-lg sm:text-xl font-bold flex-1 min-w-0 truncate">
               {isBulkEdit ? (
                 `Bulk Edit (${bulkCount} Days)`
               ) : (
@@ -356,19 +356,19 @@ const CellEditor: React.FC<CellEditorProps> = memo(
           </div>
 
           {isAdmin && (
-            <div className="flex md:hidden justify-around bg-theme-base p-2 border-b border-theme-item shrink-0">
+            <div className="flex md:hidden justify-around bg-theme-base p-2 border-b border-theme-item shrink-0 gap-1 sm:gap-2">
               {tabs.map((tab) => {
-                const activeClass = activeTab === tab.id 
-                  ? 'bg-theme-panel text-theme-accent shadow-sm' 
-                  : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover';
-
+                const activeClass = activeTab === tab.id
+                   ? 'bg-theme-panel text-theme-accent shadow-sm'
+                   : 'text-theme-text-secondary hover:text-theme-text hover:bg-theme-item-hover';
+                   
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex justify-center items-center px-3 py-2 rounded-lg text-sm font-medium transition-all mx-1 ${activeClass}`}
+                    className={`flex-1 flex justify-center items-center px-1 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all min-w-0 ${activeClass}`}
                   >
-                    <tab.icon size={16} className="mr-1.5 shrink-0" />
+                    <tab.icon size={16} className="mr-1 sm:mr-1.5 shrink-0" />
                     <span className="truncate">{tab.label}</span>
                   </button>
                 );
@@ -412,7 +412,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                   <strong className="text-theme-text">Location(s):</strong>
                   {localLocations && localLocations.length > 0 ? (
                     localLocations.split(',').map((loc) => loc.trim()).filter(Boolean).map((location, index) => (
-                      <span key={index} className="px-3 py-1 bg-theme-item border border-theme-grid-divider rounded-full text-sm font-bold text-theme-text break-words shadow-sm">
+                      <span key={index} className="px-3 py-1 bg-theme-item border border-theme-grid-divider rounded-full text-sm font-bold text-theme-text break-words break-all max-w-full inline-block shadow-sm">
                         {location}
                       </span>
                     ))
@@ -444,7 +444,7 @@ const CellEditor: React.FC<CellEditorProps> = memo(
                 )}
                 {localDetails && localDetails.replace(/<[^>]*>?/gm, '').trim() !== '' && (
                   <div
-                    className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border border-theme-grid-divider rounded-lg bg-theme-item overflow-y-auto text-theme-text"
+                    className="ql-editor prose prose-sm dark:prose-invert max-w-none mt-2 p-3 border border-theme-grid-divider rounded-lg bg-theme-item overflow-y-auto overflow-x-hidden break-words text-theme-text"
                     style={{ maxHeight: '150px' }}
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(localDetails) }}
                   />

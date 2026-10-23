@@ -1,12 +1,18 @@
 # Calendar-App Changelog
 
-*Last updated: 2026-08-17*  
-*Current Version: v1.2.1*
+*Last updated: 2026-10-22*  
+*Current Version: v1.2.2*
 
 ## Overview
 This document tracks past changes starting with v0.7.1.
 
 ## Changelog
+### Release v1.2.2
+- UI: Fixed mobile UI overflow issues on the editor modal.
+- Bugfix: Prevented long location names and notes from stretching off-screen on mobile devices.
+- Bugfix: Resolved condition preventing the Welcome Modal from consistently opening on initial load.
+- Bugfix: Updated the Welcome Modal to strictly parse release notes matching the current version tag.
+
 ### Release v1.2.1
 - Feature: Added Draft Mode to hide work-in-progress days from non-admins.
 - Feature: Added a "Clear Days" button to the Bulk Edit tool.

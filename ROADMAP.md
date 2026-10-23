@@ -1,17 +1,12 @@
 # Calendar-App Roadmap
 
-*Last updated: 2026-08-17*  
-*Current Version: v1.2.1*
+*Last updated: 2026-10-22*  
+*Current Version: v1.2.2*
 
 ## Overview
 This document tracks planned improvements, enhancements, and technical debt for the calendar-app.
 
 ## Release Roadmap
-
-### Release v1.2.2: Bugfixes
-- On Mobile, Location & Notes sometimes goes off the side of the page, like on the iphone screen.
-- welcome modal not consistently opening. Had an issue with caching the previous bug notes and now it just doesn't open at all sometimes. I had to click refresh like 10 times to do it sometimes other times I can't get it. and when it did show it, it still showed the old previous builds release notes for that version.
-  - this needs a complete rework, logic is too complex and is breaking
 
 ### Release v1.2.3: iCal updates
 - Key Modal Categories and Activites

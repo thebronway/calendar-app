@@ -13,3 +13,4 @@ package-lock.json
 # Data
 data/
 test_data/
+.prompt

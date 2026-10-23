@@ -258,8 +258,7 @@ export default function App() {
     // Show Welcome Modal if admin logs in and hasn't seen the current version (or in demo mode)
     if (role === 'admin' && !welcomeShownRef.current && (config.isDemoMode || config.lastSeenVersion !== packageInfo.version)) {
       welcomeShownRef.current = true;
-      const timer = setTimeout(() => setShowWelcome(true), 500);
-      return () => clearTimeout(timer);
+      setShowWelcome(true);
     }
   }, [role, config.lastSeenVersion, config.isDemoMode, isCheckingAuth, isDataLoading]);
 

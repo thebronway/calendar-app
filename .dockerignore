@@ -20,3 +20,4 @@ screenshots/
 *.md
 !CHANGELOG.md
 !docs/USER_GUIDE.md
+.prompt
